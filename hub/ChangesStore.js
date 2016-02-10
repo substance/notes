@@ -1,22 +1,18 @@
 "use strict";
 
 var connect = require('./connect');
-var EventEmitter = require('./EventEmitter');
+var EventEmitter = require('substance/util/EventEmitter');
 
 /*
   Implements Substance Store API. This is just a stub and is used for
   testing.
 */
 function ChangesStore(knex) {
-  this.connect(knex);
+  this.db = connect(knex.config);
   ChangesStore.super.apply(this);
 }
 
 ChangesStore.Prototype = function() {
-
-  this.connect = function(knex) {
-    this.db = connect(knex);
-  }
 
   /*
     Gets changes from the DB.
@@ -50,20 +46,21 @@ ChangesStore.Prototype = function() {
   */
   this.addChange = function(id, change, cb) {
     // cb(null, change, headVersion)
+    var self = this;
     var user = 'substance bot';
 
     this.getVersion(id, function(err, headVersion) {
       var version = headVersion + 1;
       var record = {
-        id: set + '/' + version,
-        changeset: set,
+        id: id + '/' + version,
+        changeset: id,
         pos: version,
         data: change,
         timestamp: Date.now(),
         user: user
       };
 
-      this.db.table('changes').insert(record)
+      self.db.table('changes').insert(record)
         .asCallback(function(err) {
           cb(err, change, version);
         });
@@ -77,10 +74,11 @@ ChangesStore.Prototype = function() {
     // HINT: version = count of changes
     // 0 changes: version = 0
     // 1 change:  version = 1
-    var query = db('changes')
+    var query = this.db('changes')
                 .where('changeset', id)
                 .count();
     query.asCallback(function(err, count) {
+      if (err) return cb(err);
       return cb(err, count[0]['count(*)']);
     });
     // cb(null, headversion);
@@ -92,7 +90,7 @@ ChangesStore.Prototype = function() {
     @param {String} id changeset id
   */
   this.deleteChangeset = function(id, cb) {
-    var query = db('changes')
+    var query = this.db('changes')
                 .where('changeset', id)
                 .del();
     query.asCallback(function(err) {
@@ -103,4 +101,5 @@ ChangesStore.Prototype = function() {
 };
 
 EventEmitter.extend(ChangesStore);
+
 module.exports = ChangesStore;

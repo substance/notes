@@ -23,7 +23,8 @@
   },
   "scripts": {
     "bundle": "gulp",
-    "postinstall": "knex migrate:latest --knexfile=./db/knexfile.js"
+    "postinstall": "knex migrate:latest --knexfile=./db/knexfile.js",
+    "test-store": "node test-store"
   },
   "version": "1.0.0-beta"
 }
