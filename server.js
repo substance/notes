@@ -18,7 +18,6 @@ server.serveJS(app, '/app.js', path.join(__dirname, 'notepad', 'app.js'));
 app.use(express.static(path.join(__dirname, 'notepad')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
-
 // Connect Substance
 // ----------------
 
@@ -33,9 +32,9 @@ var store = new TestStore({
 var hub = new Hub(wss, store);
 
 // Delegate http requests to express app
-server.on('request', app);
+httpServer.on('request', app);
 
-server.listen(port, function() { console.log('Listening on ' + server.address().port); });
+httpServer.listen(port, function() { console.log('Listening on ' + httpServer.address().port); });
 
 // Export app for requiring in test files
 module.exports = app;

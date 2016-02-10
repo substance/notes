@@ -2,18 +2,24 @@
 
 var $ = window.$ = require('substance/util/jquery');
 var Component = require('substance/ui/Component');
+var CollabSession = require('substance/model/CollabSession');
+
 var Notepad = require('./Notepad');
-var NoteImporter = require('../converter/NoteImporter');
-var importer = new NoteImporter();
+var Note = require('../note/Note');
+
+var doc = new Note();
+var ws = new WebSocket('ws://localhost:5000');
+var session = new CollabSession(doc, ws, {
+  docId: 'note-1',
+  docVersion: 0
+});
 
 $(function() {
-  var htmlContent = $('#editor_container').html();
-  $('#editor_container').empty();
-  var doc = importer.importDocument(htmlContent);
-  
   // For debugging in the console
   window.doc = doc;
+  window.session = session;
+
   Component.mount(Notepad, {
-    doc: doc
-  }, $('#editor_container'));
+    documentSession: session,
+  }, document.getElementById('editor_container'));
 });

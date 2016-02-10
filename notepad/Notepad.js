@@ -38,7 +38,7 @@ Notepad.Prototype = function() {
           )
         ),
         $$(ContainerEditor, {
-          doc: this.props.doc,
+          doc: this.props.documentSession.doc,
           containerId: 'body',
           name: 'bodyEditor',
           commands: config.bodyEditor.commands,
