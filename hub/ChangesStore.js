@@ -30,9 +30,9 @@ ChangesStore.Prototype = function() {
                 .orderBy('pos', 'desc');
 
     query.asCallback(function(err, changes) {
-      if (err) return cb(err, changes, null);
+      if (err) return cb(err);
       self.getVersion(id, function(err, headVersion) {
-        return cb(err, changes, headVersion);
+        return cb(null, changes, headVersion);
       });
     });
   };
@@ -50,6 +50,7 @@ ChangesStore.Prototype = function() {
     var user = 'substance bot';
 
     this.getVersion(id, function(err, headVersion) {
+      if (err) return cb(err);
       var version = headVersion + 1;
       var record = {
         id: id + '/' + version,
@@ -62,7 +63,8 @@ ChangesStore.Prototype = function() {
 
       self.db.table('changes').insert(record)
         .asCallback(function(err) {
-          cb(err, change, version);
+          if (err) return cb(err);
+          cb(null, version);
         });
     });
   };
@@ -79,7 +81,7 @@ ChangesStore.Prototype = function() {
                 .count();
     query.asCallback(function(err, count) {
       if (err) return cb(err);
-      return cb(err, count[0]['count(*)']);
+      return cb(null, count[0]['count(*)']);
     });
     // cb(null, headversion);
   };

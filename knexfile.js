@@ -4,10 +4,10 @@ module.exports = {
   development: {
     client: 'sqlite3',
     connection: {
-      filename: './dev.hub.sqlite3'
+      filename: './db/dev.hub.sqlite3'
     },
     migrations: {
-      directory: './migrations',
+      directory: './db/migrations',
       tableName: 'knex_migrations'
     },
     seeds: {
@@ -18,10 +18,10 @@ module.exports = {
   test: {
     client: 'sqlite3',
     connection: {
-      filename: './test.hub.sqlite3'
+      filename: './db/test.hub.sqlite3'
     },
     migrations: {
-      directory: './migrations',
+      directory: './db/migrations',
       tableName: 'knex_migrations'
     }
   },
@@ -29,10 +29,10 @@ module.exports = {
   production: {
     client: 'sqlite3',
     connection: {
-      filename: './production.hub.sqlite3'
+      filename: './db/production.hub.sqlite3'
     },
     migrations: {
-      directory: './migrations',
+      directory: './db/migrations',
       tableName: 'knex_migrations'
     }
   }

@@ -20,12 +20,13 @@
     "gulp-sass": "^2.0.3",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.2.0",
+    "mocha": "2.4.5",
     "through2": "^2.0.0"
   },
   "scripts": {
     "bundle": "gulp",
-    "postinstall": "knex migrate:latest --knexfile=./db/knexfile.js",
-    "test-store": "node test-store"
+    "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest",
+    "test": "npm run postinstall && mocha"
   },
   "version": "1.0.0-beta"
 }
