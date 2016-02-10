@@ -28,7 +28,7 @@ node_modules
 .lock-wscript
 
 # DB files
-.sqlite3
+*.sqlite3
 
 dist
 dist/doc
