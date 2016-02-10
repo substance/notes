@@ -19,7 +19,11 @@ $(function() {
   window.doc = doc;
   window.session = session;
 
-  Component.mount(Notepad, {
-    documentSession: session,
-  }, document.getElementById('editor_container'));
+  session.on('connected', function() {
+    Component.mount(Notepad, {
+      documentSession: session,
+    }, document.getElementById('editor_container'));
+  });
+
+
 });
