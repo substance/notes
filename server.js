@@ -4,10 +4,12 @@ var app = express();
 var port = process.env.PORT || 5000;
 var server = require('substance/util/server');
 var CollabHub = require('substance/util/CollabHub');
-var TestStore = require('substance/util/TestStore');
+var Storage = require('./hub/ChangesStore');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
 var exampleNoteChangeset = require('./note/exampleNoteChangeset');
+
+var knexConfig = require('./knexfile');
 
 // Serve app in development mode
 // ----------------
@@ -25,9 +27,7 @@ var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
 
 // Will be replaced with Daniel's persistent store
-var store = new TestStore({
-  'note-1': exampleNoteChangeset()
-});
+var store = new Storage({config: knexConfig});
 
 var hub = new CollabHub(wss, store);
 
