@@ -52,7 +52,7 @@ function exampleNoteChangeset() {
     body.show('t3');
   });
 
-  return [change.toJSON()];
+  return [change];
 }
 
 module.exports = exampleNoteChangeset;
