@@ -11,6 +11,12 @@ var WebSocketServer = require('ws').Server;
 
 var knexConfig = require('./knexfile');
 
+// If seed option provided we should remove db, run migration and seed script
+if(process.argv[2] == 'seed') {
+	var exec = require('child_process').exec;
+	exec("rm -rf ./db/*.sqlite3 && knex migrate:latest && node seed");
+}
+
 // Serve app in development mode
 // ----------------
 
