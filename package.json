@@ -6,7 +6,7 @@
   "dependencies": {
     "jquery": "*",
     "knex": "0.9.0",
-    "lodash": "3.10.1",
+    "lodash": "4.2.1",
     "sqlite3": "3.1.1",
     "substance": "substance/substance#collab",
     "ws": "^1.0.1"
