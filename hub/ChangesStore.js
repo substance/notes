@@ -2,7 +2,7 @@
 
 var connect = require('./connect');
 var EventEmitter = require('substance/util/EventEmitter');
-
+var _ = require('substance/util/helpers');
 /*
   Implements Substance Store API. This is just a stub and is used for
   testing.
@@ -31,8 +31,11 @@ ChangesStore.Prototype = function() {
 
     query.asCallback(function(err, changes) {
       if (err) return cb(err);
+
+      console.log('changes', changes);
+      changes = _.map(changes, function(c) {return c.data; });
       self.getVersion(id, function(err, headVersion) {
-        return cb(null, changes, headVersion);
+        return cb(null, headVersion, changes);
       });
     });
   };
@@ -45,6 +48,8 @@ ChangesStore.Prototype = function() {
     @param {String} change serialized change
   */
   this.addChange = function(id, change, cb) {
+    console.log('change', change);
+    
     // cb(null, change, headVersion)
     var self = this;
     var user = 'substance bot';
