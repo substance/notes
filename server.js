@@ -6,6 +6,7 @@ var CollabHub = require('substance/util/CollabHub');
 var Storage = require('./hub/ChangesStore');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
+
 var api = require('./api');
 var knexConfig = require('./knexfile');
 
@@ -13,6 +14,12 @@ var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 var store = new Storage({config: knexConfig});
+
+// If seed option provided we should remove db, run migration and seed script
+if(process.argv[2] == 'seed') {
+	var exec = require('child_process').exec;
+	exec("rm -rf ./db/*.sqlite3 && knex migrate:latest && node seed");
+}
 
 // Serve app in development mode
 // ----------------
