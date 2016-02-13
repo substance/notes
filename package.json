@@ -26,6 +26,8 @@
   "scripts": {
     "bundle": "gulp",
     "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest",
+    "seed": "node seed",
+    "start": "node server",
     "test": "npm run postinstall && mocha"
   },
   "version": "1.0.0-beta"
