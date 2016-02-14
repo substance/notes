@@ -28,12 +28,31 @@ function App() {
 
   var host = config.host || 'localhost';
   var port = config.port || 5000;
-  var wsUrl = config.wsUrl || 'ws://'+host+':'+port;
-  console.log('WebSocket-URL:', wsUrl);
-  this.ws = new WebSocket(wsUrl);
+  this.wsUrl = config.wsUrl || 'ws://'+host+':'+port;
+  this._initWebSocket();
 }
 
 App.Prototype = function() {
+
+  this._initWebSocket = function() {
+    console.log('Starting websocket connection:', this.wsUrl);
+
+    this.ws = new WebSocket(this.wsUrl);
+    window.ws = this.ws;
+    this.ws.onopen = this._onWebSocketOpen.bind(this);
+
+    this.ws.onclose = function() {
+      console.log('websocket connection closed. Attempting to reconnect in 5s.');
+      setTimeout(function() {
+        this._initWebSocket();
+      }.bind(this), 5000);
+    }.bind(this);
+  };
+
+  this._onWebSocketOpen = function() {
+    console.log('websocket connection is open.');
+    this._initSession();
+  };
 
   this.getInitialContext = function() {
     return {
@@ -47,12 +66,6 @@ App.Prototype = function() {
     };
   };
 
-  this.didMount = function() {
-    if (this.state.mode === 'edit') {
-      this._initSession();
-    }
-  };
-
   // E.g. if a different document is opened
   this.didUpdateState = function() {
     if (this.state.mode === 'edit') {
@@ -62,24 +75,38 @@ App.Prototype = function() {
 
   this._initSession = function() {
     console.log('App._initSession');
-    if (this.session) {
-      this.session.dispose();
+    if (this.state.mode === 'edit') {
+        
+        // Either we init the session for the first time or the docId has changed
+      if (!this.session || (this.session && this.state.docId !== this.session.doc.id)) {
+        
+        // We need to dispose the old session first
+        if (this.session) {
+          this.session._dispose();
+        }
+
+        this.doc = new Note();
+        this.session = new CollabSession(this.doc, {
+          docId: this.state.docId,
+          docVersion: 0
+        });
+
+        window.doc = this.doc;
+        window.session = this.session;
+
+        // Now we connect the session to the remote end point and wait until the
+        // 'opened' event has been fired. Then the doc is ready for editing
+        this.session.open(this.ws);
+        this.session.on('opened', this._onSessionOpened, this);
+      } else if (this.session && this.state.docId === this.session.doc.id) {
+        // This happens on reconnect (when websocket got closed and new connection was opened)
+        this.session.open(this.ws);
+        this.session.on('opened', this._onSessionOpened, this);
+      }
     }
-
-    this.doc = new Note();
-    this.session = new CollabSession(doc, this.ws, {
-      docId: this.state.docId,
-      docVersion: 0
-    });
-
-    window.doc = this.doc;
-    window.session = this.session;
-
-    // TODO: Use on('started') instead.
-    this.session.on('connected', this._onSessionStarted, this);
   };
 
-  this._onSessionStarted = function() {
+  this._onSessionOpened = function() {
     // Now it's time to render the editor
     this.rerender();
   };
@@ -103,7 +130,7 @@ App.Prototype = function() {
     var el = $$('div').addClass('sc-app');
 
     if (this.state.mode === 'edit') {
-      if (this.session && this.session.isRunning()) {
+      if (this.session && this.session.isOpen()) {
         el.append($$(Notepad, {documentSession: this.session}));        
       } else {
         el.append('Loading document...');
@@ -117,13 +144,11 @@ App.Prototype = function() {
 
     return el;
   };
-
 };
 
 Component.extend(App);
 
 // Start the application
-
 $(function() {
   Component.mount(App, document.body);
 });
