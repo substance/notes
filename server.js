@@ -41,7 +41,10 @@ var hub = new CollabHub(wss, store);
 // Delegate http requests to express app
 httpServer.on('request', app);
 
-httpServer.listen(port, 'localhost', function() { console.log('Listening on ' + httpServer.address().port); });
+// FIXME: without specifying a host to bind to, the server gets bound to 0.0.0.0
+// In production I'd rather want that bound to localhost
+// however, the nginx websocket reverse proxy is not working yet
+httpServer.listen(port, /*'localhost',*/ function() { console.log('Listening on ' + httpServer.address().port); });
 
 // Export app for requiring in test files
 module.exports = app;
