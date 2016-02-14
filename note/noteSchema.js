@@ -3,6 +3,7 @@
 var DocumentSchema = require('substance/model/DocumentSchema');
 var TextBlock = require('substance/model/TextBlock');
 var PropertyAnnotation = require('substance/model/PropertyAnnotation');
+var ContainerAnnotation = require('substance/model/ContainerAnnotation');
 
 /**
   Simple mark for highlighting text in a note
@@ -11,7 +12,7 @@ var PropertyAnnotation = require('substance/model/PropertyAnnotation');
 function Mark() {
   Mark.super.apply(this, arguments);
 }
-PropertyAnnotation.extend(Mark);
+ContainerAnnotation.extend(Mark);
 Mark.static.name = 'mark';
 
 /**
