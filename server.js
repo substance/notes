@@ -43,10 +43,11 @@ var hub = new CollabHub(wss, store);
 // Delegate http requests to express app
 httpServer.on('request', app);
 
-// FIXME: without specifying a host to bind to, the server gets bound to 0.0.0.0
-// In production I'd rather want that bound to localhost
-// however, the nginx websocket reverse proxy is not working yet
-httpServer.listen(port, /*'localhost',*/ function() { console.log('Listening on ' + httpServer.address().port); });
+// NOTE: binding to localhost means that the app is not exposed
+// to the www directly.
+// E.g. on sandbox.substance.io we have established a reverse proxy
+// forwarding http+ws on notepad.substance.io to localhost:5001
+httpServer.listen(port, 'localhost', function() { console.log('Listening on ' + httpServer.address().port); });
 
 // Export app for requiring in test files
 module.exports = app;
