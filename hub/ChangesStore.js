@@ -47,7 +47,7 @@ ChangesStore.Prototype = function() {
     @param {String} change serialized change
   */
   this.addChange = function(id, change, cb) {
-    console.log('change', change);
+    // console.log('change', change);
 
     // cb(null, change, headVersion)
     var self = this;
