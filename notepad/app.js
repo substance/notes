@@ -29,9 +29,10 @@ $(function() {
   var host = config.host || 'localhost';
   var port = config.port || 5000;
   var wsUrl;
-  if (config.NODE_ENV === 'production') {
-    // we assume that we have a http/websocket prox running on the host
-    // i.e. port is only used on localhost
+  // we assume that we have a http/websocket proxy running on the host
+  // when we specify a host,
+  // i.e. port is only used on localhost
+  if (config.host) {
     wsUrl = 'ws://'+host;
   } else {
     wsUrl = 'ws://'+host+':'+port;

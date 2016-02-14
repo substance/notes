@@ -17,7 +17,6 @@ var knexConfig = require('./knexfile');
 server.serveStyles(app, '/app.css', path.join(__dirname, 'notepad', 'app.scss'));
 server.serveJS(app, '/app.js', path.join(__dirname, 'notepad', 'app.js'));
 var config = {
-  NODE_ENV: process.env.NODE_ENV || '',
   host: host,
   port: port
 };
