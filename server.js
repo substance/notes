@@ -8,8 +8,10 @@ var CollabHub = require('substance/util/CollabHub');
 var Storage = require('./hub/ChangesStore');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
-
+var api = require('./api');
 var knexConfig = require('./knexfile');
+
+var store = new Storage({config: knexConfig});
 
 // Serve app in development mode
 // ----------------
@@ -22,14 +24,14 @@ server.serveHTML(app, '/', path.join(__dirname, 'notepad', 'index.html'), config
 app.use(express.static(path.join(__dirname, 'notepad')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
+// Connect http api
+app.use('/api', api(store));
+
 // Connect Substance
 // ----------------
 
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
-
-// Will be replaced with Daniel's persistent store
-var store = new Storage({config: knexConfig});
 
 var hub = new CollabHub(wss, store);
 
