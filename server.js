@@ -1,8 +1,6 @@
 var express = require('express');
 var path = require('path');
 var app = express();
-var port = process.env.PORT || 5000;
-var host = process.env.HOST || 'localhost';
 var server = require('substance/util/server');
 var CollabHub = require('substance/util/CollabHub');
 var Storage = require('./hub/ChangesStore');
@@ -11,6 +9,9 @@ var WebSocketServer = require('ws').Server;
 
 var knexConfig = require('./knexfile');
 
+var port = process.env.PORT || 5000;
+var host = process.env.HOST || 'localhost';
+var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 // Serve app in development mode
 // ----------------
 
@@ -18,7 +19,8 @@ server.serveStyles(app, '/app.css', path.join(__dirname, 'notepad', 'app.scss'))
 server.serveJS(app, '/app.js', path.join(__dirname, 'notepad', 'app.js'));
 var config = {
   host: host,
-  port: port
+  port: port,
+  wsUrl: wsUrl
 };
 server.serveHTML(app, '/', path.join(__dirname, 'notepad', 'index.html'), config);
 

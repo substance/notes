@@ -28,15 +28,7 @@ $(function() {
 
   var host = config.host || 'localhost';
   var port = config.port || 5000;
-  var wsUrl;
-  // we assume that we have a http/websocket proxy running on the host
-  // when we specify a host,
-  // i.e. port is only used on localhost
-  if (config.host) {
-    wsUrl = 'ws://'+host;
-  } else {
-    wsUrl = 'ws://'+host+':'+port;
-  }
+  var wsUrl = config.wsUrl || 'ws://'+host+':'+port;
   console.log('WebSocket-URL:', wsUrl);
   var ws = new WebSocket(wsUrl);
   var session = new CollabSession(doc, ws, {
