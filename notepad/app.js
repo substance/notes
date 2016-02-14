@@ -8,6 +8,7 @@ var CollabSession = require('substance/model/CollabSession');
 var Router = require('substance/ui/Router');
 var Notepad = require('./Notepad');
 var Note = require('../note/Note');
+var uuid = require('substance/util/uuid');
 
 function App() {
   Component.apply(this, arguments);
@@ -82,7 +83,7 @@ App.Prototype = function() {
         
         // We need to dispose the old session first
         if (this.session) {
-          this.session._dispose();
+          this.session.dispose();
         }
 
         this.doc = new Note();
@@ -115,7 +116,14 @@ App.Prototype = function() {
     Creates a new note and opens it for editing
   */
   this.newNote = function() {
-    // Just open the existing note
+    var newNoteId = uuid();
+    this.openNote(newNoteId);
+  };
+
+  /*
+    Open the example document 
+  */
+  this.exampleNote = function() {
     this.openNote('note-1');
   };
 
@@ -131,17 +139,36 @@ App.Prototype = function() {
 
     if (this.state.mode === 'edit') {
       if (this.session && this.session.isOpen()) {
-        el.append($$(Notepad, {documentSession: this.session}));        
+        el.append(
+          $$('div').addClass('se-edit-view').append(
+            $$('div').addClass('se-header').append(
+              $$('div').addClass('se-actions').append(
+                $$('button').addClass('se-action').append('New Note').on('click', this.newNote)
+              ),
+              $$('div').addClass('se-collaborators').append(
+                $$('div').addClass('se-collaborator').append(
+                  $$('img').attr('src', 'https://avatars0.githubusercontent.com/u/2931?v=3&s=460')
+                ),
+                $$('div').addClass('se-collaborator sm-2').append(
+                  $$('img').attr('src', 'https://avatars3.githubusercontent.com/u/284099?v=3&s=460')
+                )
+              )
+            ),
+            $$(Notepad, {documentSession: this.session})
+          )
+        );
       } else {
         el.append('Loading document...');
       }
     } else {
       el.append(
-        $$('div').append('Substance Notepad is real-time collaborative notes editor.'),
-        $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note')
+        $$('div').addClass('se-intro').append(
+          $$('div').addClass('se-intro-text').html('Substance Notepad is <strong>real-time collaborative</strong> notes editor. 100% open source.'),
+          $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note'),
+          $$('button').addClass('se-example-note').on('click', this.exampleNote).append('Example Note')
+        )
       );
     }
-
     return el;
   };
 };
