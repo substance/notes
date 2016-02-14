@@ -36,7 +36,7 @@ var hub = new CollabHub(wss, store);
 // Delegate http requests to express app
 httpServer.on('request', app);
 
-httpServer.listen(port, function() { console.log('Listening on ' + httpServer.address().port); });
+httpServer.listen(port, 'localhost', function() { console.log('Listening on ' + httpServer.address().port); });
 
 // Export app for requiring in test files
 module.exports = app;
