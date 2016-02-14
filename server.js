@@ -15,10 +15,12 @@ var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 var store = new Storage({config: knexConfig});
 
+
 // If seed option provided we should remove db, run migration and seed script
 if(process.argv[2] == 'seed') {
-	var exec = require('child_process').exec;
-	exec("rm -rf ./db/*.sqlite3 && knex migrate:latest && node seed");
+	var execSync = require('child_process').execSync;
+	execSync("rm -rf ./db/*.sqlite3 && knex migrate:latest && node seed");
+  console.log('Seeding the db...');
 }
 
 // Serve app in development mode
