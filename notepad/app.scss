@@ -34,25 +34,79 @@ $fa-font-path:  "../fonts" !default;
 /* Shared demo styles */
 
 body {
-  background: #f1f1f1;
-  padding: 30px;
   overflow: hidden;
 }
 
-.footer {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  right: 10px;
+.sc-app {
+  .se-header {
+    height: 50px;
+    background: #272727;
+
+    overflow: hidden;
+
+    .se-actions {
+      margin-left: 15px;
+      float: left;
+      .se-action {
+        line-height: 50px;
+        display: inline-block;
+        color: rgba(255,255,255, 0.7);
+      }
+
+      .se-action:hover {
+        color: rgba(255,255,255, 1);
+      }
+    }
+
+    .se-collaborators {
+      float: right;
+      margin-right: 10px;
+
+      .se-collaborator {
+        margin: 3px;
+        display: inline-block;
+        width: 44px;
+        height: 44px;
+
+        img {
+          border: 2px solid #7ED321;
+          border-radius: 50%;
+          width: 100%;
+        }
+      }
+
+      .se-collaborator.sm-2 img {
+        border: 2px solid #D34321;
+      }
+    }
+  }
+
+  // Intro
+  .se-intro {
+    padding: 50px;
+    font-size: 20px;
+
+    button {
+      display: inline-block;
+      background: #444;
+      color: #fff;
+      padding: 2px 5px;
+      margin-right: 10px;
+    }
+
+    .se-intro-text {
+      margin-bottom: 40px;
+    }
+  }
+
 }
 
 .sc-notepad {
   position: fixed;
-  top: 10px;
-  bottom: 40px;
-  left: 10px;
-  right: 10px;
-  border: 1px solid #ddd;
+  top: 50px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
   background: white;
   color: #222;
 }
