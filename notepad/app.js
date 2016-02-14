@@ -25,10 +25,19 @@ $(function() {
       config[name] = content;
     }
   });
-  console.log('####', config);
+
   var host = config.host || 'localhost';
   var port = config.port || 5000;
-  var ws = new WebSocket('ws://'+host+':'+port);
+  var wsUrl;
+  if (config.NODE_ENV === 'production') {
+    // we assume that we have a http/websocket prox running on the host
+    // i.e. port is only used on localhost
+    wsUrl = 'ws://'+host;
+  } else {
+    wsUrl = 'ws://'+host+':'+port;
+  }
+  console.log('WebSocket-URL:', wsUrl);
+  var ws = new WebSocket(wsUrl);
   var session = new CollabSession(doc, ws, {
     docId: 'note-1',
     docVersion: 0
