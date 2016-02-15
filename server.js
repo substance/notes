@@ -36,10 +36,19 @@ var config = {
 server.serveHTML(app, '/', path.join(__dirname, 'notepad', 'index.html'), config);
 
 app.use(express.static(path.join(__dirname, 'notepad')));
+app.use(express.static(path.join(__dirname, 'upload')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
 // Connect http api
 app.use('/api', api(store));
+
+// Error handler
+app.use(errorHandler);
+
+function errorHandler(err, req, res, next) {
+  res.status(500);
+  res.send(err.message);
+}
 
 // Connect Substance
 // ----------------
