@@ -36,6 +36,7 @@ var config = {
 server.serveHTML(app, '/', path.join(__dirname, 'notepad', 'index.html'), config);
 
 app.use(express.static(path.join(__dirname, 'notepad')));
+app.use(express.static(path.join(__dirname, 'upload')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
 // Connect http api
