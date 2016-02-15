@@ -8,7 +8,7 @@
     "knex": "0.9.0",
     "lodash": "4.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#3572ebb775805af5a9bea9c933264c70c139c484",
+    "substance": "substance/substance#6c5d1a14b74eb55aa9fbd5b0d7728bad340ba96d",
     "ws": "^1.0.1"
   },
   "devDependencies": {
