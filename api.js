@@ -1,8 +1,24 @@
 var express = require('express');
 var api = express.Router();
+var multer = require('multer');
+var uuid = require('substance/util/uuid')
 var Note = require('./note/Note');
 var Snapshot = require('./hub/Snapshot')
 var snapshot;
+
+var figureStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads')
+  },
+  filename: function (req, file, cb) {
+  	var extension = file.originalname.split('.').pop();
+    cb(null, uuid() + '.' + extension)
+  }
+})
+
+var figureUploader = multer({
+	storage: figureStorage
+});
 
 var getSnapshot = function(req, res, next) {
   snapshot.get(req.params.id, function(err, doc, version) {
@@ -11,8 +27,15 @@ var getSnapshot = function(req, res, next) {
   });
 };
 
+var handleUpload = function(req, res, next) {
+	res.send('ok');
+};
+
 api.route('/snapshot/:id')
-    .get(getSnapshot);
+	.get(getSnapshot);
+
+api.route('/upload')
+	.post(figureUploader.single('figure'), handleUpload);
 
 api.register = function(store) {
   snapshot = new Snapshot(store, Note);
@@ -20,39 +43,3 @@ api.register = function(store) {
 }
 
 module.exports = api.register;
-
-// //snapshot.get('note-1');
-
-// function Api(app, store) {
-//  this.app = app;
-//  this.store = store;
-//  this.snapshot = new Snapshot(store, Note);
-//   Api.super.apply(this);
-// };
-
-// Api.Prototype = function() {
-  
-//  this.getSnapshot = function(req, res, next) {
-//    var self = this;
-
-//    console.log(self)
-//    self.snapshot.get(req.params.id, function(err, doc, version) {
-//      if(err) return next(err);
-//      res.json([doc, version]);
-//    });
-//  };
-
-
-//  this.register = function() {
-//    this.app.route('/snapshot/:id')
-//      .get(this.getSnapshot);
-//  };
-//  // var
-
-//  // app.route('/snapshot')
-//  //  .get(getSnapshot)
-// };
-
-// EventEmitter.extend(Api);
-
-// module.exports = Api;
