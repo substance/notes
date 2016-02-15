@@ -4,9 +4,11 @@
   "description": "Real-time notes editing",
   "license": "MIT",
   "dependencies": {
+    "express": "4.13.1",
     "jquery": "*",
     "knex": "0.9.0",
     "lodash": "3.10.1",
+    "multer": "1.1.0",
     "sqlite3": "3.1.1",
     "substance": "substance/substance#collab",
     "ws": "^1.0.1"
@@ -15,7 +17,6 @@
     "font-awesome": "4.5.0",
     "browserify": "^10.2.4",
     "node-sass": "3.x",
-    "express": "4.13.1",
     "gulp": "^3.8.11",
     "gulp-sass": "^2.0.3",
     "gulp-rename": "^1.2.2",
