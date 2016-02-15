@@ -28,7 +28,8 @@ var getSnapshot = function(req, res, next) {
 };
 
 var handleUpload = function(req, res, next) {
-	res.send('ok');
+	res.status(200);
+	res.send({name: req.file.filename});
 };
 
 api.route('/snapshot/:id')
