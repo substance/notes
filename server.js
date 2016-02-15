@@ -41,6 +41,14 @@ app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome
 // Connect http api
 app.use('/api', api(store));
 
+// Error handler
+app.use(errorHandler);
+
+function errorHandler(err, req, res, next) {
+  res.status(500);
+  res.send(err.message);
+}
+
 // Connect Substance
 // ----------------
 
