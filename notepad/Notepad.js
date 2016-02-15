@@ -12,6 +12,7 @@ var SwitchTextTypeTool = require('substance/packages/text/SwitchTextTypeTool');
 var StrongTool = require('substance/packages/strong/StrongTool');
 var EmphasisTool = require('substance/packages/emphasis/EmphasisTool');
 var LinkTool = require('substance/packages/link/LinkTool');
+var ImageTool = require('substance/packages/image/ImageTool');
 var MarkTool = require('./MarkTool');
 var TodoTool = require('./TodoTool');
 
@@ -34,7 +35,8 @@ Notepad.Prototype = function() {
             $$(EmphasisTool).append($$(Icon, {icon: 'fa-italic'})),
             $$(MarkTool).append($$(Icon, {icon: 'fa-pencil'})),
             $$(LinkTool).append($$(Icon, {icon: 'fa-link'})),
-            $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'}))
+            $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'})),
+            $$(ImageTool).append($$(Icon, {icon: 'fa-image'}))
           )
         ),
         $$(ContainerEditor, {
@@ -62,6 +64,7 @@ Notepad.static.config = {
     components: {
       'paragraph': require('substance/packages/paragraph/ParagraphComponent'),
       'heading': require('substance/packages/heading/HeadingComponent'),
+      'image': require('substance/packages/image/ImageComponent'),
       'link': require('substance/packages/link/LinkComponent'),
       'todo': require('./TodoComponent'),
       'codeblock': require('substance/packages/codeblock/CodeblockComponent'),
@@ -81,6 +84,7 @@ Notepad.static.config = {
       require('substance/packages/strong/StrongCommand'),
       require('substance/packages/emphasis/EmphasisCommand'),
       require('substance/packages/link/LinkCommand'),
+      require('substance/packages/image/ImageCommand'),
       require('./MarkCommand'),
       require('./TodoCommand'),
     ],
