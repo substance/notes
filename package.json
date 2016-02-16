@@ -26,7 +26,7 @@
   },
   "scripts": {
     "bundle": "gulp",
-    "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && mkdir upload",
+    "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && rm -rf ./uploads && mkdir uploads",
     "seed": "node seed",
     "test": "npm run postinstall && mocha"
   },
