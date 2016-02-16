@@ -4,11 +4,13 @@ var _ = require('substance/util/helpers');
 var $ = window.$ = require('substance/util/jquery');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
+var HubClient = require('substance/util/HubClient');
 var CollabSession = require('substance/model/CollabSession');
 var Router = require('substance/ui/Router');
 var Notepad = require('./Notepad');
 var Note = require('../note/Note');
 var uuid = require('substance/util/uuid');
+
 
 function App() {
   Component.apply(this, arguments);
@@ -29,31 +31,20 @@ function App() {
 
   var host = config.host || 'localhost';
   var port = config.port || 5000;
-  this.wsUrl = config.wsUrl || 'ws://'+host+':'+port;
-  this._initWebSocket();
+
+  this.hubClient = new HubClient({
+    wsUrl: config.wsUrl || 'ws://'+host+':'+port,
+    httpUrl: config.httpUrl || 'http://'+host+':'+port
+  });
+
+  this.hubClient.on('connection', function() {
+    console.log('hub client is now connected');
+    this._initSession();
+  }.bind(this));
 }
 
 App.Prototype = function() {
 
-  this._initWebSocket = function() {
-    console.log('Starting websocket connection:', this.wsUrl);
-
-    this.ws = new WebSocket(this.wsUrl);
-    window.ws = this.ws;
-    this.ws.onopen = this._onWebSocketOpen.bind(this);
-
-    this.ws.onclose = function() {
-      console.log('websocket connection closed. Attempting to reconnect in 5s.');
-      setTimeout(function() {
-        this._initWebSocket();
-      }.bind(this), 5000);
-    }.bind(this);
-  };
-
-  this._onWebSocketOpen = function() {
-    console.log('websocket connection is open.');
-    this._initSession();
-  };
 
   this.getInitialContext = function() {
     return {
@@ -61,9 +52,13 @@ App.Prototype = function() {
     };
   };
 
+  this._authenticate = function() {
+    console.log('authenticating');
+  };
+
   this.getInitialState = function() {
     return {
-      mode: 'index'
+      mode: 'anauthenticated'
     };
   };
 
@@ -89,26 +84,32 @@ App.Prototype = function() {
         this.doc = new Note();
         this.session = new CollabSession(this.doc, {
           docId: this.state.docId,
-          docVersion: 0
+          docVersion: 0,
+          hubClient: this.hubClient
         });
+
+        console.log('Collabsession created for ', this.state.docId);
 
         window.doc = this.doc;
         window.session = this.session;
 
         // Now we connect the session to the remote end point and wait until the
         // 'opened' event has been fired. Then the doc is ready for editing
-        this.session.open(this.ws);
-        this.session.on('opened', this._onSessionOpened, this);
-      } else if (this.session && this.state.docId === this.session.doc.id) {
-        // This happens on reconnect (when websocket got closed and new connection was opened)
-        this.session.open(this.ws);
+        // this.session.open(this.ws);
         this.session.on('opened', this._onSessionOpened, this);
       }
+
+      // else if (this.session && this.state.docId === this.session.doc.id) {
+      //   // This happens on reconnect (when websocket got closed and new connection was opened)
+      //   this.session.open(this.ws);
+      //   this.session.on('opened', this._onSessionOpened, this);
+      // }
     }
   };
 
   this._onSessionOpened = function() {
     // Now it's time to render the editor
+    console.log('session opened / or reconnected. Now rerendering editor');
     this.rerender();
   };
 
@@ -137,7 +138,11 @@ App.Prototype = function() {
   this.render = function() {
     var el = $$('div').addClass('sc-app');
 
-    if (this.state.mode === 'edit') {
+    if (this.state.mode === 'unauthenticated') {
+      el.append(
+        $$('button').on('click', this._authen)
+      )
+    } else if (this.state.mode === 'edit') {
       if (this.session && this.session.isOpen()) {
         el.append(
           $$('div').addClass('se-edit-view').append(

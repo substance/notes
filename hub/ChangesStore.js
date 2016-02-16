@@ -3,6 +3,20 @@
 var connect = require('./connect');
 var EventEmitter = require('substance/util/EventEmitter');
 var _ = require('substance/util/helpers');
+
+// TODO: we should move that into the real database
+var USERS = {
+  'demo': {
+    'id': 'demo',
+    'password': 'demo',
+    'name': 'Demo user'
+  }
+};
+
+// TODO: store sessions in a real db table
+var SESSIONS = {
+};
+
 /*
   Implements Substance Store API. This is just a stub and is used for
   testing.
@@ -102,6 +116,21 @@ ChangesStore.Prototype = function() {
     query.asCallback(function(err) {
       return cb(err);
     });
+  };
+
+
+  this.getUser = function(userId) {
+    return new Promise(function(resolve) {
+      resolve(USERS[userId]);
+    });
+  };
+
+  this.setSession = function(sessionId, sessionData) {
+
+  };
+
+  this.getSession = function(sessionId) {
+
   };
 
 };
