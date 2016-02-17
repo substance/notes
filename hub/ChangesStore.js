@@ -3,6 +3,7 @@
 var connect = require('./connect');
 var EventEmitter = require('substance/util/EventEmitter');
 var _ = require('substance/util/helpers');
+var uuid = require('substance/util/uuid');
 
 // TODO: we should move that into the real database
 var USERS = {
@@ -15,6 +16,7 @@ var USERS = {
 
 // TODO: store sessions in a real db table
 var SESSIONS = {
+
 };
 
 /*
@@ -33,8 +35,9 @@ ChangesStore.Prototype = function() {
 
     @param {String} id changeset id
     @param {String} sinceVersion changes since version (0 = all changes, 1 all except first change)
+    @return
   */
-  this.getChanges = function(id, sinceVersion, cb) {
+  this.getChanges = function(id, sinceVersion) {
     // cb(null, changes, headVersion);
     var self = this;
     var query = this.db('changes')
@@ -43,12 +46,18 @@ ChangesStore.Prototype = function() {
                 .andWhere('pos', '>=', sinceVersion)
                 .orderBy('pos', 'asc');
 
-    query.asCallback(function(err, changes) {
-      if (err) return cb(err);
-      // console.log('changes', changes);
-      changes = _.map(changes, function(c) {return c.data; });
-      self.getVersion(id, function(err, headVersion) {
-        return cb(null, headVersion, changes);
+    return new Promise(function(resolve, reject) {
+      query.asCallback(function(err, changes) {
+        if (err) return reject(err);
+        // console.log('changes', changes);
+        changes = _.map(changes, function(c) {return JSON.parse(c.data); });
+
+        self.getVersion(id).then(function(headVersion) {
+          resolve({
+            version: headVersion,
+            changes: changes
+          });
+        }, reject);
       });
     });
   };
@@ -58,50 +67,50 @@ ChangesStore.Prototype = function() {
     when the first change is added to
 
     @param {String} id changeset id
-    @param {String} change serialized change
+    @param {String} change change represented as JSON object
   */
-  this.addChange = function(id, change, cb) {
-    // console.log('change', change);
-
-    // cb(null, change, headVersion)
+  this.addChange = function(id, change) {
     var self = this;
     var user = 'substance bot';
 
-    this.getVersion(id, function(err, headVersion) {
-      if (err) return cb(err);
-      var version = headVersion + 1;
-      var record = {
-        id: id + '/' + version,
-        changeset: id,
-        pos: version,
-        data: change,
-        timestamp: Date.now(),
-        user: user
-      };
+    return new Promise(function(resolve, reject) {
+      self.getVersion(id).then(function(headVersion) {
+        var newVersion = headVersion + 1;
+        var record = {
+          id: id + '/' + newVersion,
+          changeset: id,
+          pos: newVersion,
+          data: JSON.stringify(change),
+          timestamp: Date.now(),
+          user: user
+        };
 
-      self.db.table('changes').insert(record)
-        .asCallback(function(err) {
-          if (err) return cb(err);
-          cb(null, version);
-        });
+        self.db.table('changes').insert(record)
+          .asCallback(function(err) {
+            if (err) return reject(err);
+            resolve(newVersion);
+          });
+      }, reject);
     });
   };
 
   /*
     Gets the version number for a document
   */
-  this.getVersion = function(id, cb) {
+  this.getVersion = function(id) {
     // HINT: version = count of changes
     // 0 changes: version = 0
     // 1 change:  version = 1
     var query = this.db('changes')
                 .where('changeset', id)
                 .count();
-    query.asCallback(function(err, count) {
-      if (err) return cb(err);
-      return cb(null, count[0]['count(*)']);
+
+    return new Promise(function(resolve, reject) {
+      query.asCallback(function(err, count) {
+        if (err) return reject(err);
+        resolve(count[0]['count(*)']);
+      });
     });
-    // cb(null, headversion);
   };
 
   /*
@@ -109,15 +118,21 @@ ChangesStore.Prototype = function() {
 
     @param {String} id changeset id
   */
-  this.deleteChangeset = function(id, cb) {
+  this.deleteChangeset = function(id) {
     var query = this.db('changes')
                 .where('changeset', id)
                 .del();
-    query.asCallback(function(err) {
-      return cb(err);
+
+    return new Promise(function(resolve, reject) {
+      query.asCallback(function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });      
     });
   };
-
 
   this.getUser = function(userId) {
     return new Promise(function(resolve) {
@@ -125,12 +140,36 @@ ChangesStore.Prototype = function() {
     });
   };
 
-  this.setSession = function(sessionId, sessionData) {
-
+  /*
+    Checks given login data and creates an entry in the session store for valid logins
+    Returns a user record and a session token
+  */
+  this.createSession = function(loginData) {
+    return new Promise(function(resolve, reject) {
+      var user = USERS[loginData.login];
+      if (user && loginData.password === user.password) {
+        var newSession = {
+          sessionToken: uuid(),
+          user: user
+        };
+        // TODO: In a real db we must store only the userId not the whole
+        // user record
+        SESSIONS[newSession.sessionToken] = newSession;
+        resolve(newSession);
+      } else {
+        reject(new Error('Invalid login'));
+      }
+    });
   };
 
-  this.getSession = function(sessionId) {
+  this.deleteSession = function(/*sessionToken*/) {
+    // TODO: implement
+  };
 
+  this.getSession = function(sessionToken) {
+    return new Promise(function(resolve) {
+      resolve(SESSIONS[sessionToken]);
+    });
   };
 
 };

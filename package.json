@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "express": "4.13.1",
+    "body-parser": "1.15.0",
     "jquery": "*",
     "knex": "0.9.0",
     "lodash": "4.2.1",
@@ -27,7 +28,7 @@
   "scripts": {
     "bundle": "gulp",
     "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && rm -rf ./uploads && mkdir uploads",
-    "seed": "node seed",
+    "seed": "npm run postinstall && node seed",
     "test": "npm run postinstall && mocha"
   },
   "version": "1.0.0-beta"

@@ -1,9 +1,9 @@
 var express = require('express');
 var api = express.Router();
 var multer = require('multer');
-var uuid = require('substance/util/uuid')
+var uuid = require('substance/util/uuid');
 var Note = require('./note/Note');
-var Snapshot = require('./hub/Snapshot')
+var Snapshot = require('./hub/Snapshot');
 var snapshot;
 
 var figureStorage = multer.diskStorage({
@@ -14,7 +14,7 @@ var figureStorage = multer.diskStorage({
   	var extension = file.originalname.split('.').pop();
     cb(null, uuid() + '.' + extension)
   }
-})
+});
 
 var figureUploader = multer({
 	storage: figureStorage
