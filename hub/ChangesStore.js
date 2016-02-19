@@ -8,7 +8,7 @@ var uuid = require('substance/util/uuid');
 // TODO: we should move that into the real database
 var USERS = {
   'demo': {
-    'id': 'demo',
+    'userId': 'demo',
     'password': 'demo',
     'name': 'Demo user'
   }
@@ -32,12 +32,10 @@ ChangesStore.Prototype = function() {
 
   /*
     Gets changes from the DB.
-
     @param {String} id changeset id
     @param {String} sinceVersion changes since version (0 = all changes, 1 all except first change)
-    @return
   */
-  this.getChanges = function(id, sinceVersion) {
+  this.getChanges = function(id, sinceVersion, cb) {
     // cb(null, changes, headVersion);
     var self = this;
     var query = this.db('changes')
@@ -46,18 +44,12 @@ ChangesStore.Prototype = function() {
                 .andWhere('pos', '>=', sinceVersion)
                 .orderBy('pos', 'asc');
 
-    return new Promise(function(resolve, reject) {
-      query.asCallback(function(err, changes) {
-        if (err) return reject(err);
-        // console.log('changes', changes);
-        changes = _.map(changes, function(c) {return JSON.parse(c.data); });
-
-        self.getVersion(id).then(function(headVersion) {
-          resolve({
-            version: headVersion,
-            changes: changes
-          });
-        }, reject);
+    query.asCallback(function(err, changes) {
+      if (err) return cb(err);
+      // console.log('changes', changes);
+      changes = _.map(changes, function(c) {return JSON.parse(c.data); });
+      self.getVersion(id, function(err, headVersion) {
+        return cb(null, headVersion, changes);
       });
     });
   };
@@ -65,79 +57,67 @@ ChangesStore.Prototype = function() {
   /*
     Add a change to a changeset. Implicitly creates a new changeset
     when the first change is added to
-
     @param {String} id changeset id
-    @param {String} change change represented as JSON object
+    @param {Object} change as JSON object
   */
-  this.addChange = function(id, change) {
+  this.addChange = function(id, change, cb) {
     var self = this;
     var user = 'substance bot';
 
-    return new Promise(function(resolve, reject) {
-      self.getVersion(id).then(function(headVersion) {
-        var newVersion = headVersion + 1;
-        var record = {
-          id: id + '/' + newVersion,
-          changeset: id,
-          pos: newVersion,
-          data: JSON.stringify(change),
-          timestamp: Date.now(),
-          user: user
-        };
+    this.getVersion(id, function(err, headVersion) {
+      if (err) return cb(err);
+      var version = headVersion + 1;
+      var record = {
+        id: id + '/' + version,
+        changeset: id,
+        pos: version,
+        data: JSON.stringify(change),
+        timestamp: Date.now(),
+        user: user
+      };
 
-        self.db.table('changes').insert(record)
-          .asCallback(function(err) {
-            if (err) return reject(err);
-            resolve(newVersion);
-          });
-      }, reject);
+      self.db.table('changes').insert(record)
+        .asCallback(function(err) {
+          if (err) return cb(err);
+          cb(null, version);
+        });
     });
   };
 
   /*
     Gets the version number for a document
   */
-  this.getVersion = function(id) {
+  this.getVersion = function(id, cb) {
     // HINT: version = count of changes
     // 0 changes: version = 0
     // 1 change:  version = 1
     var query = this.db('changes')
                 .where('changeset', id)
                 .count();
-
-    return new Promise(function(resolve, reject) {
-      query.asCallback(function(err, count) {
-        if (err) return reject(err);
-        resolve(count[0]['count(*)']);
-      });
+    query.asCallback(function(err, count) {
+      if (err) return cb(err);
+      return cb(null, count[0]['count(*)']);
     });
   };
 
   /*
     Removes a changeset from the db
-
     @param {String} id changeset id
   */
-  this.deleteChangeset = function(id) {
+  this.deleteChangeset = function(id, cb) {
     var query = this.db('changes')
                 .where('changeset', id)
                 .del();
-
-    return new Promise(function(resolve, reject) {
-      query.asCallback(function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });      
+    query.asCallback(function(err) {
+      return cb(err);
     });
   };
 
-  this.getUser = function(userId) {
-    return new Promise(function(resolve) {
-      resolve(USERS[userId]);
-    });
+  /*
+    Get user record for a given userId
+  */
+  this.getUser = function(userId, cb) {
+    cb(null, USERS[userId]);
   };
 
   /*
@@ -166,10 +146,8 @@ ChangesStore.Prototype = function() {
     // TODO: implement
   };
 
-  this.getSession = function(sessionToken) {
-    return new Promise(function(resolve) {
-      resolve(SESSIONS[sessionToken]);
-    });
+  this.getSession = function(sessionToken, cb) {
+    cb(null, SESSIONS[sessionToken]);
   };
 
 };

@@ -2,7 +2,7 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var server = require('substance/util/server');
-var CollabHub = require('substance/util/CollabHub');
+var CollabHub = require('substance/collab/CollabHub');
 var Storage = require('./hub/ChangesStore');
 var bodyParser = require('body-parser');
 var http = require('http');
@@ -29,7 +29,6 @@ if(process.argv[2] == 'seed') {
 
 app.use(bodyParser.json({limit: '3mb'}));
 app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 3000 }));
-
 
 /* Serve HTML, bundled JS and CSS */
 
@@ -61,7 +60,6 @@ function errorHandler(err, req, res, next) {
   res.send(err.message);
 }
 
-
 // Connect Substance
 // ----------------
 
@@ -80,7 +78,9 @@ httpServer.on('request', app);
 // E.g. on sandbox.substance.io we have established a reverse proxy
 // forwarding http+ws on notepad.substance.io to localhost:5001
 
-httpServer.listen(port, 'localhost', function() { console.log('Listening on ' + httpServer.address().port); });
+httpServer.listen(port, 'localhost', function() {
+  console.log('Listening on ' + httpServer.address().port); 
+});
 
 // Export app for requiring in test files
 module.exports = app;
