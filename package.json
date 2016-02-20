@@ -5,12 +5,13 @@
   "license": "MIT",
   "dependencies": {
     "express": "4.13.1",
+    "body-parser": "1.15.0",
     "jquery": "*",
     "knex": "0.9.0",
     "lodash": "4.2.1",
     "multer": "1.1.0",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#6c5d1a14b74eb55aa9fbd5b0d7728bad340ba96d",
+    "substance": "substance/substance#cbe49001e833190bc0688495f28ec083f8cb18f6",
     "ws": "^1.0.1"
   },
   "devDependencies": {
@@ -27,7 +28,7 @@
   "scripts": {
     "bundle": "gulp",
     "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && rm -rf ./uploads && mkdir uploads",
-    "seed": "node seed",
+    "seed": "npm run postinstall && node seed",
     "test": "npm run postinstall && mocha"
   },
   "version": "1.0.0-beta"
