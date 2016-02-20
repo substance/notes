@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
 
-var api = require('./api');
+// var api = require('./api');
 
 var knexConfig = require('./knexfile');
 var port = process.env.PORT || 5000;
@@ -51,16 +51,16 @@ app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome
 
 
 // Error handler
-app.use(errorHandler);
+// app.use(errorHandler);
 
 // Connect http api
-app.use('/api', api(store));
+// app.use('/api', api(store));
 
 
-function errorHandler(err, req, res) {
-  res.status(500);
-  res.send(err.message);
-}
+// function errorHandler(err, req, res) {
+//   res.status(500);
+//   res.send(err.message);
+// }
 
 // Connect Substance
 // ----------------

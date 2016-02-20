@@ -9,7 +9,7 @@ var uuid = require('substance/util/uuid');
 var USERS = {
   1: {
     'userId': 1,
-    'loginKey': 'demoLogin'
+    'loginKey': 'demoLogin',
     'name': 'Demo user'
   }
 };
@@ -123,7 +123,8 @@ ChangesStore.Prototype = function() {
     var newUser = {
       userId: 2, // TODO: use incremental id from postgres.
       name: userData.name,
-      createdAt: new Date()
+      createdAt: new Date(),
+      loginKey: loginKey
     };
     cb(null, newUser);
   };
@@ -143,7 +144,8 @@ ChangesStore.Prototype = function() {
     // this is hardcoded for the demo. you need to lookup the user table based on 
     // loginData.loginKey, if you find an entry then you return that user entry
     // if no entry is found the loginKey was wrong and you return an error
-    var user = USERS[1]; 
+    var user = USERS[1];
+    console.log('USER', user); 
 
     if (user) {
       var newSession = {
