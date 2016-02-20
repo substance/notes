@@ -42,28 +42,27 @@ Collaborators.Prototype = function() {
     this.props.session.off(this);
   };
 
+  this._extractInitials = function(name) {
+    var parts = name.split(' ');
+    return parts.map(function(part) {
+      return part[0].toUpperCase(); // only use the first letter of a part
+    });
+  };
+
   this.render = function() {
     console.log('rerendering');
     var el = $$('div').addClass('se-collaborators');
 
     var collaborators = this.props.session.collaborators;
     forEach(collaborators, function(collaborator) {
+      var initials = this._extractInitials(collaborator.user.name);
       el.append(
-        $$('div').addClass('se-collaborator').attr({title: collaborator.user.userId}).append(
-          $$('img').attr('src', 'https://avatars0.githubusercontent.com/u/2931?v=3&s=460')
+        $$('div').addClass('se-collaborator').attr({title: collaborator.user.name}).append(
+          initials
         )
-      )
-    });
+      );
+    }.bind(this));
     return el;
-    // .append(
-    //   $$('div').addClass('se-collaborator').append(
-    //     $$('img').attr('src', 'https://avatars0.githubusercontent.com/u/2931?v=3&s=460')
-    //   ),
-    //   $$('div').addClass('se-collaborator sm-2').append(
-    //     $$('img').attr('src', 'https://avatars3.githubusercontent.com/u/284099?v=3&s=460')
-    //   )
-    // )
-
   };
 };
 
