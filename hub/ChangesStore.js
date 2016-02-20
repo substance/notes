@@ -7,9 +7,9 @@ var uuid = require('substance/util/uuid');
 
 // TODO: we should move that into the real database
 var USERS = {
-  'demo': {
-    'userId': 'demo',
-    'password': 'demo',
+  1: {
+    'userId': 1,
+    'loginKey': 'demoLogin'
     'name': 'Demo user'
   }
 };
@@ -115,6 +115,21 @@ ChangesStore.Prototype = function() {
 
   /*
     Get user record for a given userId
+
+    @param {Object} userData contains name property
+  */
+  this.createUser = function(userData, cb) {
+    var loginKey = uuid(); // at some point we should make this more secure
+    var newUser = {
+      userId: 2, // TODO: use incremental id from postgres.
+      name: userData.name,
+      createdAt: new Date()
+    };
+    cb(null, newUser);
+  };
+
+  /*
+    Get user record for a given userId
   */
   this.getUser = function(userId, cb) {
     cb(null, USERS[userId]);
@@ -124,29 +139,41 @@ ChangesStore.Prototype = function() {
     Checks given login data and creates an entry in the session store for valid logins
     Returns a user record and a session token
   */
-  this.createSession = function(loginData) {
-    return new Promise(function(resolve, reject) {
-      var user = USERS[loginData.login];
-      if (user && loginData.password === user.password) {
-        var newSession = {
-          sessionToken: uuid(),
-          user: user
-        };
-        // TODO: In a real db we must store only the userId not the whole
-        // user record
-        SESSIONS[newSession.sessionToken] = newSession;
-        resolve(newSession);
-      } else {
-        reject(new Error('Invalid login'));
-      }
-    });
+  this.createSession = function(loginData, cb) {
+    // this is hardcoded for the demo. you need to lookup the user table based on 
+    // loginData.loginKey, if you find an entry then you return that user entry
+    // if no entry is found the loginKey was wrong and you return an error
+    var user = USERS[1]; 
+
+    if (user) {
+      var newSession = {
+        sessionToken: uuid(),
+        user: user
+      };
+      // TODO: In a real db we must store only the userId not the whole
+      // user record. However as a response we still want the full user
+      // object there
+      SESSIONS[newSession.sessionToken] = newSession;
+      cb(null, newSession);
+    } else {
+      cb(new Error('Invalid login'));
+    }
   };
 
   this.deleteSession = function(/*sessionToken*/) {
-    // TODO: implement
+    // Actually we don't need this really. Instead we
+    // need a maintenance operation that deletes expired sessions.
   };
 
   this.getSession = function(sessionToken, cb) {
+    // TODO: this must get the session from the db based on sessionToken
+    // then you also need to fetch the user associated with that session
+    // to return it
+    // format must be:
+    // {
+    //   sessionToken: '...',
+    //   user: {} // object contains user record
+    // }
     cb(null, SESSIONS[sessionToken]);
   };
 

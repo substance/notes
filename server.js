@@ -56,7 +56,8 @@ app.use(errorHandler);
 // Connect http api
 app.use('/api', api(store));
 
-function errorHandler(err, req, res, next) {
+
+function errorHandler(err, req, res) {
   res.status(500);
   res.send(err.message);
 }
