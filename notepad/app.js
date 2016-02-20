@@ -5,19 +5,13 @@ var $ = window.$ = require('substance/util/jquery');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var HubClient = require('substance/collab/HubClient');
-var forEach = require('lodash/forEach');
 var CollabSession = require('substance/collab/CollabSession');
 var Router = require('substance/ui/Router');
 var Notepad = require('./Notepad');
 var Note = require('../note/Note');
 var uuid = require('substance/util/uuid');
-var Collaborator = require('./Collaborators');
-
-// This is just for prototyping purposes
-var LOGIN_DATA = {
-  loginKey: 'demoLogin'
-};
-
+var Collaborators = require('./Collaborators');
+var Login = require('./Login');
 
 function App() {
   Component.apply(this, arguments);
@@ -62,21 +56,12 @@ App.Prototype = function() {
     }
   };
 
-  /* Simple authentication */
-  this._authenticate = function() {
-    console.log('authenticating...');
-    this.hubClient.authenticate(LOGIN_DATA, function(err) {
-      if (err) {
-        return alert('Login failed. Please try again.');
-      }
-      console.log('your hub session is', this.hubClient.getSession());
-
-      if (this.state.mode === 'edit') {
-        // Make the transition from authenticated to bringing up the editor
-        this._initCollabSession();
-      }
-      this.rerender();
-    }.bind(this));
+  this._onAuthenticated = function() {
+    if (this.state.mode === 'edit') {
+      // Make the transition from authenticated to bringing up the editor
+      this._initCollabSession();
+    }
+    this.rerender();
   };
 
   this.getInitialState = function() {
@@ -87,7 +72,7 @@ App.Prototype = function() {
 
   this.didMount = function() {
     // Auto-autenticate on page load
-    this._authenticate();
+    // this._authenticate();
   };
 
   // E.g. if a different document is opened
@@ -100,7 +85,7 @@ App.Prototype = function() {
   this._initCollabSession = function() {
     console.log('App._initCollabSession');
     
-    if (!this.hubClient.isAuthenticated()) throw new Error('You have to be authenticated to be able to edit');
+    if (!this.hubClient.isAuthenticated()) throw new Error('You have to be authenticated befor you can edit');
     if (this.state.mode !== 'edit') throw new Error('Can only create a collab session when we are in edit mode');
         
     // Either we init the session for the first time or the docId has changed
@@ -157,39 +142,58 @@ App.Prototype = function() {
     });
   };
 
+  this._renderIntro = function() {
+    var el = $$('div').addClass('se-intro').append(
+      $$('div').addClass('se-intro-text').html('Substance Notepad is <strong>real-time collaborative</strong> notes editor. 100% open source.')
+    );
+    return el;
+  };
+
+  this._renderDashboard = function() {
+    var el = $$('se-dashboard');
+    el.append(this._renderIntro());
+    // Render Dashboard
+    el.append(
+      $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note'),
+      $$('button').addClass('se-example-note').on('click', this.exampleNote).append('Example Note')
+    );
+    return el;
+  };
+
+  this._renderEditor = function() {
+    var el = $$('div').addClass('se-edit-view');
+
+    if (this.session && this.session.isOpen()) {      
+      el.append(
+        $$('div').addClass('se-header').append(
+          $$('div').addClass('se-actions').append(
+            $$('button').addClass('se-action').append('New Note').on('click', this.newNote)
+          ),
+          $$(Collaborators, {
+            session: this.session
+          })
+        ),
+        $$(Notepad, {documentSession: this.session})
+      );
+    } else {
+      el.append('Loading document...');
+    }
+  };
+
   this.render = function() {
     var el = $$('div').addClass('sc-app');
 
     if (!this.hubClient.isAuthenticated()) {
-      el.append(
-        $$('button').on('click', this._authenticate).append('Login')
-      );
+      // Render Login Screen
+      el.append($$(Login, {
+        hubClient: this.hubClient,
+        onAuthenticated: this._onAuthenticated.bind(this)
+      }));
     } else if (this.state.mode === 'edit') {
-      if (this.session && this.session.isOpen()) {
-        el.append(
-          $$('div').addClass('se-edit-view').append(
-            $$('div').addClass('se-header').append(
-              $$('div').addClass('se-actions').append(
-                $$('button').addClass('se-action').append('New Note').on('click', this.newNote)
-              ),
-              $$(Collaborators, {
-                session: this.session
-              })
-            ),
-            $$(Notepad, {documentSession: this.session})
-          )
-        );
-      } else {
-        el.append('Loading document...');
-      }
+      // Render editor
+      el.append(this._renderEditor());
     } else {
-      el.append(
-        $$('div').addClass('se-intro').append(
-          $$('div').addClass('se-intro-text').html('Substance Notepad is <strong>real-time collaborative</strong> notes editor. 100% open source.'),
-          $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note'),
-          $$('button').addClass('se-example-note').on('click', this.exampleNote).append('Example Note')
-        )
-      );
+      el.append(this._renderDashboard());
     }
     return el;
   };

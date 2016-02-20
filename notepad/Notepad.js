@@ -80,7 +80,6 @@ Notepad.Prototype = function() {
 
 Controller.extend(Notepad);
 
-
 Notepad.static.config = {
   i18n: {
     'todo.content': 'Todo'

@@ -114,7 +114,7 @@ ChangesStore.Prototype = function() {
   };
 
   /*
-    Get user record for a given userId
+    Create a new user record (aka signup)
 
     @param {Object} userData contains name property
   */
@@ -126,7 +126,18 @@ ChangesStore.Prototype = function() {
       createdAt: new Date(),
       loginKey: loginKey
     };
-    cb(null, newUser);
+
+    var newSession = {
+      sessionToken: uuid(),
+      user: newUser
+    };
+    
+    SESSIONS[newSession.sessionToken] = newSession;
+    // Return new session and loginKey
+    cb(null, {
+      session: newSession,
+      loginKey: loginKey
+    });
   };
 
   /*
@@ -147,7 +158,7 @@ ChangesStore.Prototype = function() {
     var user = USERS[1];
     console.log('USER', user); 
 
-    if (user) {
+    if (user && loginData.loginKey === 'demoLogin') {
       var newSession = {
         sessionToken: uuid(),
         user: user

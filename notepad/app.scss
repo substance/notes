@@ -100,8 +100,8 @@ body {
       margin-bottom: 40px;
     }
   }
-
 }
+
 
 .sc-notepad {
   position: fixed;
@@ -116,4 +116,18 @@ body {
 .sc-container-editor {
   padding: 20px;
   overflow: auto;
+}
+
+
+// Login Component
+// --------------------------
+
+.sc-login {
+
+  width: 300px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  margin: 0px auto;
+  margin-top: 50px;
+  padding: 20px;
 }
