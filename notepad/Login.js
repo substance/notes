@@ -27,7 +27,8 @@ Login.Prototype = function() {
   };
 
   this._signup = function() {
-    this.props.hubClient.signup({name: 'fobar' }, function(err, loginKey) {
+    var name = this.refs.name.val();
+    this.props.hubClient.signup({name: name}, function(err, loginKey) {
       if (err) {
         return alert('Signup failed. Please try again.');
       }

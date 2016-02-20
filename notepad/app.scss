@@ -41,7 +41,6 @@ body {
   .se-header {
     height: 40px;
     background: #272727;
-
     overflow: hidden;
 
     .se-actions {
@@ -55,6 +54,21 @@ body {
 
       .se-action:hover {
         color: rgba(255,255,255, 1);
+      }
+    }
+
+    // Login Status Component
+    // --------------------------
+
+    .sc-login-status {
+      float: right;
+      margin-right: 10px;
+      color: white;
+      line-height: 40px;
+      font-size: 12px;
+      button {
+        margin-left: 10px;
+        display: inline-block;
       }
     }
 
@@ -102,10 +116,9 @@ body {
   }
 }
 
-
 .sc-notepad {
   position: fixed;
-  top: 50px;
+  top: 40px;
   bottom: 0px;
   left: 0px;
   right: 0px;
@@ -118,12 +131,10 @@ body {
   overflow: auto;
 }
 
-
 // Login Component
 // --------------------------
 
 .sc-login {
-
   width: 300px;
   border-radius: 5px;
   border: 1px solid #ddd;

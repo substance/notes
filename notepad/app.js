@@ -12,6 +12,7 @@ var Note = require('../note/Note');
 var uuid = require('substance/util/uuid');
 var Collaborators = require('./Collaborators');
 var Login = require('./Login');
+var LoginStatus = require('./LoginStatus');
 
 function App() {
   Component.apply(this, arguments);
@@ -35,10 +36,15 @@ function App() {
 
   this.hubClient = new HubClient({
     wsUrl: config.wsUrl || 'ws://'+host+':'+port,
-    httpUrl: config.httpUrl || 'http://'+host+':'+port
+    httpUrl: config.httpUrl || 'http://'+host+':'+port,
+    session: this._restoreUserSession()
   });
 
   this.hubClient.on('connection', this._onHubClientConnected.bind(this));
+
+  this.handleActions({
+    'logout': this._logout
+  });
 }
 
 App.Prototype = function() {
@@ -51,12 +57,34 @@ App.Prototype = function() {
 
   this._onHubClientConnected = function() {
     console.log('hub client is now connected');
-    if (this.state.edit) {
+    if (this.state.mode === 'edit') {
       this._initCollabSession();
     }
   };
 
-  this._onAuthenticated = function() {
+  /*
+    Forget current user session
+  */
+  this._logout = function() {
+    this.hubClient.logout();
+    window.localStorage.removeItem('user-session');
+    this.rerender();
+  };
+
+  this._rememberUserSession = function(userSession) {
+    window.localStorage.setItem('user-session', JSON.stringify(userSession));
+  };
+
+  this._restoreUserSession = function() {
+    var recentSession = window.localStorage.getItem('user-session');
+    if (recentSession) {
+      return JSON.parse(recentSession);
+    }
+  };
+
+  this._onAuthenticated = function(userSession) {
+    console.log('usersession', userSession);
+    this._rememberUserSession(userSession);
     if (this.state.mode === 'edit') {
       // Make the transition from authenticated to bringing up the editor
       this._initCollabSession();
@@ -73,6 +101,10 @@ App.Prototype = function() {
   this.didMount = function() {
     // Auto-autenticate on page load
     // this._authenticate();
+    // if (this.state.mode === 'edit' && this.hubClient.isAuthenticated()) {
+
+    //   this._initCollabSession();
+    // }
   };
 
   // E.g. if a different document is opened
@@ -85,7 +117,7 @@ App.Prototype = function() {
   this._initCollabSession = function() {
     console.log('App._initCollabSession');
     
-    if (!this.hubClient.isAuthenticated()) throw new Error('You have to be authenticated befor you can edit');
+    if (!this.hubClient.isAuthenticated()) return // throw new Error('You have to be authenticated befor you can edit');
     if (this.state.mode !== 'edit') throw new Error('Can only create a collab session when we are in edit mode');
         
     // Either we init the session for the first time or the docId has changed
@@ -151,11 +183,11 @@ App.Prototype = function() {
 
   this._renderDashboard = function() {
     var el = $$('se-dashboard');
-    el.append(this._renderIntro());
-    // Render Dashboard
     el.append(
-      $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note'),
-      $$('button').addClass('se-example-note').on('click', this.exampleNote).append('Example Note')
+      this._renderIntro().append(
+        $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note'),
+        $$('button').addClass('se-example-note').on('click', this.exampleNote).append('Example Note')
+      )
     );
     return el;
   };
@@ -169,6 +201,9 @@ App.Prototype = function() {
           $$('div').addClass('se-actions').append(
             $$('button').addClass('se-action').append('New Note').on('click', this.newNote)
           ),
+          $$(LoginStatus, {
+            user: this.hubClient.getUser()
+          }),
           $$(Collaborators, {
             session: this.session
           })
@@ -185,6 +220,7 @@ App.Prototype = function() {
     var el = $$('div').addClass('sc-app');
 
     if (!this.hubClient.isAuthenticated()) {
+      el.append(this._renderIntro());
       // Render Login Screen
       el.append($$(Login, {
         hubClient: this.hubClient,
