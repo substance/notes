@@ -163,7 +163,7 @@ App.Prototype = function() {
   this._renderEditor = function() {
     var el = $$('div').addClass('se-edit-view');
 
-    if (this.session && this.session.isOpen()) {      
+    if (this.session && this.session.isOpen()) {
       el.append(
         $$('div').addClass('se-header').append(
           $$('div').addClass('se-actions').append(
@@ -178,6 +178,7 @@ App.Prototype = function() {
     } else {
       el.append('Loading document...');
     }
+    return el;
   };
 
   this.render = function() {

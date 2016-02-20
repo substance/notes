@@ -33,7 +33,6 @@ Collaborators.Prototype = function() {
   };
 
   this.render = function() {
-    console.log('rerendering');
     var el = $$('div').addClass('se-collaborators');
 
     var collaborators = this.props.session.collaborators;
@@ -49,7 +48,6 @@ Collaborators.Prototype = function() {
   };
 };
 
-
 Component.extend(Collaborators);
 
-module.export = Collaborators;
+module.exports = Collaborators;

@@ -9,7 +9,7 @@ var uuid = require('substance/util/uuid');
 var USERS = {
   1: {
     'userId': 1,
-    'loginKey': 'demoLogin',
+    'loginKey': '1234',
     'name': 'Demo user'
   }
 };
@@ -158,7 +158,7 @@ ChangesStore.Prototype = function() {
     var user = USERS[1];
     console.log('USER', user); 
 
-    if (user && loginData.loginKey === 'demoLogin') {
+    if (user && loginData.loginKey === user.loginKey) {
       var newSession = {
         sessionToken: uuid(),
         user: user
