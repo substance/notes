@@ -5,6 +5,7 @@ var $ = window.$ = require('substance/util/jquery');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var HubClient = require('substance/collab/HubClient');
+var forEach = require('lodash/forEach');
 var CollabSession = require('substance/collab/CollabSession');
 var Router = require('substance/ui/Router');
 var Notepad = require('./Notepad');
@@ -16,6 +17,60 @@ var LOGIN_DATA = {
   login: 'demo',
   password: 'demo'
 };
+
+
+function Collaborators() {
+  Component.apply(this, arguments);
+}
+
+Collaborators.Prototype = function() {
+
+  this.didMount = function() {
+    this._init();
+  };
+
+  this.willReceiveProps = function() {
+    this.dispose();
+    this._init();
+  };
+
+  this._init = function() {
+    this.props.session.on('collaborators:changed', this.rerender, this);
+  };
+
+  this.dispose = function() {
+    this.props.session.off(this);
+  };
+
+  this.render = function() {
+    console.log('rerendering');
+    var el = $$('div').addClass('se-collaborators');
+
+    var collaborators = this.props.session.collaborators;
+    forEach(collaborators, function(collaborator) {
+      el.append(
+        $$('div').addClass('se-collaborator').attr({title: collaborator.user.userId}).append(
+          $$('img').attr('src', 'https://avatars0.githubusercontent.com/u/2931?v=3&s=460')
+        )
+      )
+    });
+    return el;
+    // .append(
+    //   $$('div').addClass('se-collaborator').append(
+    //     $$('img').attr('src', 'https://avatars0.githubusercontent.com/u/2931?v=3&s=460')
+    //   ),
+    //   $$('div').addClass('se-collaborator sm-2').append(
+    //     $$('img').attr('src', 'https://avatars3.githubusercontent.com/u/284099?v=3&s=460')
+    //   )
+    // )
+
+  };
+};
+
+
+Component.extend(Collaborators);
+
+
 
 function App() {
   Component.apply(this, arguments);
@@ -170,14 +225,9 @@ App.Prototype = function() {
               $$('div').addClass('se-actions').append(
                 $$('button').addClass('se-action').append('New Note').on('click', this.newNote)
               ),
-              $$('div').addClass('se-collaborators').append(
-                $$('div').addClass('se-collaborator').append(
-                  $$('img').attr('src', 'https://avatars0.githubusercontent.com/u/2931?v=3&s=460')
-                ),
-                $$('div').addClass('se-collaborator sm-2').append(
-                  $$('img').attr('src', 'https://avatars3.githubusercontent.com/u/284099?v=3&s=460')
-                )
-              )
+              $$(Collaborators, {
+                session: this.session
+              })
             ),
             $$(Notepad, {documentSession: this.session})
           )
