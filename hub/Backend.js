@@ -101,11 +101,25 @@ Backend.Prototype = function() {
     @param {Object} userData contains name property
   */
   this.createUser = function(userData, cb) {
+    var self = this;
+
+    this.addUser(userData, function(err, user) {
+      if(err) return cb(err);
+      self.addSession(user.id, function(err, session) {
+        if(err) return cb(err);
+        cb(null, {
+          session: session,
+          loginKey: user.loginKey
+        });
+      });
+    });
+  };
+
+  this.addUser = function(userData, cb) {
     var loginKey = uuid(); // at some point we should make this more secure
     var user = {
-      //userId: 2, // TODO: use incremental id from postgres.
       name: userData.name,
-      createdAt: new Date(),
+      createdAt: Date.now(),
       loginKey: loginKey
     };
 
@@ -113,32 +127,34 @@ Backend.Prototype = function() {
       .asCallback(function(err, id) {
         if (err) return cb(err);
         user.id = id;
-        cb(null, version);
+        cb(null, user);
       });
-
-    var newSession = {
-      sessionToken: uuid(),
-      user: newUser
-    };
-    
-    SESSIONS[newSession.sessionToken] = newSession;
-    // Return new session and loginKey
-    cb(null, {
-      session: newSession,
-      loginKey: loginKey
-    });
-  };
+  }
 
   /*
     Get user record for a given userId
   */
   this.getUser = function(userId, cb) {
-    cb(null, USERS[userId]);
     var query = this.db('users')
                 .where('id', id);
 
     query.asCallback(function(err, user) {
       if (err) return cb(err);
+      // Here must be no results handler
+      cb(null, user);
+    });
+  };
+
+  /*
+    Get user record for a given loginKey
+  */
+  this.getUserByKey = function(loginKey, cb) {
+    var query = this.db('users')
+                .where('loginKey', loginKey);
+
+    query.asCallback(function(err, user) {
+      if (err) return cb(err);
+      // Here must be no results handler
       cb(null, user);
     });
   };
@@ -148,26 +164,31 @@ Backend.Prototype = function() {
     Returns a user record and a session token
   */
   this.createSession = function(loginData, cb) {
-    // this is hardcoded for the demo. you need to lookup the user table based on 
-    // loginData.loginKey, if you find an entry then you return that user entry
-    // if no entry is found the loginKey was wrong and you return an error
-    var user = USERS[1];
-    console.log('USER', user); 
+    var self = this;
 
-    if (user && loginData.loginKey === user.loginKey) {
-      var newSession = {
-        sessionToken: uuid(),
-        user: user
-      };
-      // TODO: In a real db we must store only the userId not the whole
-      // user record. However as a response we still want the full user
-      // object there
-      SESSIONS[newSession.sessionToken] = newSession;
-      cb(null, newSession);
-    } else {
-      cb(new Error('Invalid login'));
-    }
+    this.getUserByKey(loginData.loginKey, function(err, user) {
+      if (err) return cb(err);
+      self.addSession(user.id, function(err, session) {
+        if (err) return cb(err);
+        session.user = user;
+        cb(null, session);
+      });
+    });
   };
+
+  this.addSession = function(userId, cb) {
+    var session = {
+      sessionToken: uuid(),
+      timestamp: Date.now(),
+      user: userId
+    };
+
+    self.db.table('sessions').insert(session)
+      .asCallback(function(err) {
+        if (err) return cb(err);
+        cb(null, session);
+      });
+  }
 
   this.deleteSession = function(/*sessionToken*/) {
     // Actually we don't need this really. Instead we
@@ -175,15 +196,19 @@ Backend.Prototype = function() {
   };
 
   this.getSession = function(sessionToken, cb) {
-    // TODO: this must get the session from the db based on sessionToken
-    // then you also need to fetch the user associated with that session
-    // to return it
-    // format must be:
-    // {
-    //   sessionToken: '...',
-    //   user: {} // object contains user record
-    // }
-    cb(null, SESSIONS[sessionToken]);
+    var self = this;
+
+    var query = this.db('sessions')
+                .where('sessionToken', sessionToken);
+
+    query.asCallback(function(err, session) {
+      if (err) return cb(err);
+      this.getUser(session.user, function(err, user) {
+        if (err) return cb(err);
+        session.user = user;
+        cb(null, session);
+      });
+    });
   };
 }
 
