@@ -3,7 +3,7 @@ var path = require('path');
 var app = express();
 var server = require('substance/util/server');
 var CollabHub = require('substance/collab/CollabHub');
-var Storage = require('./hub/ChangesStore');
+var Backend = require('./hub/Backend');
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
@@ -14,7 +14,7 @@ var knexConfig = require('./knexfile');
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
-var store = new Storage({config: knexConfig});
+var backend = new Backend({config: knexConfig});
 
 // If seed option provided we should remove db, run migration and seed script
 if(process.argv[2] == 'seed') {
@@ -68,7 +68,7 @@ app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
 
-var hub = new CollabHub(wss, store);
+var hub = new CollabHub(wss, backend);
 // Adds http routes that CollabHub implements
 hub.addRoutes(app);
 
