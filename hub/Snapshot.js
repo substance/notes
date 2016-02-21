@@ -20,7 +20,6 @@ Snapshot.Prototype = function() {
       if(err) return cb(err);
       var doc = new self.model();
       _.each(changes, function(change) {
-        change = JSON.parse(change)
         _.each(change.ops, function(op){
           doc.data.apply(op);
         });
