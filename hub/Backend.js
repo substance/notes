@@ -1,6 +1,7 @@
 "use strict";
 
 var connect = require('./connect');
+var localFiles = require('./localFiles');
 var EventEmitter = require('substance/util/EventEmitter');
 var _ = require('substance/util/helpers');
 var uuid = require('substance/util/uuid');
@@ -8,8 +9,10 @@ var uuid = require('substance/util/uuid');
 /*
   Implements example of Substance Backend API.
 */
-function Backend(knex) {
+function Backend(knex, model) {
   this.db = connect(knex.config);
+  this.model = model;
+  this.storage = localFiles;
   Backend.super.apply(this);
 }
 
@@ -92,6 +95,25 @@ Backend.Prototype = function() {
                 .del();
     query.asCallback(function(err) {
       return cb(err);
+    });
+  };
+
+  /*
+    Get latest snapshot of document
+    @param {String} id changeset id
+  */
+
+  this.getSnapshot = function(id, cb) {
+    var self = this;
+    this.getChanges(id, 0, function(err, version, changes) {
+      if(err) return cb(err);
+      var doc = new self.model();
+      _.each(changes, function(change) {
+        _.each(change.ops, function(op){
+          doc.data.apply(op);
+        });
+      });
+      cb(null, doc.toJSON(), version);
     });
   };
 
@@ -209,6 +231,16 @@ Backend.Prototype = function() {
         cb(null, session);
       });
     });
+  };
+
+  // Get middleware for file uploading
+  this.getFileUploader = function(fieldname) {
+    return this.storage.uploader.single(fieldname);
+  };
+
+  // Get name of stored file
+  this.getFileName = function(req) {
+    return req.file.filename;
   };
 }
 
