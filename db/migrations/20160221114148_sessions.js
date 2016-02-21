@@ -1,8 +1,8 @@
 exports.up = function(knex, Promise) {
   return knex.schema.createTable('sessions', function(table) {
     table.string('sessionToken').primary();
-    table.integer('createdAt');
-    table.integer('userId');
+    table.integer('timestamp');
+    table.integer('user');
   });
 };
 

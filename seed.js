@@ -20,7 +20,8 @@ var seedChanges = function(cb) {
 var seedUsersAndSessions = function(cb) {
 	backend.createUser(user, function(err, session) {
 		if(err) return cb(err);
-		console.log('User and session successfully seeded. Use following login key to access notepad:', session.loginKey ,'. Session Id: ', session.sessionToken);
+		console.log(session)
+		console.log('User and session successfully seeded. Use following login key to access notepad:', session.loginKey ,'. Session Id: ', session.session.sessionToken);
 		cb(null);
 	});
 }

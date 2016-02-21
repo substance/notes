@@ -123,7 +123,7 @@ Backend.Prototype = function() {
       loginKey: loginKey
     };
 
-    self.db.table('users').insert(user)
+    this.db.table('users').insert(user)
       .asCallback(function(err, id) {
         if (err) return cb(err);
         user.id = id;
@@ -183,7 +183,7 @@ Backend.Prototype = function() {
       user: userId
     };
 
-    self.db.table('sessions').insert(session)
+    this.db.table('sessions').insert(session)
       .asCallback(function(err) {
         if (err) return cb(err);
         cb(null, session);
