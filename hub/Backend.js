@@ -116,7 +116,7 @@ Backend.Prototype = function() {
   };
 
   this.addUser = function(userData, cb) {
-    var loginKey = uuid(); // at some point we should make this more secure
+    var loginKey = userData.loginKey || uuid(); // at some point we should make this more secure
     var user = {
       name: userData.name,
       createdAt: Date.now(),
