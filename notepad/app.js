@@ -102,8 +102,10 @@ App.Prototype = function() {
 
   this._retreiveUserSession = function() {
     var recentSession = window.localStorage.getItem('user-session');
-    if (recentSession) {
-      return JSON.parse(recentSession);
+    try {
+      return JSON.parse(recentSession);  
+    } catch(err) {
+      return undefined;
     }
   };
 
@@ -249,6 +251,7 @@ App.Prototype = function() {
 
     if (!this.hubClient.isAuthenticated()) {
       el.append(this._renderIntro());
+
       // Render Login Screen
       el.append($$(Login, {
         hubClient: this.hubClient,
