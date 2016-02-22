@@ -103,7 +103,6 @@ Backend.Prototype = function() {
     Get latest snapshot of document
     @param {String} id changeset id
   */
-
   this.getSnapshot = function(id, cb) {
     var self = this;
     this.getChanges(id, 0, function(err, version, changes) {
@@ -150,10 +149,10 @@ Backend.Prototype = function() {
     };
 
     this.db.table('users').insert(user)
-      .asCallback(function(err, userId) {
+      .asCallback(function(err, userIds) {
         if (err) return cb(err);
         // Takes the auto-incremented userId
-        user.userId = userId;
+        user.userId = userIds[0];
         cb(null, user);
       });
   };
@@ -167,7 +166,7 @@ Backend.Prototype = function() {
 
     query.asCallback(function(err, users) {
       if (err) return cb(err);
-      console.log('getUser users: ', users);
+      console.log('getUser users: ', userId, users);
       // Here must be no results handler
       cb(null, users[0]);
     });
@@ -237,8 +236,12 @@ Backend.Prototype = function() {
 
     query.asCallback(function(err, session) {
       if (err) return cb(err);
+      session = session[0]; // we receive an array
+      if (!session) return cb(new Error('No session found for that token'));
+      
+      console.log('getting session', session);
       self.getUser(session.userId, function(err, user) {
-        console.log('user found for', session.user, user);
+        console.log('user found for', session.userId, user);
         if (err) return cb(err);
         session.user = user;
         cb(null, session);
