@@ -234,7 +234,6 @@ Backend.Prototype = function() {
       if (err) return cb(err);
       user = user[0]; // query result is an array
       if (!user) return cb(new Error('No user found for login key '+loginKey));
-      console.log('_getUserByLoginKey users:', users);
       cb(null, user);
     });
   };
