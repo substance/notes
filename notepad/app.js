@@ -40,7 +40,10 @@ function App() {
     session: this._restoreUserSession()
   });
 
-  this.hubClient.on('connection', this._onHubClientConnected.bind(this));
+  this.hubClient.on('connection', this._onHubClientConnected, this);
+  this.hubClient.on('disconnect', this._onHubClientDisconnected, this);
+  // this.hubClient.on('authenticate', this._onHubAuthenticated, this);
+  this.hubClient.on('unauthenticate', this._onHubUnauthenticated, this);
 
   this.handleActions({
     'logout': this._logout
@@ -62,12 +65,35 @@ App.Prototype = function() {
     }
   };
 
+  this._onHubClientDisconnected = function() {
+    console.log('hub client is now disconnected');
+
+    this.rerender();
+    // if (this.state.mode === 'edit') {
+    //   this._initCollabSession();
+    // }
+  };
+
+  this._onHubUnauthenticated = function() {
+    // Remove user session from localStorage as it's no longer valid
+    window.localStorage.removeItem('user-session');
+    this.rerender();
+  };
+
   /*
     Forget current user session
   */
   this._logout = function() {
     this.hubClient.logout();
-    window.localStorage.removeItem('user-session');
+  };
+
+  this._onHubAuthenticated = function(userSession) {
+    console.log('usersession', userSession);
+    this._rememberUserSession(userSession);
+    if (this.state.mode === 'edit') {
+      // Make the transition from authenticated to bringing up the editor
+      this._initCollabSession();
+    }
     this.rerender();
   };
 
@@ -80,16 +106,6 @@ App.Prototype = function() {
     if (recentSession) {
       return JSON.parse(recentSession);
     }
-  };
-
-  this._onAuthenticated = function(userSession) {
-    console.log('usersession', userSession);
-    this._rememberUserSession(userSession);
-    if (this.state.mode === 'edit') {
-      // Make the transition from authenticated to bringing up the editor
-      this._initCollabSession();
-    }
-    this.rerender();
   };
 
   this.getInitialState = function() {
@@ -117,8 +133,14 @@ App.Prototype = function() {
   this._initCollabSession = function() {
     console.log('App._initCollabSession');
     
-    if (!this.hubClient.isAuthenticated()) return // throw new Error('You have to be authenticated befor you can edit');
-    if (this.state.mode !== 'edit') throw new Error('Can only create a collab session when we are in edit mode');
+    if (!this.hubClient.isAuthenticated()) {
+      console.warn('Tried to init collab session but not authenticated. Skipping.');
+      return;
+    }
+    if (this.state.mode !== 'edit') {
+      console.error('Can only create a collab session when we are in edit mode');
+      return;
+    }
         
     // Either we init the session for the first time or the docId has changed
     if (!this.session || (this.session && this.state.docId !== this.session.doc.id)) {
@@ -142,8 +164,8 @@ App.Prototype = function() {
 
       // Now we connect the session to the remote end point and wait until the
       // 'opened' event has been fired. Then the doc is ready for editing
-      this.session.on('opened', this._onSessionOpened, this);
     }
+    this.session.on('opened', this._onSessionOpened, this);
   };
 
   this._onSessionOpened = function() {
@@ -208,7 +230,7 @@ App.Prototype = function() {
             session: this.session
           })
         ),
-        $$(Notepad, {documentSession: this.session})
+        $$(Notepad, {documentSession: this.session}).ref('notepad')
       );
     } else {
       el.append('Loading document...');
@@ -224,7 +246,7 @@ App.Prototype = function() {
       // Render Login Screen
       el.append($$(Login, {
         hubClient: this.hubClient,
-        onAuthenticated: this._onAuthenticated.bind(this)
+        onAuthenticated: this._onHubAuthenticated.bind(this)
       }));
     } else if (this.state.mode === 'edit') {
       // Render editor
@@ -240,5 +262,5 @@ Component.extend(App);
 
 // Start the application
 $(function() {
-  Component.mount(App, document.body);
+  window.app = Component.mount(App, document.body);
 });
