@@ -14,6 +14,7 @@ var Collaborators = require('./Collaborators');
 var Login = require('./Login');
 var LoginStatus = require('./LoginStatus');
 
+
 function App() {
   Component.apply(this, arguments);
 
@@ -34,14 +35,15 @@ function App() {
   var host = config.host || 'localhost';
   var port = config.port || 5000;
 
+  // Initialize hubClient
   this.hubClient = new HubClient({
     wsUrl: config.wsUrl || 'ws://'+host+':'+port,
     httpUrl: config.httpUrl || 'http://'+host+':'+port,
-    session: this._restoreUserSession()
+    session: this._retreiveUserSession()
   });
 
   this.hubClient.on('connection', this._onHubClientConnected, this);
-  this.hubClient.on('disconnect', this._onHubClientDisconnected, this);
+  // this.hubClient.on('disconnect', this._onHubClientDisconnected, this);
   // this.hubClient.on('authenticate', this._onHubAuthenticated, this);
   this.hubClient.on('unauthenticate', this._onHubUnauthenticated, this);
 
@@ -67,11 +69,8 @@ App.Prototype = function() {
 
   this._onHubClientDisconnected = function() {
     console.log('hub client is now disconnected');
-
     this.rerender();
-    // if (this.state.mode === 'edit') {
-    //   this._initCollabSession();
-    // }
+
   };
 
   this._onHubUnauthenticated = function() {
@@ -89,7 +88,7 @@ App.Prototype = function() {
 
   this._onHubAuthenticated = function(userSession) {
     console.log('usersession', userSession);
-    this._rememberUserSession(userSession);
+    this._storeUserSession(userSession);
     if (this.state.mode === 'edit') {
       // Make the transition from authenticated to bringing up the editor
       this._initCollabSession();
@@ -97,11 +96,11 @@ App.Prototype = function() {
     this.rerender();
   };
 
-  this._rememberUserSession = function(userSession) {
+  this._storeUserSession = function(userSession) {
     window.localStorage.setItem('user-session', JSON.stringify(userSession));
   };
 
-  this._restoreUserSession = function() {
+  this._retreiveUserSession = function() {
     var recentSession = window.localStorage.getItem('user-session');
     if (recentSession) {
       return JSON.parse(recentSession);
@@ -162,9 +161,13 @@ App.Prototype = function() {
       window.doc = this.doc;
       window.session = this.session;
 
-      // Now we connect the session to the remote end point and wait until the
-      // 'opened' event has been fired. Then the doc is ready for editing
+    } else {
+      // Just trigger a reopen of the existing session (including pending changes)
+      this.session.open();
     }
+
+    // Now we connect the session to the remote end point and wait until the
+    // 'opened' event has been fired. Then the doc is ready for editing
     this.session.on('opened', this._onSessionOpened, this);
   };
 
@@ -189,6 +192,9 @@ App.Prototype = function() {
     this.openNote('note-1');
   };
 
+  /*
+    Open an existing note
+  */
   this.openNote = function(docId) {
     this.extendState({
       mode: 'edit',

@@ -11,10 +11,11 @@
     "lodash": "4.2.1",
     "multer": "1.1.0",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#cbe49001e833190bc0688495f28ec083f8cb18f6",
+    "substance": "substance/substance#d37b8c29f277cf5e465e7b384d3aaa548ce552a6",
     "ws": "^1.0.1"
   },
   "devDependencies": {
+    "async": "1.5.2",
     "font-awesome": "4.5.0",
     "browserify": "^10.2.4",
     "node-sass": "3.x",

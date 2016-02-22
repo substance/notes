@@ -3,18 +3,20 @@ var path = require('path');
 var app = express();
 var server = require('substance/util/server');
 var CollabHub = require('substance/collab/CollabHub');
-var Storage = require('./hub/ChangesStore');
+var Backend = require('./hub/Backend');
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
-
-// var api = require('./api');
-
 var knexConfig = require('./knexfile');
+
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
-var store = new Storage({config: knexConfig});
+
+var backend = new Backend({
+  knexConfig: knexConfig,
+  ArticleClass: require('./note/Note.js')
+});
 
 // If seed option provided we should remove db, run migration and seed script
 if(process.argv[2] == 'seed') {
@@ -26,12 +28,12 @@ if(process.argv[2] == 'seed') {
 /*
   Serve app in development mode
 */
-
 app.use(bodyParser.json({limit: '3mb'}));
 app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 3000 }));
 
-/* Serve HTML, bundled JS and CSS */
-
+/*
+  Serve HTML, bundled JS and CSS
+*/
 var config = {
   host: host,
   port: port,
@@ -49,26 +51,13 @@ app.use(express.static(path.join(__dirname, 'notepad')));
 app.use('/figures', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
-
-// Error handler
-// app.use(errorHandler);
-
-// Connect http api
-// app.use('/api', api(store));
-
-
-// function errorHandler(err, req, res) {
-//   res.status(500);
-//   res.send(err.message);
-// }
-
 // Connect Substance
 // ----------------
 
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
+var hub = new CollabHub(wss, backend);
 
-var hub = new CollabHub(wss, store);
 // Adds http routes that CollabHub implements
 hub.addRoutes(app);
 
@@ -79,7 +68,6 @@ httpServer.on('request', app);
 // to the www directly.
 // E.g. on sandbox.substance.io we have established a reverse proxy
 // forwarding http+ws on notepad.substance.io to localhost:5001
-
 httpServer.listen(port, 'localhost', function() {
   console.log('Listening on ' + httpServer.address().port); 
 });

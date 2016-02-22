@@ -1,6 +1,6 @@
 exports.up = function(knex, Promise) {
   return knex.schema.createTable('changes', function(table) {
-    table.string('id');
+    table.string('id').primary();
     table.string('changeset');
     table.integer('pos');
     table.string('data');
