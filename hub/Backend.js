@@ -129,6 +129,9 @@ Backend.Prototype = function() {
       if(err) return cb(err);
       self._createSession(user.userId, function(err, session) {
         if(err) return cb(err);
+
+        // Make session rich
+        session.user = user;
         cb(null, {
           session: session,
           loginKey: user.loginKey
@@ -138,62 +141,26 @@ Backend.Prototype = function() {
   };
 
   /*
-    Internal method to create a user entry
-  */
-  this._createUser = function(userData, cb) {
-    var loginKey = userData.loginKey || uuid(); // at some point we should make this more secure
-    var user = {
-      name: userData.name,
-      createdAt: Date.now(),
-      loginKey: loginKey
-    };
-
-    this.db.table('users').insert(user)
-      .asCallback(function(err, userIds) {
-        if (err) return cb(err);
-        // Takes the auto-incremented userId
-        user.userId = userIds[0];
-        cb(null, user);
-      });
-  };
-
-  /*
     Get user record for a given userId
   */
   this.getUser = function(userId, cb) {
     var query = this.db('users')
                 .where('userId', userId);
 
-    query.asCallback(function(err, users) {
+    query.asCallback(function(err, user) {
       if (err) return cb(err);
-      console.log('getUser users: ', userId, users);
-      // Here must be no results handler
-      cb(null, users[0]);
-    });
-  };
-
-  /*
-    Get user record for a given loginKey
-  */
-  this._getUserByLoginKey = function(loginKey, cb) {
-    var query = this.db('users')
-                .where('loginKey', loginKey);
-
-    query.asCallback(function(err, users) {
-      if (err) return cb(err);
-      console.log('_getUserByLoginKey users:', users);
-      // Here must be no results handler
-      cb(null, users[0]);
+      user = user[0]; // query result is an array
+      if (!user) return cb(new Error('No user found for userId '+userId));
+      cb(null, user);
     });
   };
 
   /*
     Checks given login data and creates an entry in the session store for valid logins
-    Returns a user record and a session token
+    Returns a an object with a user record and a session token
   */
   this.createSession = function(loginData, cb) {
     var self = this;
-
     this._getUserByLoginKey(loginData.loginKey, function(err, user) {
       if (err) return cb(err);
       self._createSession(user.userId, function(err, session) {
@@ -202,23 +169,6 @@ Backend.Prototype = function() {
         cb(null, session);
       });
     });
-  };
-
-  /*
-    Internal method to create a session record
-  */
-  this._createSession = function(userId, cb) {
-    var newSession = {
-      sessionToken: uuid(),
-      timestamp: Date.now(),
-      userId: userId
-    };
-
-    this.db.table('sessions').insert(newSession)
-      .asCallback(function(err) {
-        if (err) return cb(err);
-        cb(null, newSession);
-      });
   };
 
   this.deleteSession = function(/*sessionToken*/) {
@@ -238,26 +188,90 @@ Backend.Prototype = function() {
       if (err) return cb(err);
       session = session[0]; // we receive an array
       if (!session) return cb(new Error('No session found for that token'));
-      
-      console.log('getting session', session);
-      self.getUser(session.userId, function(err, user) {
-        console.log('user found for', session.userId, user);
-        if (err) return cb(err);
-        session.user = user;
-        cb(null, session);
-      });
+      self._getRichSession(session, cb);
     });
   };
 
-  // Get middleware for file uploading
+  /*
+    Returns middleware for file uploading
+  */
   this.getFileUploader = function(fieldname) {
     return this.storage.uploader.single(fieldname);
   };
 
-  // Get name of stored file
+  /*
+    Get name of stored file
+  */
   this.getFileName = function(req) {
     return req.file.filename;
   };
+
+  /*
+    Internal method to create a session record
+  */
+  this._createSession = function(userId, cb) {
+    var newSession = {
+      sessionToken: uuid(),
+      timestamp: Date.now(),
+      userId: userId
+    };
+
+    this.db.table('sessions').insert(newSession)
+      .asCallback(function(err) {
+        if (err) return cb(err);
+        cb(null, newSession);
+      });
+  };
+
+  /*
+    Get user record for a given loginKey
+  */
+  this._getUserByLoginKey = function(loginKey, cb) {
+    var query = this.db('users')
+                .where('loginKey', loginKey);
+
+    query.asCallback(function(err, user) {
+      if (err) return cb(err);
+      user = user[0]; // query result is an array
+      if (!user) return cb(new Error('No user found for login key '+loginKey));
+      console.log('_getUserByLoginKey users:', users);
+      cb(null, user);
+    });
+  };
+
+  /*
+    Internal method to create a user entry
+  */
+  this._createUser = function(userData, cb) {
+    var loginKey = userData.loginKey || uuid(); // at some point we should make this more secure
+    var user = {
+      name: userData.name,
+      createdAt: Date.now(),
+      loginKey: loginKey
+    };
+
+    this.db.table('users').insert(user)
+      .asCallback(function(err, userIds) {
+        if (err) return cb(err);
+        // Takes the auto-incremented userId
+        user.userId = userIds[0];
+
+        cb(null, user);
+      });
+  };
+
+  /*
+    Just turns the session db record into an expanded version that contains
+    the complete user record.
+  */
+  this._getRichSession = function(session, cb) {
+    this.getUser(session.userId, function(err, user) {
+      if (err) return cb(err);
+      session.user = user;
+      cb(null, session);
+    });
+  };
+
 };
 
 EventEmitter.extend(Backend);
