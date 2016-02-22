@@ -2,11 +2,12 @@ var async = require('async');
 var knexConfig = require('./knexfile');
 var Backend = require('./hub/Backend');
 var exampleNoteChangeset = require('./note/exampleNoteChangeset')();
-var backend = new Backend({config: knexConfig});
+var backend = new Backend({knexConfig: knexConfig});
 var change = exampleNoteChangeset[0].toJSON();
+
 var user = {
   loginKey: '1234',
-  name: 'Substance Bot'
+  name: 'Demo User'
 }
 
 var seedChanges = function(cb) {

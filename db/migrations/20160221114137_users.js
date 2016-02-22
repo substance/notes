@@ -1,9 +1,9 @@
 exports.up = function(knex, Promise) {
   return knex.schema.createTable('users', function(table) {
-    table.increments('id');
+    table.increments('userId').primary();
     table.string('name');
     table.integer('createdAt');
-    table.string('loginKey');
+    table.string('loginKey').unique().index();
   });
 };
 

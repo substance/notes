@@ -16,12 +16,4 @@ LocalFiles.uploader = multer({
 	storage: LocalFiles.storage
 });
 
-// var handleUpload = function(req, res, next) {
-// 	res.json({name: req.file.filename});
-// };
-
-// Figures.addRoutes = function(app) {
-//   app.post('/hub/api/upload', figureUploader.single('figure'), handleUpload);
-// };
-
 module.exports = LocalFiles;

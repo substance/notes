@@ -9,9 +9,10 @@ var uuid = require('substance/util/uuid');
 /*
   Implements example of Substance Backend API.
 */
-function Backend(knex, model) {
-  this.db = connect(knex.config);
-  this.model = model;
+function Backend(config) {
+  this.config = config;
+  this.db = connect(config.knexConfig);
+  this.model = config.ArticleClass;
   this.storage = localFiles;
   Backend.super.apply(this);
 }
@@ -125,9 +126,9 @@ Backend.Prototype = function() {
   this.createUser = function(userData, cb) {
     var self = this;
 
-    this.addUser(userData, function(err, user) {
+    this._createUser(userData, function(err, user) {
       if(err) return cb(err);
-      self.addSession(user.id, function(err, session) {
+      self._createSession(user.userId, function(err, session) {
         if(err) return cb(err);
         cb(null, {
           session: session,
@@ -137,7 +138,10 @@ Backend.Prototype = function() {
     });
   };
 
-  this.addUser = function(userData, cb) {
+  /*
+    Internal method to create a user entry
+  */
+  this._createUser = function(userData, cb) {
     var loginKey = userData.loginKey || uuid(); // at some point we should make this more secure
     var user = {
       name: userData.name,
@@ -146,38 +150,41 @@ Backend.Prototype = function() {
     };
 
     this.db.table('users').insert(user)
-      .asCallback(function(err, id) {
+      .asCallback(function(err, userId) {
         if (err) return cb(err);
-        user.id = id;
+        // Takes the auto-incremented userId
+        user.userId = userId;
         cb(null, user);
       });
-  }
+  };
 
   /*
     Get user record for a given userId
   */
   this.getUser = function(userId, cb) {
     var query = this.db('users')
-                .where('id', id);
+                .where('userId', userId);
 
-    query.asCallback(function(err, user) {
+    query.asCallback(function(err, users) {
       if (err) return cb(err);
+      console.log('getUser users: ', users);
       // Here must be no results handler
-      cb(null, user);
+      cb(null, users[0]);
     });
   };
 
   /*
     Get user record for a given loginKey
   */
-  this.getUserByKey = function(loginKey, cb) {
+  this._getUserByLoginKey = function(loginKey, cb) {
     var query = this.db('users')
                 .where('loginKey', loginKey);
 
-    query.asCallback(function(err, user) {
+    query.asCallback(function(err, users) {
       if (err) return cb(err);
+      console.log('_getUserByLoginKey users:', users);
       // Here must be no results handler
-      cb(null, user);
+      cb(null, users[0]);
     });
   };
 
@@ -188,9 +195,9 @@ Backend.Prototype = function() {
   this.createSession = function(loginData, cb) {
     var self = this;
 
-    this.getUserByKey(loginData.loginKey, function(err, user) {
+    this._getUserByLoginKey(loginData.loginKey, function(err, user) {
       if (err) return cb(err);
-      self.addSession(user.id, function(err, session) {
+      self._createSession(user.userId, function(err, session) {
         if (err) return cb(err);
         session.user = user;
         cb(null, session);
@@ -198,34 +205,40 @@ Backend.Prototype = function() {
     });
   };
 
-  this.addSession = function(userId, cb) {
-    var session = {
+  /*
+    Internal method to create a session record
+  */
+  this._createSession = function(userId, cb) {
+    var newSession = {
       sessionToken: uuid(),
       timestamp: Date.now(),
-      user: userId
+      userId: userId
     };
 
-    this.db.table('sessions').insert(session)
+    this.db.table('sessions').insert(newSession)
       .asCallback(function(err) {
         if (err) return cb(err);
-        cb(null, session);
+        cb(null, newSession);
       });
-  }
+  };
 
   this.deleteSession = function(/*sessionToken*/) {
     // Actually we don't need this really. Instead we
     // need a maintenance operation that deletes expired sessions.
   };
 
+  /*
+    Get session entry based on a sessionToken
+  */
   this.getSession = function(sessionToken, cb) {
     var self = this;
-
     var query = this.db('sessions')
                 .where('sessionToken', sessionToken);
 
     query.asCallback(function(err, session) {
       if (err) return cb(err);
-      this.getUser(session.user, function(err, user) {
+      self.getUser(session.userId, function(err, user) {
+        console.log('user found for', session.user, user);
         if (err) return cb(err);
         session.user = user;
         cb(null, session);
@@ -242,7 +255,7 @@ Backend.Prototype = function() {
   this.getFileName = function(req) {
     return req.file.filename;
   };
-}
+};
 
 EventEmitter.extend(Backend);
 
