@@ -22,9 +22,9 @@ Controller.prototype.uploadFile = function(file, cb) {
     return this.props.onUploadFile(file, cb);
   } else {
     var formData = new FormData();
-    formData.append("figure", file);
+    formData.append("files", file);
     var xhr = new XMLHttpRequest();
-    xhr.open('post', '/api/upload', true);
+    xhr.open('post', '/hub/api/upload', true);
     xhr.upload.onprogress = function(e) {
       if (e.lengthComputable) {
         var percentage = (e.loaded / e.total) * 100;
