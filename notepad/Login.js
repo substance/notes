@@ -55,8 +55,9 @@ Login.Prototype = function() {
         $$('button').on('click', this._login).append('Login')
       );
       el.append(
-        'No account yet?',
-        $$('a').attr({href: '#'}).on('click', this._toggleSignup).append('Signup')
+        'No account yet? ',
+        $$('a').attr({href: '#'}).on('click', this._toggleSignup).append('Signup'),
+        ' or use demo account with login key "1234".'
       );
     } else if (this._state.mode === 'signup') {
       // Signup view
@@ -70,7 +71,7 @@ Login.Prototype = function() {
         $$('div').append('Your user has been created and a pass key has been generated for you.'),
         $$('div').append('Store your passkey safely. It can not be recovered. If you loose it you have to create a new account.'),
         $$('div').append(
-          '<strong>PassKey: </strong>',
+          'PassKey:',
           this._state.loginKey
         ),
         $$('button').on('click', this._finishSignup).append('Finish Signup')

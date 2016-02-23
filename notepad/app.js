@@ -42,7 +42,7 @@ function App() {
 
   this.hubClient.on('connection', this._onHubClientConnected, this);
   this.hubClient.on('unauthenticate', this._onHubUnauthenticated, this);
-
+  this._initialized = false;
   this.handleActions({
     'logout': this._logout
   });
@@ -76,13 +76,16 @@ App.Prototype = function() {
     var token = this._getLastSessionToken();
     if (token) {
       this.hubClient.authenticate({sessionToken: token}, function(err, session) {
-        console.log('reauthenticated');
+        this._initialized = true;
         if (err) {
           console.log('reauthenticate unsuccessful. Removing invalid sessionToken. Login with loginKey required.');
           window.localStorage.removeItem('sessionToken');
         }
         this._onHubAuthenticated(session);
       }.bind(this));      
+    } else {
+      this._initialized = true;
+      this.rerender();
     }
   };
 
@@ -121,10 +124,6 @@ App.Prototype = function() {
   this.didMount = function() {
     // Auto-autenticate on page load
     this._reAuthenticate();
-
-    // if (this.state.mode === 'edit' && this.hubClient.isAuthenticated()) {
-    //   this._initCollabSession();
-    // }
   };
 
   // E.g. if a different document is opened
@@ -254,20 +253,21 @@ App.Prototype = function() {
 
   this.render = function() {
     var el = $$('div').addClass('sc-app');
+    if (this._initialized) { // show nothing during initial authentication
+      if (!this.hubClient.isAuthenticated()) {
+        el.append(this._renderIntro());
 
-    if (!this.hubClient.isAuthenticated()) {
-      el.append(this._renderIntro());
-
-      // Render Login Screen
-      el.append($$(Login, {
-        hubClient: this.hubClient,
-        onAuthenticated: this._onHubAuthenticated.bind(this)
-      }));
-    } else if (this.state.mode === 'edit') {
-      // Render editor
-      el.append(this._renderEditor());
-    } else {
-      el.append(this._renderDashboard());
+        // Render Login Screen
+        el.append($$(Login, {
+          hubClient: this.hubClient,
+          onAuthenticated: this._onHubAuthenticated.bind(this)
+        }));
+      } else if (this.state.mode === 'edit') {
+        // Render editor
+        el.append(this._renderEditor());
+      } else {
+        el.append(this._renderDashboard());
+      }
     }
     return el;
   };

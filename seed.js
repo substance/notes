@@ -8,9 +8,9 @@ var change = exampleNoteChangeset[0].toJSON();
 var user = {
   loginKey: '1234',
   name: 'Demo User'
-}
+};
 
-var seedChanges = function(cb) {
+function seedChanges(cb) {
 	backend.addChange('note-1', change, function(err, version) {
 		if(err) return cb(err);
 		console.log('Changes successfully seeded. Version of example document: ', version);
@@ -18,11 +18,16 @@ var seedChanges = function(cb) {
 	});
 }
 
-var seedUsersAndSessions = function(cb) {
+function seedUsersAndSessions(cb) {
 	backend.createUser(user, function(err, session) {
 		if(err) return cb(err);
-		console.log(session)
-		console.log('User and session successfully seeded. Use following login key to access notepad:', session.loginKey ,'. Session Id: ', session.session.sessionToken);
+		console.log(session);
+		console.log(
+      'User and session successfully seeded. Use following login key to access notepad:',
+      session.loginKey ,
+      '. Session Id: ',
+      session.session.sessionToken
+    );
 		cb(null);
 	});
 }
@@ -30,11 +35,11 @@ var seedUsersAndSessions = function(cb) {
 async.series([
 	seedChanges,
 	seedUsersAndSessions
-], function(err, results) {
-	if(err) {
+], function(err) {
+	if (err) {
     console.log(err.message);
     process.exit(1);
-  };
+  }
   console.log('Seeding has been completed!');
   process.exit(0);
 });
