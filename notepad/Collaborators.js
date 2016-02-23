@@ -39,7 +39,7 @@ Collaborators.Prototype = function() {
     forEach(collaborators, function(collaborator) {
       var initials = this._extractInitials(collaborator.user.name);
       el.append(
-        $$('div').addClass('se-collaborator').attr({title: collaborator.user.name}).append(
+        $$('div').addClass('se-collaborator sm-collaborator-'+collaborator.colorIndex).attr({title: collaborator.user.name}).append(
           initials
         )
       );
