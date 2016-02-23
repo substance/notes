@@ -48,6 +48,7 @@ function Notepad() {
 }
 
 Notepad.Prototype = function() {
+
   // Custom Render method for your editor
   this.render = function() {
     var config = this.getConfig();

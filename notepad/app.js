@@ -241,7 +241,10 @@ App.Prototype = function() {
             session: this.session
           })
         ),
-        $$(Notepad, {documentSession: this.session}).ref('notepad')
+        $$(Notepad, {
+          documentSession: this.session,
+          onUploadFile: this.hubClient.uploadFile
+        }).ref('notepad')
       );
     } else {
       el.append('Loading document...');
