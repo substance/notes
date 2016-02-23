@@ -16,33 +16,6 @@ var ImageTool = require('substance/packages/image/ImageTool');
 var MarkTool = require('./MarkTool');
 var TodoTool = require('./TodoTool');
 
-Controller.prototype.uploadFile = function(file, cb) {
-  // This is a testing implementation
-  if (this.props.onUploadFile) {
-    return this.props.onUploadFile(file, cb);
-  } else {
-    var formData = new FormData();
-    formData.append("files", file);
-    var xhr = new XMLHttpRequest();
-    xhr.open('post', '/hub/api/upload', true);
-    xhr.upload.onprogress = function(e) {
-      if (e.lengthComputable) {
-        var percentage = (e.loaded / e.total) * 100;
-        // do something with percentage
-      }
-    };
-    xhr.onload = function(e) {
-      if(this.status == 500) {
-        cb(new Error(response));
-      }
-      var data = JSON.parse(this.response);
-      var path = window.location.origin + '/figures/' + data.name;
-      cb(null, path);
-    };
-    xhr.send(formData);
-  }
-};
-
 function Notepad() {
   Controller.apply(this, arguments);
 }
