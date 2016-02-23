@@ -159,9 +159,54 @@ Backend.Prototype = function() {
     Checks given login data and creates an entry in the session store for valid logins
     Returns a an object with a user record and a session token
   */
-  this.createSession = function(loginData, cb) {
+  this.authenticate = function(loginData, cb) {
+    console.log('loginData', loginData);
+    if (loginData.sessionToken) {
+      this._authenticateWithToken(loginData.sessionToken, cb);
+    } else {
+      this._authenticateWithLoginKey(loginData.loginKey, cb);
+    }
+  };
+
+  /*
+    Creates a new user session based on an existing sessionToken
+  */
+  this._authenticateWithToken = function(sessionToken, cb) {
     var self = this;
-    this._getUserByLoginKey(loginData.loginKey, function(err, user) {
+    this._getSession(sessionToken, function(err, session) {
+      if (err) return cb(new Error('No session found for '+sessionToken));
+      // Delete existing session and create a new one
+      self._createSessionFromOldSession(session, cb);
+    });
+  };
+
+  /*
+    Refreshes session for an authenticated user
+
+    Returns a rich session including a user object
+  */
+  this._createSessionFromOldSession = function(oldSession, cb) {
+    var self = this;
+    this._deleteSession(oldSession.sessionToken, function(err) {
+      if (err) return cb(err);
+      self._createSession(oldSession.userId, function(err, session) {
+        if (err) return cb(err);
+        self._getRichSession(session, cb);
+      });
+    });
+  };
+
+  this._deleteSession = function(sessionToken, cb) {
+    // We just skip that for now
+    cb(null);
+  };
+
+  /*
+    Authenicate based on login key
+  */
+  this._authenticateWithLoginKey = function(loginKey, cb) {
+    var self = this;
+    this._getUserByLoginKey(loginKey, function(err, user) {
       if (err) return cb(err);
       self._createSession(user.userId, function(err, session) {
         if (err) return cb(err);
@@ -171,25 +216,14 @@ Backend.Prototype = function() {
     });
   };
 
-  this.deleteSession = function(/*sessionToken*/) {
-    // Actually we don't need this really. Instead we
-    // need a maintenance operation that deletes expired sessions.
-  };
-
   /*
     Get session entry based on a sessionToken
   */
   this.getSession = function(sessionToken, cb) {
-    var self = this;
-    var query = this.db('sessions')
-                .where('sessionToken', sessionToken);
-
-    query.asCallback(function(err, session) {
+    this._getSession(sessionToken, function(err, session) {
       if (err) return cb(err);
-      session = session[0]; // we receive an array
-      if (!session) return cb(new Error('No session found for that token'));
-      self._getRichSession(session, cb);
-    });
+      this._getRichSession(session, cb);
+    }.bind(this));
   };
 
   /*
@@ -223,6 +257,18 @@ Backend.Prototype = function() {
       });
   };
 
+  this._getSession = function(sessionToken, cb) {
+    var query = this.db('sessions')
+                .where('sessionToken', sessionToken);
+
+    query.asCallback(function(err, session) {
+      if (err) return cb(err);
+      session = session[0]; // query result is an array
+      if (!session) return cb(new Error('No session found for that token'));
+      cb(null, session);
+    });
+  };
+
   /*
     Get user record for a given loginKey
   */
@@ -242,7 +288,8 @@ Backend.Prototype = function() {
     Internal method to create a user entry
   */
   this._createUser = function(userData, cb) {
-    var loginKey = userData.loginKey || uuid(); // at some point we should make this more secure
+    // at some point we should make this more secure
+    var loginKey = userData.loginKey || uuid();
     var user = {
       name: userData.name,
       createdAt: Date.now(),

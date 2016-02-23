@@ -14,7 +14,6 @@ var Collaborators = require('./Collaborators');
 var Login = require('./Login');
 var LoginStatus = require('./LoginStatus');
 
-
 function App() {
   Component.apply(this, arguments);
 
@@ -38,13 +37,10 @@ function App() {
   // Initialize hubClient
   this.hubClient = new HubClient({
     wsUrl: config.wsUrl || 'ws://'+host+':'+port,
-    httpUrl: config.httpUrl || 'http://'+host+':'+port,
-    session: this._retreiveUserSession()
+    httpUrl: config.httpUrl || 'http://'+host+':'+port
   });
 
   this.hubClient.on('connection', this._onHubClientConnected, this);
-  // this.hubClient.on('disconnect', this._onHubClientDisconnected, this);
-  // this.hubClient.on('authenticate', this._onHubAuthenticated, this);
   this.hubClient.on('unauthenticate', this._onHubUnauthenticated, this);
 
   this.handleActions({
@@ -67,16 +63,27 @@ App.Prototype = function() {
     }
   };
 
-  this._onHubClientDisconnected = function() {
-    console.log('hub client is now disconnected');
-    this.rerender();
-
-  };
-
   this._onHubUnauthenticated = function() {
     // Remove user session from localStorage as it's no longer valid
-    window.localStorage.removeItem('user-session');
+    window.localStorage.removeItem('sessionToken');
     this.rerender();
+  };
+
+  /*
+    Attempt to reauthenticate based on last used session token
+  */
+  this._reAuthenticate = function() {
+    var token = this._getLastSessionToken();
+    if (token) {
+      this.hubClient.authenticate({sessionToken: token}, function(err, session) {
+        console.log('reauthenticated');
+        if (err) {
+          console.log('reauthenticate unsuccessful. Removing invalid sessionToken. Login with loginKey required.');
+          window.localStorage.removeItem('sessionToken');
+        }
+        this._onHubAuthenticated(session);
+      }.bind(this));      
+    }
   };
 
   /*
@@ -88,7 +95,7 @@ App.Prototype = function() {
 
   this._onHubAuthenticated = function(userSession) {
     console.log('usersession', userSession);
-    this._storeUserSession(userSession);
+    this._storeLastSessionToken(userSession.sessionToken);
     if (this.state.mode === 'edit') {
       // Make the transition from authenticated to bringing up the editor
       this._initCollabSession();
@@ -96,17 +103,13 @@ App.Prototype = function() {
     this.rerender();
   };
 
-  this._storeUserSession = function(userSession) {
-    window.localStorage.setItem('user-session', JSON.stringify(userSession));
+  this._storeLastSessionToken = function(sessionToken) {
+    console.log('storing token', sessionToken);
+    window.localStorage.setItem('sessionToken', sessionToken);
   };
 
-  this._retreiveUserSession = function() {
-    var recentSession = window.localStorage.getItem('user-session');
-    try {
-      return JSON.parse(recentSession);  
-    } catch(err) {
-      return undefined;
-    }
+  this._getLastSessionToken = function() {
+    return window.localStorage.getItem('sessionToken');
   };
 
   this.getInitialState = function() {
@@ -117,9 +120,9 @@ App.Prototype = function() {
 
   this.didMount = function() {
     // Auto-autenticate on page load
-    // this._authenticate();
-    // if (this.state.mode === 'edit' && this.hubClient.isAuthenticated()) {
+    this._reAuthenticate();
 
+    // if (this.state.mode === 'edit' && this.hubClient.isAuthenticated()) {
     //   this._initCollabSession();
     // }
   };

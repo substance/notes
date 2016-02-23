@@ -16,7 +16,7 @@ Login.Prototype = function() {
     this.rerender();
   };
 
-  this._authenticate = function() {
+  this._login = function() {
     var loginKey = this.refs.loginKey.val();
     this.props.hubClient.authenticate({loginKey: loginKey}, function(err) {
       if (err) {
@@ -52,7 +52,7 @@ Login.Prototype = function() {
       // Login view
       el.append(
         $$('input').ref('loginKey').attr({placeholder: 'Enter Login Key'}),
-        $$('button').on('click', this._authenticate).append('Login')
+        $$('button').on('click', this._login).append('Login')
       );
       el.append(
         'No account yet?',
