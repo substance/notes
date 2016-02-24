@@ -48,7 +48,7 @@ server.serveJS(app, '/app.js', path.join(__dirname, 'notepad', 'app.js'));
   Serve static files
 */
 app.use(express.static(path.join(__dirname, 'notepad')));
-app.use('/figures', express.static(path.join(__dirname, 'uploads')));
+app.use('/media', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
 // Connect Substance
