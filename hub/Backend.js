@@ -46,9 +46,8 @@ Backend.Prototype = function() {
     @param {String} id changeset id
     @param {Object} change as JSON object
   */
-  this.addChange = function(id, change, cb) {
+  this.addChange = function(id, change, userId, cb) {
     var self = this;
-    var user = 'substance bot';
 
     this.getVersion(id, function(err, headVersion) {
       if (err) return cb(err);
@@ -59,7 +58,7 @@ Backend.Prototype = function() {
         pos: version,
         data: JSON.stringify(change),
         timestamp: Date.now(),
-        user: user
+        userId: userId
       };
 
       self.db.table('changes').insert(record)
