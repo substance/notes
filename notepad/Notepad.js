@@ -1,102 +1,129 @@
+var CollabSession = require('substance/collab/CollabSession');
+var JSONConverter = require('substance/model/JSONConverter');
+var Note = require('../note/Note');
+var Collaborators = require('./Collaborators');
+var LoginStatus = require('./LoginStatus');
+var converter = new JSONConverter();
+var NoteWriter = require('./NoteWriter');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 
-var Controller = require('substance/ui/Controller');
-var ContainerEditor = require('substance/ui/ContainerEditor');
-var SplitPane = require('substance/ui/SplitPane');
-var Icon = require('substance/ui/FontAwesomeIcon');
-var Toolbar = require('substance/ui/Toolbar');
-var UndoTool = require('substance/ui/UndoTool');
-var RedoTool = require('substance/ui/RedoTool');
-var SwitchTextTypeTool = require('substance/packages/text/SwitchTextTypeTool');
-var StrongTool = require('substance/packages/strong/StrongTool');
-var EmphasisTool = require('substance/packages/emphasis/EmphasisTool');
-var LinkTool = require('substance/packages/link/LinkTool');
-var ImageTool = require('substance/packages/image/ImageTool');
-var MarkTool = require('./MarkTool');
-var TodoTool = require('./TodoTool');
-
 function Notepad() {
-  Controller.apply(this, arguments);
+  Component.apply(this, arguments);
 }
 
 Notepad.Prototype = function() {
 
-  // Custom Render method for your editor
-  this.render = function() {
-    var config = this.getConfig();
-    return $$('div').addClass('sc-notepad').append(
-      $$(SplitPane, {splitType: 'horizontal'}).append(
-        $$(Toolbar).append(
-          $$(Toolbar.Group).append(
-            $$(SwitchTextTypeTool, {'title': this.i18n.t('switch_text')}),
-            $$(UndoTool).append($$(Icon, {icon: 'fa-undo'})),
-            $$(RedoTool).append($$(Icon, {icon: 'fa-repeat'})),
-            $$(StrongTool).append($$(Icon, {icon: 'fa-bold'})),
-            $$(EmphasisTool).append($$(Icon, {icon: 'fa-italic'})),
-            $$(MarkTool).append($$(Icon, {icon: 'fa-pencil'})),
-            $$(LinkTool).append($$(Icon, {icon: 'fa-link'})),
-            $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'})),
-            $$(ImageTool).append($$(Icon, {icon: 'fa-image'}))
-          )
-        ),
-        $$(ContainerEditor, {
-          doc: this.props.documentSession.doc,
-          containerId: 'body',
-          name: 'bodyEditor',
-          commands: config.bodyEditor.commands,
-          textTypes: config.bodyEditor.textTypes
-        }).ref('bodyEditor')
-      )
-    );
+  this.getInitialState = function() {
+    return {
+      session: null, // CollabSession will be stored here, if null indicates we are in loading state
+      error: null // used to display error messages e.g. loading of document failed
+    };
   };
+
+  // Life cycle
+  // ------------------------------------
+
+  this.didMount = function() {
+    console.log('did mount');
+    this._init();
+  };
+
+  this.willReceiveProps = function() {
+    console.log('willreceive props');
+    this.dispose();
+    // TODO: In React it's possible
+    this.state = this.getInitialState();
+    this._init();
+  };
+
+  this._init = function() {
+    this._loadDocument();
+  };
+
+  this.dispose = function() {
+    if (this.state.session) {
+      this.state.session.dispose();
+    }
+  };
+
+  // Life cycle
+  // ------------------------------------
+
+  this.render = function() {
+    console.log('Notepad.render', this._state);
+    var hubClient = this.context.hubClient;
+
+    var el = $$('div').addClass('sc-notepad-wrapper');
+
+    if (this.state.error) {
+      // TODO: render this in a pop in addition to the regular content
+      el.append('div').addClass('se-error').append(this.state.error.message);
+    } else if (this.state.session) {
+      el.append(
+        $$('div').addClass('se-header').append(
+          $$('div').addClass('se-actions').append(
+            $$('button').addClass('se-action').append('New Note') // .on('click', this.send.bind(this, 'newNote'))
+          ),
+          $$(LoginStatus, {
+            user: hubClient.getUser()
+          }),
+          $$(Collaborators, {
+            session: this.state.session
+          })
+        ),
+        $$(NoteWriter, {
+          documentSession: this.state.session,
+          onUploadFile: hubClient.uploadFile
+        }).ref('notepad')
+      );
+    } else {
+      el.append('Loading document...');
+    }
+    return el;
+  };
+
+  // Helpers
+  // ------------------------------------
+
+  /*
+    Loads a document and initializes a CollabSession
+  */
+  this._loadDocument = function() {
+    var hubClient = this.context.hubClient;
+
+    // TODO: API could be improved. Maybe better call it jsonDoc and 
+    // provide version just via property
+    hubClient.getDocument(this.props.docId, function(err, rawDoc) {
+      if (err) {
+        this.setState({
+          error: new Error('Document could not be loaded')
+        });
+        console.log('ERROR', err);
+        return;
+      }
+      
+      var doc = new Note();
+      doc = converter.importDocument(doc, rawDoc.document);
+      var session = new CollabSession(doc, {
+        docId: this.props.docId,
+        docVersion: rawDoc.version,
+        hubClient: hubClient
+      });
+
+      // HACK: For debugging purposes
+      window.doc = doc;
+      window.session = session;
+
+      this.extendState({
+        session: session
+      });
+
+    }.bind(this));
+  };
+
 };
 
-Controller.extend(Notepad);
-
-Notepad.static.config = {
-  i18n: {
-    'todo.content': 'Todo'
-  },
-  // Controller specific configuration (required!)
-  controller: {
-    // Component registry
-    components: {
-      'paragraph': require('substance/packages/paragraph/ParagraphComponent'),
-      'heading': require('substance/packages/heading/HeadingComponent'),
-      'image': require('substance/packages/image/ImageComponent'),
-      'link': require('substance/packages/link/LinkComponent'),
-      'todo': require('./TodoComponent'),
-      'codeblock': require('substance/packages/codeblock/CodeblockComponent'),
-      'blockquote': require('substance/packages/blockquote/BlockquoteComponent')
-    },
-    // Controller commands
-    commands: [
-      require('substance/ui/UndoCommand'),
-      require('substance/ui/RedoCommand'),
-      require('substance/ui/SaveCommand')
-    ]
-  },
-  // Custom configuration (required!)
-  bodyEditor: {
-    commands: [
-      require('substance/packages/text/SwitchTextTypeCommand'),
-      require('substance/packages/strong/StrongCommand'),
-      require('substance/packages/emphasis/EmphasisCommand'),
-      require('substance/packages/link/LinkCommand'),
-      require('substance/packages/image/ImageCommand'),
-      require('./MarkCommand'),
-      require('./TodoCommand'),
-    ],
-    textTypes: [
-      {name: 'paragraph', data: {type: 'paragraph'}},
-      {name: 'heading1',  data: {type: 'heading', level: 1}},
-      {name: 'heading2',  data: {type: 'heading', level: 2}},
-      {name: 'heading3',  data: {type: 'heading', level: 3}},
-      {name: 'codeblock', data: {type: 'codeblock'}},
-      {name: 'blockquote', data: {type: 'blockquote'}}
-    ]
-  }
-};
+Component.extend(Notepad);
 
 module.exports = Notepad;

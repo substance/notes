@@ -5,14 +5,11 @@ var $ = window.$ = require('substance/util/jquery');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var HubClient = require('substance/collab/HubClient');
-var CollabSession = require('substance/collab/CollabSession');
 var Router = require('substance/ui/Router');
 var Notepad = require('./Notepad');
-var Note = require('../note/Note');
-var uuid = require('substance/util/uuid');
-var Collaborators = require('./Collaborators');
 var Login = require('./Login');
-var LoginStatus = require('./LoginStatus');
+var Dashboard = require('./Dashboard');
+var Welcome = require('./Welcome');
 
 function App() {
   Component.apply(this, arguments);
@@ -33,60 +30,110 @@ function App() {
 
   var host = config.host || 'localhost';
   var port = config.port || 5000;
+  
+  // We need to maintain some extra private/internal state in addition to
+  // this.state, which is used for routing
+  this._state = {
+    initialized: false,
+    authenticated: false
+  };
 
   // Initialize hubClient
   this.hubClient = new HubClient({
     wsUrl: config.wsUrl || 'ws://'+host+':'+port,
     httpUrl: config.httpUrl || 'http://'+host+':'+port
   });
-
-  this.hubClient.on('connection', this._onHubClientConnected, this);
-  this.hubClient.on('unauthenticate', this._onHubUnauthenticated, this);
-  this._initialized = false;
+  
   this.handleActions({
+    'openNote': this._openNote,
+    'authenticated': this._authenticated,
     'logout': this._logout
   });
 }
 
 App.Prototype = function() {
 
+  // Life cycle
+  // ------------------------------------
+
+  /*
+    Router initialization
+  */
   this.getInitialContext = function() {
     return {
       router: new Router(this)
     };
   };
 
-  this._onHubClientConnected = function() {
-    console.log('hub client is now connected');
-    if (this.state.mode === 'edit') {
-      this._initCollabSession();
-    }
+  /*
+    Expose hubClient to all child components
+  */
+  this.getChildContext = function() {
+    return {
+      hubClient: this.hubClient
+    };
   };
 
-  this._onHubUnauthenticated = function() {
-    // Remove user session from localStorage as it's no longer valid
-    window.localStorage.removeItem('sessionToken');
-    this.rerender();
+  /*
+    That's the public state reflected in the route
+  */
+  this.getInitialState = function() {
+    return {
+      mode: 'index'
+    };
+  };
+
+  /*
+    Handle result of initial authenticate
+  */
+  this._authenticateDone = function(err, userSession) {
+    if (err) {
+      console.log('Initial authenticate based on remembered token failed.');
+      window.localStorage.removeItem('sessionToken');
+    } else {
+      this._setSessionToken(userSession.sessionToken);
+    }
+
+    this.extendInternalState({
+      initialized: true,
+      authenticated: !err
+    });
   };
 
   /*
     Attempt to reauthenticate based on last used session token
   */
-  this._reAuthenticate = function() {
-    var token = this._getLastSessionToken();
+  this._init = function() {
+    var token = this._getSessionToken();
     if (token) {
-      this.hubClient.authenticate({sessionToken: token}, function(err, session) {
-        this._initialized = true;
-        if (err) {
-          console.log('reauthenticate unsuccessful. Removing invalid sessionToken. Login with loginKey required.');
-          window.localStorage.removeItem('sessionToken');
-        }
-        this._onHubAuthenticated(session);
-      }.bind(this));      
+      this.hubClient.authenticate({sessionToken: token}, this._authenticateDone.bind(this));
     } else {
-      this._initialized = true;
-      this.rerender();
+      this.extendInternalState({initialized: true});
     }
+  };
+
+  this.didMount = function() {
+    this._init();
+  };
+
+  /*
+    Nothing to do here, as app is always running
+  */
+  this.dispose = function() {
+
+  };
+
+  // Action Handlers
+  // ------------------------------------
+
+  /*
+    Open an existing note
+  */
+  this._openNote = function(docId) {
+    this.extendState({
+      mode: 'edit',
+      docId: docId
+    });
   };
 
   /*
@@ -94,182 +141,84 @@ App.Prototype = function() {
   */
   this._logout = function() {
     this.hubClient.logout();
-  };
-
-  this._onHubAuthenticated = function(userSession) {
-    console.log('usersession', userSession);
-    this._storeLastSessionToken(userSession.sessionToken);
-    if (this.state.mode === 'edit') {
-      // Make the transition from authenticated to bringing up the editor
-      this._initCollabSession();
-    }
-    this.rerender();
-  };
-
-  this._storeLastSessionToken = function(sessionToken) {
-    console.log('storing token', sessionToken);
-    window.localStorage.setItem('sessionToken', sessionToken);
-  };
-
-  this._getLastSessionToken = function() {
-    return window.localStorage.getItem('sessionToken');
-  };
-
-  this.getInitialState = function() {
-    return {
-      mode: 'index'
-    };
-  };
-
-  this.didMount = function() {
-    // Auto-autenticate on page load
-    this._reAuthenticate();
-  };
-
-  // E.g. if a different document is opened
-  this.didUpdateState = function() {
-    if (this.state.mode === 'edit') {
-      this._initCollabSession();
-    }
-  };
-
-  this._initCollabSession = function() {
-    console.log('App._initCollabSession');
-    
-    if (!this.hubClient.isAuthenticated()) {
-      console.warn('Tried to init collab session but not authenticated. Skipping.');
-      return;
-    }
-    if (this.state.mode !== 'edit') {
-      console.error('Can only create a collab session when we are in edit mode');
-      return;
-    }
-        
-    // Either we init the session for the first time or the docId has changed
-    if (!this.session || (this.session && this.state.docId !== this.session.doc.id)) {
-      
-      // We need to dispose the old session first
-      if (this.session) {
-        this.session.dispose();
-      }
-
-      this.doc = new Note();
-      this.session = new CollabSession(this.doc, {
-        docId: this.state.docId,
-        docVersion: 0,
-        hubClient: this.hubClient
-      });
-
-      console.log('Collabsession created for ', this.state.docId);
-
-      window.doc = this.doc;
-      window.session = this.session;
-
-    } else {
-      // Just trigger a reopen of the existing session (including pending changes)
-      this.session.open();
-    }
-
-    // Now we connect the session to the remote end point and wait until the
-    // 'opened' event has been fired. Then the doc is ready for editing
-    this.session.on('opened', this._onSessionOpened, this);
-  };
-
-  this._onSessionOpened = function() {
-    // Now it's time to render the editor
-    console.log('session opened / or reconnected. Now rerendering editor');
-    this.rerender();
-  };
-
-  /*
-    Creates a new note and opens it for editing
-  */
-  this.newNote = function() {
-    var newNoteId = uuid();
-    this.openNote(newNoteId);
-  };
-
-  /*
-    Open the example document 
-  */
-  this.exampleNote = function() {
-    this.openNote('note-1');
-  };
-
-  /*
-    Open an existing note
-  */
-  this.openNote = function(docId) {
-    this.extendState({
-      mode: 'edit',
-      docId: docId
+    this.extendInternalState({
+      authenticated: false
     });
   };
 
-  this._renderIntro = function() {
-    var el = $$('div').addClass('se-intro').append(
-      $$('div').addClass('se-intro-text').html('Substance Notepad is <strong>real-time collaborative</strong> notes editor. 100% open source.')
-    );
-    return el;
+  /*
+    Handles action triggered by Login component
+  */
+  this._authenticated = function(userSession) {
+    this._setSessionToken(userSession.sessionToken);
+    this.extendInternalState({
+      authenticated: true
+    });
   };
 
-  this._renderDashboard = function() {
-    var el = $$('se-dashboard');
-    el.append(
-      this._renderIntro().append(
-        $$('button').addClass('se-new-note').on('click', this.newNote).append('New Note'),
-        $$('button').addClass('se-example-note').on('click', this.exampleNote).append('Example Note')
-      )
-    );
-    return el;
-  };
 
-  this._renderEditor = function() {
-    var el = $$('div').addClass('se-edit-view');
-
-    if (this.session && this.session.isOpen()) {
-      el.append(
-        $$('div').addClass('se-header').append(
-          $$('div').addClass('se-actions').append(
-            $$('button').addClass('se-action').append('New Note').on('click', this.newNote)
-          ),
-          $$(LoginStatus, {
-            user: this.hubClient.getUser()
-          }),
-          $$(Collaborators, {
-            session: this.session
-          })
-        ),
-        $$(Notepad, {
-          documentSession: this.session,
-          onUploadFile: this.hubClient.uploadFile
-        }).ref('notepad')
-      );
-    } else {
-      el.append('Loading document...');
-    }
-    return el;
-  };
+  // Rendering
+  // ------------------------------------
 
   this.render = function() {
     var el = $$('div').addClass('sc-app');
-    if (this._initialized) { // show nothing during initial authentication
-      if (!this.hubClient.isAuthenticated()) {
-        el.append(this._renderIntro());
 
-        // Render Login Screen
-        el.append($$(Login, {
-          hubClient: this.hubClient,
-          onAuthenticated: this._onHubAuthenticated.bind(this)
-        }));
-      } else if (this.state.mode === 'edit') {
-        // Render editor
-        el.append(this._renderEditor());
-      } else {
-        el.append(this._renderDashboard());
-      }
+    // console.log('################');
+    
+    // Just render empty div during initialization phase
+    if (!this._state.initialized) {
+      return el;
+    }
+
+    // Just render the login form if not authenticated
+    if (!this._state.authenticated) {
+      el.append($$(Login).ref('login'));
+      return el;
+    }
+
+    switch(this.state.mode) {
+      case 'index':
+        if (this._state.authenticated) {
+          el.append($$(Dashboard).ref('dashboard'));
+        } else {
+          el.append($$(Welcome).ref('welcome'));
+        }
+        break;
+      case 'edit':
+        el.append($$(Notepad, {
+          docId: this.state.docId
+        }).ref('notepad'));
+        break;
+      default:
+        console.error('Unsupported mode', this.state.mode);
     }
     return el;
+  };
+
+  // Helpers
+  // ------------------------------------
+
+  /*
+    Store session token in localStorage
+  */
+  this._setSessionToken = function(sessionToken) {
+    console.log('storing new sessionToken', sessionToken);
+    window.localStorage.setItem('sessionToken', sessionToken);
+  };
+
+  /*
+    Retrieve last session token from localStorage
+  */
+  this._getSessionToken = function() {
+    return window.localStorage.getItem('sessionToken');
+  };
+
+  /*
+    We need to maintain some extra private/internal state
+  */
+  this.extendInternalState = function(obj) {
+    Object.assign(this._state, obj);
+    this.rerender();
   };
 };
 

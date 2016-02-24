@@ -17,18 +17,23 @@ Login.Prototype = function() {
   };
 
   this._login = function() {
+    var hubClient = this.context.hubClient;
     var loginKey = this.refs.loginKey.val();
-    this.props.hubClient.authenticate({loginKey: loginKey}, function(err) {
+
+    hubClient.authenticate({loginKey: loginKey}, function(err) {
       if (err) {
         return alert('Login failed. Please try again.');
       }
-      this.props.onAuthenticated(this.props.hubClient.getSession());
+      this.send('loginComplete');
+      // this.props.onAuthenticated(this.props.hubClient.getSession());
     }.bind(this));
   };
 
   this._signup = function() {
     var name = this.refs.name.val();
-    this.props.hubClient.signup({name: name}, function(err, loginKey) {
+    var hubClient = this.context.hubClient;
+
+    hubClient.signup({name: name}, function(err, loginKey) {
       if (err) {
         return alert('Signup failed. Please try again.');
       }
@@ -42,7 +47,8 @@ Login.Prototype = function() {
     Finish signup
   */
   this._finishSignup = function() {
-    this.props.onAuthenticated(this.props.hubClient.getSession());
+    // this.props.onAuthenticated(null, this.props.hubClient.getSession());
+    this.send('loginComplete');
   };
 
   this.render = function() {
