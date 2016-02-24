@@ -11,7 +11,7 @@ var user = {
 };
 
 function seedChanges(cb) {
-	backend.addChange('note-1', change, function(err, version) {
+	backend.addChange('note-1', change, 1, function(err, version) {
 		if(err) return cb(err);
 		console.log('Changes successfully seeded. Version of example document: ', version);
 		cb(null);
@@ -33,8 +33,8 @@ function seedUsersAndSessions(cb) {
 }
 
 async.series([
-	seedChanges,
-	seedUsersAndSessions
+	seedUsersAndSessions,
+	seedChanges
 ], function(err) {
 	if (err) {
     console.log(err.message);

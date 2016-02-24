@@ -11,7 +11,7 @@
     "lodash": "4.2.1",
     "multer": "1.1.0",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#c6c9ea752c384aaadf8525b33f3298ec9c0e1e68",
+    "substance": "substance/substance#adc032c28b05a2c48b662af9648b3ac37ce39c4a",
     "ws": "^1.0.1"
   },
   "devDependencies": {

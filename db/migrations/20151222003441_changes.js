@@ -5,7 +5,7 @@ exports.up = function(knex, Promise) {
     table.integer('pos');
     table.string('data');
     table.integer('timestamp');
-    table.string('user');
+    table.string('userId');
   });
 };
 
