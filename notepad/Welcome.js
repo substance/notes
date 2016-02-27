@@ -7,9 +7,10 @@ function Welcome() {
 
 Welcome.Prototype = function() {
   this.render = function() {
-    var el = $$('div').addClass('se-intro').append(
-      $$('div').addClass('se-intro-text').html('Substance Notepad is a <strong>real-time collaborative</strong> notes editor.')
-    );
+    var el = $$('sc-notes-welcome');
+    
+    el.html(this.i18n.t('sc-notes-welcome.intro', {}));
+
     return el;
   };
 };

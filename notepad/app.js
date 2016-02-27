@@ -11,6 +11,9 @@ var Login = require('./Login');
 var Dashboard = require('./Dashboard');
 var Welcome = require('./Welcome');
 
+var I18n = require('substance/ui/i18n');
+I18n.instance.load(require('./i18n/en'));
+
 function App() {
   Component.apply(this, arguments);
 
