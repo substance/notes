@@ -61,6 +61,13 @@ var hub = new CollabHub(wss, backend);
 // Adds http routes that CollabHub implements
 hub.addRoutes(app);
 
+
+// Error handling
+// We send JSON to the client so they can display messages in the UI.
+app.use(function(err, req, res, next) {
+  res.status(500).json({errorMessage: err.message});
+});
+
 // Delegate http requests to express app
 httpServer.on('request', app);
 
@@ -71,6 +78,7 @@ httpServer.on('request', app);
 httpServer.listen(port, 'localhost', function() {
   console.log('Listening on ' + httpServer.address().port); 
 });
+
 
 // Export app for requiring in test files
 module.exports = app;
