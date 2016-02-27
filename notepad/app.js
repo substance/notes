@@ -107,9 +107,18 @@ App.Prototype = function() {
     Attempt to reauthenticate based on last used session token
   */
   this._init = function() {
-    var token = this._getSessionToken();
-    if (token) {
-      this.hubClient.authenticate({sessionToken: token}, this._authenticateDone.bind(this));
+    var loginKey = this.state.loginKey;
+    var storedToken = this._getSessionToken();
+    var loginData;
+
+    if (loginKey) {
+      loginData = {loginKey: loginKey};
+    } else if (storedToken) {
+      loginData = {sessionToken: storedToken};
+    }
+    
+    if (loginData) {
+      this.hubClient.authenticate(loginData, this._authenticateDone.bind(this));
     } else {
       this.extendInternalState({initialized: true});
     }
@@ -165,8 +174,6 @@ App.Prototype = function() {
 
   this.render = function() {
     var el = $$('div').addClass('sc-app');
-
-    // console.log('################');
     
     // Just render empty div during initialization phase
     if (!this._state.initialized) {
@@ -174,7 +181,7 @@ App.Prototype = function() {
     }
 
     // Just render the login form if not authenticated
-    if (!this._state.authenticated) {
+    if (this.state.mode === 'edit' && !this._state.authenticated) {
       el.append($$(Login).ref('login'));
       return el;
     }

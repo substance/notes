@@ -283,7 +283,7 @@ Backend.Prototype = function() {
     query.asCallback(function(err, user) {
       if (err) return cb(err);
       user = user[0]; // query result is an array
-      if (!user) return cb(new Error('No user found for login key '+loginKey));
+      if (!user) return cb(new Error('Your provided login key was invalid.'));
       cb(null, user);
     });
   };
