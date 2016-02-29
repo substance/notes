@@ -91,7 +91,6 @@ App.Prototype = function() {
   */
   this._authenticateDone = function(err, userSession) {
     if (err) {
-      console.log('Initial authenticate based on remembered token failed.');
       window.localStorage.removeItem('sessionToken');
     } else {
       this._setSessionToken(userSession.sessionToken);
@@ -99,6 +98,7 @@ App.Prototype = function() {
 
     this.extendInternalState({
       initialized: true,
+      error: err,
       authenticated: !err
     });
   };
@@ -175,6 +175,13 @@ App.Prototype = function() {
   this.render = function() {
     var el = $$('div').addClass('sc-app');
     
+    // TODO: Create error component (popup)
+    if (this._state.error) {
+      el.append($$('div').addClass('se-error').append(
+        this._state.error.message
+      ));
+    }
+
     // Just render empty div during initialization phase
     if (!this._state.initialized) {
       return el;
