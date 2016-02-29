@@ -1,4 +1,4 @@
-# Substance Notes
+# Substance Notes [![Build Status](https://travis-ci.org/substance/notes.svg?branch=master)](https://travis-ci.org/substance/notes)
 
 Real-time collaborative notes editing.
 
