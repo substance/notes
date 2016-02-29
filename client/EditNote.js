@@ -8,11 +8,11 @@ var NoteWriter = require('./NoteWriter');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 
-function Notepad() {
+function EditNote() {
   Component.apply(this, arguments);
 }
 
-Notepad.Prototype = function() {
+EditNote.Prototype = function() {
 
   this.getInitialState = function() {
     return {
@@ -51,7 +51,7 @@ Notepad.Prototype = function() {
   // ------------------------------------
 
   this.render = function() {
-    console.log('Notepad.render', this._state);
+    console.log('EditNote.render', this.state);
     var hubClient = this.context.hubClient;
 
     var el = $$('div').addClass('sc-notepad-wrapper');
@@ -124,6 +124,6 @@ Notepad.Prototype = function() {
 
 };
 
-Component.extend(Notepad);
+Component.extend(EditNote);
 
-module.exports = Notepad;
+module.exports = EditNote;

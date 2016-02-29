@@ -5,8 +5,7 @@ var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var HubClient = require('substance/collab/HubClient');
 var Router = require('substance/ui/Router');
-var Notepad = require('./Notepad');
-var Login = require('./Login');
+var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
 var Welcome = require('./Welcome');
 
@@ -48,7 +47,6 @@ function Notes() {
   
   this.handleActions({
     'openNote': this._openNote,
-    'authenticated': this._authenticated,
     'logout': this._logout
   });
 }
@@ -157,16 +155,6 @@ Notes.Prototype = function() {
     });
   };
 
-  /*
-    Handles action triggered by Login component
-  */
-  this._authenticated = function(userSession) {
-    this._setSessionToken(userSession.sessionToken);
-    this.extendInternalState({
-      authenticated: true
-    });
-  };
-
 
   // Rendering
   // ------------------------------------
@@ -188,11 +176,12 @@ Notes.Prototype = function() {
 
     // Just render the login form if not authenticated
     if (this.state.mode === 'edit' && !this._state.authenticated) {
-      el.append($$(Login).ref('login'));
+      // We just show the welcome screen here for now
+      el.append($$(Welcome).ref('welcome'));
       return el;
     }
 
-    switch(this.state.mode) {
+    switch (this.state.mode) {
       case 'index':
         if (this._state.authenticated) {
           el.append($$(Dashboard).ref('dashboard'));
@@ -201,9 +190,9 @@ Notes.Prototype = function() {
         }
         break;
       case 'edit':
-        el.append($$(Notepad, {
+        el.append($$(EditNote, {
           docId: this.state.docId
-        }).ref('notepad'));
+        }).ref('editNote'));
         break;
       default:
         console.error('Unsupported mode', this.state.mode);
