@@ -13,5 +13,5 @@ module.exports = {
     Welcome page
   */
   // 'sc-notes-welcome.intro': getFile('sc-welcome.intro.html'),
-  'sc-notes-welcome.intro': fs.readFileSync(__dirname + '/sc-welcome.intro.html', 'utf8')
+  'sc-welcome.intro': fs.readFileSync(__dirname + '/sc-welcome.intro.html', 'utf8')
 };

@@ -1,6 +1,6 @@
 var CollabSession = require('substance/collab/CollabSession');
 var JSONConverter = require('substance/model/JSONConverter');
-var Note = require('../note/Note');
+var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
 var LoginStatus = require('./LoginStatus');
 var converter = new JSONConverter();

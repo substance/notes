@@ -33,7 +33,7 @@ Collaborators.Prototype = function() {
   };
 
   this.render = function() {
-    var el = $$('div').addClass('se-collaborators');
+    var el = $$('div').addClass('sc-collaborators');
 
     var collaborators = this.props.session.collaborators;
     forEach(collaborators, function(collaborator) {

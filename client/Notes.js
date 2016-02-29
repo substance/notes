@@ -1,7 +1,6 @@
 'use strict';
 
 var _ = require('substance/util/helpers');
-var $ = window.$ = require('substance/util/jquery');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var HubClient = require('substance/collab/HubClient');
@@ -12,9 +11,9 @@ var Dashboard = require('./Dashboard');
 var Welcome = require('./Welcome');
 
 var I18n = require('substance/ui/i18n');
-I18n.instance.load(require('./i18n/en'));
+I18n.instance.load(require('../i18n/en'));
 
-function App() {
+function Notes() {
   Component.apply(this, arguments);
 
   // EXPERIMENTAL: with server.serveHTML it is now possible to
@@ -54,7 +53,7 @@ function App() {
   });
 }
 
-App.Prototype = function() {
+Notes.Prototype = function() {
 
   // Life cycle
   // ------------------------------------
@@ -239,9 +238,6 @@ App.Prototype = function() {
   };
 };
 
-Component.extend(App);
+Component.extend(Notes);
 
-// Start the application
-$(function() {
-  window.app = Component.mount(App, document.body);
-});
+module.exports = Notes;
