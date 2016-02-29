@@ -16,11 +16,11 @@ var ImageTool = require('substance/packages/image/ImageTool');
 var MarkTool = require('./MarkTool');
 var TodoTool = require('./TodoTool');
 
-function Notepad() {
+function NoteWriter() {
   Controller.apply(this, arguments);
 }
 
-Notepad.Prototype = function() {
+NoteWriter.Prototype = function() {
 
   // Custom Render method for your editor
   this.render = function() {
@@ -52,9 +52,9 @@ Notepad.Prototype = function() {
   };
 };
 
-Controller.extend(Notepad);
+Controller.extend(NoteWriter);
 
-Notepad.static.config = {
+NoteWriter.static.config = {
   i18n: {
     'todo.content': 'Todo'
   },
@@ -99,4 +99,4 @@ Notepad.static.config = {
   }
 };
 
-module.exports = Notepad;
+module.exports = NoteWriter;

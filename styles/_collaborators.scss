@@ -1,0 +1,24 @@
+.se-collaborators {
+  float: right;
+  margin-right: 10px;
+
+  .se-collaborator {
+    margin: 3px;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    line-height: 27px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    border: 2px solid #ccc;
+    color: #ccc;
+  }
+
+  .se-collaborator.sm-collaborator-1 { border: 2px solid $collaborator-color-1; color: $collaborator-color-1; }
+  .se-collaborator.sm-collaborator-2 { border: 2px solid $collaborator-color-2; color: $collaborator-color-2; }
+  .se-collaborator.sm-collaborator-3 { border: 2px solid $collaborator-color-3; color: $collaborator-color-3; }
+  .se-collaborator.sm-collaborator-4 { border: 2px solid $collaborator-color-4; color: $collaborator-color-4; }
+  .se-collaborator.sm-collaborator-5 { border: 2px solid $collaborator-color-5; color: $collaborator-color-5; }
+}

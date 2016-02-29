@@ -3,7 +3,7 @@ var path = require('path');
 var app = express();
 var server = require('substance/util/server');
 var CollabHub = require('substance/collab/CollabHub');
-var Backend = require('./hub/Backend');
+var Backend = require('./server/Backend');
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
@@ -15,7 +15,7 @@ var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 
 var backend = new Backend({
   knexConfig: knexConfig,
-  ArticleClass: require('./note/Note.js')
+  ArticleClass: require('./model/Note.js')
 });
 
 // If seed option provided we should remove db, run migration and seed script
@@ -39,15 +39,14 @@ var config = {
   port: port,
   wsUrl: wsUrl
 };
-server.serveHTML(app, '/', path.join(__dirname, 'notepad', 'index.html'), config);
-server.serveStyles(app, '/app.css', path.join(__dirname, 'notepad', 'app.scss'));
-server.serveJS(app, '/app.js', path.join(__dirname, 'notepad', 'app.js'));
-
+server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
+server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
+server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
 
 /*
   Serve static files
 */
-app.use(express.static(path.join(__dirname, 'notepad')));
+// app.use(express.static(path.join(__dirname, 'notepad')));
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
@@ -60,6 +59,12 @@ var hub = new CollabHub(wss, backend);
 
 // Adds http routes that CollabHub implements
 hub.addRoutes(app);
+
+// Error handling
+// We send JSON to the client so they can display messages in the UI.
+app.use(function(err, req, res, next) {
+  res.status(500).json({errorMessage: err.message});
+});
 
 // Delegate http requests to express app
 httpServer.on('request', app);

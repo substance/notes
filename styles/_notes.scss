@@ -1,0 +1,21 @@
+.sc-app {
+  .se-header {
+    height: 40px;
+    background: #3B4749;
+    overflow: hidden;
+
+    .se-actions {
+      margin-left: 15px;
+      float: left;
+      .se-action {
+        line-height: 40px;
+        display: inline-block;
+        color: rgba(255,255,255, 0.7);
+      }
+
+      .se-action:hover {
+        color: rgba(255,255,255, 1);
+      }
+    }
+  }
+}

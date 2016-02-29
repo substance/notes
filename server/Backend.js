@@ -3,6 +3,7 @@
 var connect = require('./connect');
 var localFiles = require('./localFiles');
 var EventEmitter = require('substance/util/EventEmitter');
+var JSONConverter = require('substance/model/JSONConverter');
 var _ = require('substance/util/helpers');
 var uuid = require('substance/util/uuid');
 
@@ -101,6 +102,8 @@ Backend.Prototype = function() {
   /*
     Get latest snapshot of document
     @param {String} id changeset id
+
+    TODO: we should find a way to optimize this.
   */
   this.getSnapshot = function(id, cb) {
     var self = this;
@@ -112,7 +115,9 @@ Backend.Prototype = function() {
           doc.data.apply(op);
         });
       });
-      cb(null, doc.toJSON(), version);
+
+      var converter = new JSONConverter();
+      cb(null, converter.exportDocument(doc), version);
     });
   };
 
@@ -278,7 +283,7 @@ Backend.Prototype = function() {
     query.asCallback(function(err, user) {
       if (err) return cb(err);
       user = user[0]; // query result is an array
-      if (!user) return cb(new Error('No user found for login key '+loginKey));
+      if (!user) return cb(new Error('Your provided login key was invalid.'));
       cb(null, user);
     });
   };
