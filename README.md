@@ -1,4 +1,4 @@
-# Substance Notepad
+# Substance Notes
 
 Real-time collaborative notes editing.
 
