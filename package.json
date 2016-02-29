@@ -25,14 +25,16 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.2.0",
     "mocha": "2.4.5",
-    "through2": "^2.0.0"
+    "through2": "^2.0.0",
+    "gulp-jshint": "2.0.0",
+    "jshint": "2.8.0"
   },
   "browserify": { "transform": [ "brfs" ] },
   "scripts": {
     "bundle": "gulp",
     "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && rm -rf ./uploads && mkdir uploads",
     "seed": "npm run postinstall && node seed",
-    "test": "npm run postinstall && mocha"
+    "test": "gulp test"
   },
   "version": "1.0.0-beta"
 }
