@@ -322,6 +322,34 @@ Backend.Prototype = function() {
     });
   };
 
+  /*
+    Disconnect from the db and shut down
+  */
+  this.shutdown = function(cb) {
+    this.db.destroy(cb);
+  };
+
+  /*
+    Resets the database and loads a given seed object
+
+    Be careful with running this in production
+  */
+  this.seed = function(seed, cb) {
+    // 1. Clear existing database
+
+    // TODO: maybe we can do this via API in a more elegant way
+    var env = process.env.NODE_ENV;
+    var execSync = require('child_process').execSync;
+    execSync('rm -rf ./db/'+env+'.sqlite3 && knex migrate:latest');
+    
+    // 2. Fill it with provided seed
+    // - seed.users has the users
+    // - seed.changesets has the changesets
+
+    cb(null); // if succesful
+    // cb(err); if there was an error
+  };
+
 };
 
 EventEmitter.extend(Backend);

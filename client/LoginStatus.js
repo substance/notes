@@ -1,5 +1,4 @@
 var Component = require('substance/ui/Component');
-var forEach = require('lodash/forEach');
 var $$ = Component.$$;
 
 function LoginStatus() {

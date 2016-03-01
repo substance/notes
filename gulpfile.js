@@ -11,10 +11,9 @@ gulp.task('lint', function() {
     .pipe(jshint.reporter("fail"));
 });
 
-
 gulp.task('test:server', ['lint'], function() {
   // requiring instead of doing 'node test/run.js'
-  // require('./test/run');
+  require('./test/run');
 });
 
 gulp.task('test', ['lint', 'test:server']);

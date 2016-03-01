@@ -11,6 +11,6 @@ var connect = function(knexConfig) {
 	  throw new Error('Could not find config for environment', environment);
 	}
 	return new Knex(config);
-}
+};
 
 module.exports = connect;

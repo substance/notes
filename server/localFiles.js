@@ -4,11 +4,11 @@ var LocalFiles = {};
 
 LocalFiles.storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './uploads')
+    cb(null, './uploads');
   },
   filename: function (req, file, cb) {
   	var extension = file.originalname.split('.').pop();
-    cb(null, uuid() + '.' + extension)
+    cb(null, uuid() + '.' + extension);
   }
 });
 
