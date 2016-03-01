@@ -8,7 +8,6 @@ var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
 var knexConfig = require('./knexfile');
-var mail = require('./mail')
 
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
@@ -18,7 +17,7 @@ var backend = new Backend({
   knexConfig: knexConfig,
   ArticleClass: require('./model/Note.js')
 });
-//mail.sendPlain('michael@substance.io', 'Welcome to Notes app', 'Hey! \rIt\'s just a joke ;)');
+
 // If seed option provided we should remove db, run migration and seed script
 if(process.argv[2] == 'seed') {
 	var execSync = require('child_process').execSync;
