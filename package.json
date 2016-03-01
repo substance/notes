@@ -35,8 +35,8 @@
   "browserify": { "transform": [ "brfs" ] },
   "scripts": {
     "bundle": "gulp",
-    "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && rm -rf ./uploads && mkdir uploads",
-    "seed": "npm run postinstall && node seed",
+    "postinstall": "mkdir uploads",
+    "seed": "node seed",
     "test": "NODE_ENV=test gulp test"
   },
   "version": "1.0.0-beta"
