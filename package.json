@@ -35,7 +35,7 @@
   "browserify": { "transform": [ "brfs" ] },
   "scripts": {
     "bundle": "gulp",
-    "postinstall": "mkdir uploads",
+    "postinstall": "mkdir -p uploads",
     "seed": "node seed",
     "test": "NODE_ENV=test gulp test"
   },
