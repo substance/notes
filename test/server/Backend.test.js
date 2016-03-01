@@ -5,6 +5,7 @@ require('../qunit_extensions');
 var knexConfig = require('../../knexfile');
 var backendSeed = require('substance/test/fixtures/collab/backendSeed');
 var Backend = require('../../server/Backend');
+
 var backend = new Backend({
   knexConfig: knexConfig,
   ArticleClass: require('substance/packages/prose-editor/ProseArticle')
@@ -13,7 +14,13 @@ var backend = new Backend({
 QUnit.module('server/Backend', {
   beforeEach: function(assert) {
     var done = assert.async();
-    backend.seed(backendSeed, done);
+    backend.seed(backendSeed, function(err) {
+      if (err) {
+        return console.error(err);
+      } else {
+        done();
+      }
+    });
   }
 });
 

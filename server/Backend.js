@@ -49,7 +49,7 @@ Backend.Prototype = function() {
   */
   this.addChange = function(id, change, userId, cb) {
     var self = this;
-
+    
     this.getVersion(id, function(err, headVersion) {
       if (err) return cb(err);
       var version = headVersion + 1;
