@@ -13,7 +13,7 @@ Mail.sendPlain = function(to, subject, content) {
   });
 
   var message = {
-    from: 'notes@substance.io',
+    from: 'Susbtance Notes ✍ <notes@substance.io>',
     to: to,
     subject: subject,
     text: content
