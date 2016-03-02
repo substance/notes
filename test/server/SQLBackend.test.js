@@ -31,6 +31,10 @@ QUnit.module('server/SQLBackend', {
   }
 });
 
+QUnit.moduleDone(function() {
+  backend.shutdown();
+});
+
 // Runs the offical backend test suite
 runBackendTests(backend, QUnit);
 
