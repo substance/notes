@@ -16,13 +16,17 @@ var uuid = require('substance/util/uuid');
 */
 function Backend(config) {
   this.config = config;
-  this.db = connect(config.knexConfig);
   this.model = config.ArticleClass;
   this.storage = localFiles;
+  this.connect();
   Backend.super.apply(this);
 }
 
 Backend.Prototype = function() {
+
+  this.connect = function() {
+    this.db = connect(this.config.knexConfig);
+  };
   /*
     Gets changes from the DB.
     @param {String} id changeset id
@@ -94,7 +98,7 @@ Backend.Prototype = function() {
     Removes a changeset from the db
     @param {String} id changeset id
   */
-  this.deleteChangeset = function(id, cb) {
+  this.deleteDocument = function(id, cb) {
     var query = this.db('changes')
                 .where('changeset', id)
                 .del();
@@ -109,7 +113,7 @@ Backend.Prototype = function() {
 
     TODO: we should find a way to optimize this.
   */
-  this.getSnapshot = function(id, cb) {
+  this.getDocument = function(id, cb) {
     var self = this;
     this.getChanges(id, 0, function(err, version, changes) {
       if(err) return cb(err);
@@ -337,11 +341,19 @@ Backend.Prototype = function() {
     Remove sqlite file for current environment
   */
   this.cleanDb = function(cb) {
-    var env = process.env.NODE_ENV || 'development';
-    var filePath = path.resolve('./db/'+env+'.hub.sqlite3');
-    fs.stat(filePath, function(err, stats) {
-      if(stats) fs.unlink(filePath);
-      cb(null);
+    var self = this;
+
+    // Close db connection
+    this.shutdown(function() {
+      var env = process.env.NODE_ENV || 'development';
+      var filePath = path.resolve(self.config.knexConfig[env].connection.filename);
+      fs.stat(filePath, function(err, stats) {
+        // Remove db file if it is exists
+        if(stats) fs.unlink(filePath);
+        // Establish new connection with db
+        self.connect();
+        cb(null);
+      });
     });
   };
 
@@ -363,6 +375,12 @@ Backend.Prototype = function() {
   this.seed = function(seed, cb) {
     var self = this;
 
+    this.connect();
+
+    function wipe(callback) {
+      self.cleanDb.call(self, callback);
+    }
+
     function migrate(callback) {
       self.runMigration.call(self, callback);
     }
@@ -373,29 +391,29 @@ Backend.Prototype = function() {
       }, callback);
     }
 
-    function seedChanges(callback) {
-      async.eachSeries(seed.changesets, function(data, callback) {
-        self.addChange(data.id, data.changeset, 1, callback);
+    function seedDocuments(callback) {
+      async.eachSeries(seed.documents, function(data, callback) {
+        self.addChange(data.id, data.document, 1, callback);
       }, callback);
     }
 
     function prepareSeed(callback) {
-      each(seed.changesets, function(changeset, id) {
+      each(seed.documents, function(document, id) {
         var result = {
-          changeset: changeset,
+          document: document,
           id: id,
         };
-        seed.changesets[id] = result;
+        seed.documents[id] = result;
       });
       callback(null);
     }
 
     async.series([
-      self.cleanDb,
+      wipe,
       migrate,
       prepareSeed,
       seedUsers,
-      seedChanges
+      seedDocuments
       ], function(err) {
       if (err) return cb(err);
       cb(null);
