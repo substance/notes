@@ -1,6 +1,5 @@
 'use strict';
 
-var oo = require('substance/util/oo');
 var Document = require('substance/model/Document');
 var noteSchema = require('./noteSchema');
 
@@ -18,7 +17,7 @@ var Note = function(schema) {
   });
 };
 
-Document.extend(Note)
+Document.extend(Note);
 Note.schema = noteSchema;
 
 module.exports = Note;

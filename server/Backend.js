@@ -1,5 +1,9 @@
 "use strict";
 
+var fs = require('fs');
+var path = require('path');
+var each = require('lodash/each');
+var async = require('async');
 var connect = require('./connect');
 var localFiles = require('./localFiles');
 var EventEmitter = require('substance/util/EventEmitter');
@@ -12,13 +16,17 @@ var uuid = require('substance/util/uuid');
 */
 function Backend(config) {
   this.config = config;
-  this.db = connect(config.knexConfig);
   this.model = config.ArticleClass;
   this.storage = localFiles;
+  this.connect();
   Backend.super.apply(this);
 }
 
 Backend.Prototype = function() {
+
+  this.connect = function() {
+    this.db = connect(this.config.knexConfig);
+  };
   /*
     Gets changes from the DB.
     @param {String} id changeset id
@@ -49,7 +57,7 @@ Backend.Prototype = function() {
   */
   this.addChange = function(id, change, userId, cb) {
     var self = this;
-
+    
     this.getVersion(id, function(err, headVersion) {
       if (err) return cb(err);
       var version = headVersion + 1;
@@ -90,7 +98,7 @@ Backend.Prototype = function() {
     Removes a changeset from the db
     @param {String} id changeset id
   */
-  this.deleteChangeset = function(id, cb) {
+  this.deleteDocument = function(id, cb) {
     var query = this.db('changes')
                 .where('changeset', id)
                 .del();
@@ -105,7 +113,7 @@ Backend.Prototype = function() {
 
     TODO: we should find a way to optimize this.
   */
-  this.getSnapshot = function(id, cb) {
+  this.getDocument = function(id, cb) {
     var self = this;
     this.getChanges(id, 0, function(err, version, changes) {
       if(err) return cb(err);
@@ -319,6 +327,96 @@ Backend.Prototype = function() {
       if (err) return cb(err);
       session.user = user;
       cb(null, session);
+    });
+  };
+
+  /*
+    Disconnect from the db and shut down
+  */
+  this.shutdown = function(cb) {
+    this.db.destroy(cb);
+  };
+
+  /*
+    Remove sqlite file for current environment
+  */
+  this.cleanDb = function(cb) {
+    var self = this;
+
+    // Close db connection
+    this.shutdown(function() {
+      var env = process.env.NODE_ENV || 'development';
+      var filePath = path.resolve(self.config.knexConfig[env].connection.filename);
+      fs.stat(filePath, function(err, stats) {
+        // Remove db file if it is exists
+        if(stats) fs.unlink(filePath);
+        // Establish new connection with db
+        self.connect();
+        cb(null);
+      });
+    });
+  };
+
+  /*
+    Run migrations
+  */
+  this.runMigration = function(cb) {
+    this.db.migrate.latest({directory: './db/migrations'}).asCallback(function(err){
+      if(err) return cb(err);
+      cb(null);
+    });
+  };
+
+  /*
+    Resets the database and loads a given seed object
+
+    Be careful with running this in production
+  */
+  this.seed = function(seed, cb) {
+    var self = this;
+
+    this.connect();
+
+    function wipe(callback) {
+      self.cleanDb.call(self, callback);
+    }
+
+    function migrate(callback) {
+      self.runMigration.call(self, callback);
+    }
+
+    function seedUsers(callback) {
+      async.eachSeries(seed.users, function(user, callback) {
+        self.createUser(user, callback);
+      }, callback);
+    }
+
+    function seedDocuments(callback) {
+      async.eachSeries(seed.documents, function(data, callback) {
+        self.addChange(data.id, data.document, 1, callback);
+      }, callback);
+    }
+
+    function prepareSeed(callback) {
+      each(seed.documents, function(document, id) {
+        var result = {
+          document: document,
+          id: id,
+        };
+        seed.documents[id] = result;
+      });
+      callback(null);
+    }
+
+    async.series([
+      wipe,
+      migrate,
+      prepareSeed,
+      seedUsers,
+      seedDocuments
+      ], function(err) {
+      if (err) return cb(err);
+      cb(null);
     });
   };
 
