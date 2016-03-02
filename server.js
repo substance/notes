@@ -21,7 +21,7 @@ var backend = new Backend({
 // If seed option provided we should remove db, run migration and seed script
 if(process.argv[2] == 'seed') {
 	var execSync = require('child_process').execSync;
-	execSync("rm -rf ./db/*.sqlite3 && knex migrate:latest && node seed");
+	execSync("node seed");
   console.log('Seeding the db...');
 }
 
