@@ -2,14 +2,20 @@
 
 require('../qunit_extensions');
 
-var knexConfig = require('../../knexfile');
 var backendSeed = require('substance/test/fixtures/collab/backendSeed');
 var Backend = require('../../server/Backend');
 var runBackendTests = require('substance/test/collab/runBackendTests');
+var twoParagraphs = require('substance/test/fixtures/collab/two-paragraphs');
 
+// TODO: Daniel, please require knexConfig directly from within the backend
 var backend = new Backend({
-  knexConfig: knexConfig,
-  ArticleClass: require('substance/packages/prose-editor/ProseArticle')
+  schemas: {
+    'prose-article': {
+      name: 'prose-article',
+      version: '1.0.0',
+      documentFactory: twoParagraphs
+    }
+  }
 });
 
 QUnit.module('server/SQLBackend', {

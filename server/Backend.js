@@ -10,6 +10,8 @@ var EventEmitter = require('substance/util/EventEmitter');
 var JSONConverter = require('substance/model/JSONConverter');
 var _ = require('substance/util/helpers');
 var uuid = require('substance/util/uuid');
+var knexConfig = require('../knexfile');
+
 
 /*
   Implements example of Substance Backend API.
@@ -25,7 +27,7 @@ function Backend(config) {
 Backend.Prototype = function() {
 
   this.connect = function() {
-    this.db = connect(this.config.knexConfig);
+    this.db = connect(knexConfig);
   };
   /*
     Gets changes from the DB.
@@ -346,7 +348,7 @@ Backend.Prototype = function() {
     // Close db connection
     this.shutdown(function() {
       var env = process.env.NODE_ENV || 'development';
-      var filePath = path.resolve(self.config.knexConfig[env].connection.filename);
+      var filePath = path.resolve(knexConfig[env].connection.filename);
       fs.stat(filePath, function(err, stats) {
         // Remove db file if it is exists
         if(stats) fs.unlink(filePath);
