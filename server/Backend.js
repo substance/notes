@@ -18,7 +18,6 @@ var knexConfig = require('../knexfile');
 */
 function Backend(config) {
   this.config = config;
-  this.model = config.ArticleClass;
   this.storage = localFiles;
   this.connect();
   Backend.super.apply(this);
@@ -31,14 +30,14 @@ Backend.Prototype = function() {
   };
   /*
     Gets changes from the DB.
-    @param {String} id changeset id
+    @param {String} id document id
     @param {String} sinceVersion changes since version (0 = all changes, 1 all except first change)
   */
   this.getChanges = function(id, sinceVersion, cb) {
     var self = this;
     var query = this.db('changes')
                 .select('data', 'id')
-                .where('changeset', id)
+                .where('document', id)
                 .andWhere('pos', '>=', sinceVersion)
                 .orderBy('pos', 'asc');
 
@@ -52,9 +51,9 @@ Backend.Prototype = function() {
   };
 
   /*
-    Add a change to a changeset. Implicitly creates a new changeset
+    Add a change to a document. Implicitly creates a new document
     when the first change is added to
-    @param {String} id changeset id
+    @param {String} id document id
     @param {Object} change as JSON object
   */
   this.addChange = function(id, change, userId, cb) {
@@ -65,7 +64,7 @@ Backend.Prototype = function() {
       var version = headVersion + 1;
       var record = {
         id: id + '/' + version,
-        changeset: id,
+        document: id,
         pos: version,
         data: JSON.stringify(change),
         timestamp: Date.now(),
@@ -88,7 +87,7 @@ Backend.Prototype = function() {
     // 0 changes: version = 0
     // 1 change:  version = 1
     var query = this.db('changes')
-                .where('changeset', id)
+                .where('document', id)
                 .count();
     query.asCallback(function(err, count) {
       if (err) return cb(err);
@@ -97,12 +96,12 @@ Backend.Prototype = function() {
   };
 
   /*
-    Removes a changeset from the db
-    @param {String} id changeset id
+    Removes a document from the db
+    @param {String} id document id
   */
   this.deleteDocument = function(id, cb) {
     var query = this.db('changes')
-                .where('changeset', id)
+                .where('document', id)
                 .del();
     query.asCallback(function(err) {
       return cb(err);
@@ -111,7 +110,7 @@ Backend.Prototype = function() {
 
   /*
     Get latest snapshot of document
-    @param {String} id changeset id
+    @param {String} id document id
 
     TODO: we should find a way to optimize this.
   */
