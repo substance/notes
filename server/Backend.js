@@ -51,8 +51,7 @@ Backend.Prototype = function() {
   };
 
   /*
-    Add a change to a document. Implicitly creates a new document
-    when the first change is added to
+    Add a change to a document
     @param {String} id document id
     @param {Object} change as JSON object
   */
@@ -80,6 +79,19 @@ Backend.Prototype = function() {
             cb(null, version);
           });
       });
+    });
+  };
+
+  /*
+    Remove changes of a document.
+    @param {String} id document id
+  */
+  this.removeChanges = function(id, cb) {
+    var query = this.db('changes')
+                .where('document', id)
+                .del();
+    query.asCallback(function(err) {
+      return cb(err);
     });
   };
 
@@ -218,11 +230,16 @@ Backend.Prototype = function() {
     @param {String} id document id
   */
   this.deleteDocument = function(id, cb) {
-    var query = this.db('changes')
-                .where('document', id)
+    var self = this;
+
+    var query = this.db('documents')
+                .where('documentId', id)
                 .del();
     query.asCallback(function(err) {
-      return cb(err);
+      if(err) return cb(err);
+      self.removeChanges(id, function(err) {
+        cb(err);
+      });
     });
   };
 
