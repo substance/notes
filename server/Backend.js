@@ -59,23 +59,27 @@ Backend.Prototype = function() {
   this.addChange = function(id, change, userId, cb) {
     var self = this;
     
-    this.getVersion(id, function(err, headVersion) {
+    this._documentExists(id, function(err, exists) {
       if (err) return cb(err);
-      var version = headVersion + 1;
-      var record = {
-        id: id + '/' + version,
-        document: id,
-        pos: version,
-        data: JSON.stringify(change),
-        timestamp: Date.now(),
-        userId: userId
-      };
+      if(!exists) return cb(new Error('ddd'));
+      self.getVersion(id, function(err, headVersion) {
+        if (err) return cb(err);
+        var version = headVersion + 1;
+        var record = {
+          id: id + '/' + version,
+          document: id,
+          pos: version,
+          data: JSON.stringify(change),
+          timestamp: Date.now(),
+          userId: userId
+        };
 
-      self.db.table('changes').insert(record)
-        .asCallback(function(err) {
-          if (err) return cb(err);
-          cb(null, version);
-        });
+        self.db.table('changes').insert(record)
+          .asCallback(function(err) {
+            if (err) return cb(err);
+            cb(null, version);
+          });
+      });
     });
   };
 
@@ -89,9 +93,123 @@ Backend.Prototype = function() {
     var query = this.db('changes')
                 .where('document', id)
                 .count();
+
     query.asCallback(function(err, count) {
       if (err) return cb(err);
-      return cb(null, count[0]['count(*)']);
+      var result = count[0]['count(*)'];
+      return cb(null, result);
+    });
+  };
+
+  /*
+    Creates a new empty or prefilled document
+  
+    Writes the initial change into the database.
+    Returns the JSON serialized version, as a starting point
+  */
+  this.createDocument = function(documentId, schemaName, cb) {
+    var userId = "123";
+
+    var self = this;
+
+    var schemaConfig = this.config.schemas[schemaName];
+    if (!schemaConfig) {
+      cb(new Error('Schema '+ schemaName +' not found'));
+    }
+    var docFactory = schemaConfig.documentFactory;
+    var doc = docFactory.createArticle();
+
+    this._createDocument(documentId, schemaConfig, userId, function(err, docData){
+      if(err) return cb(err);
+      var changeset = docFactory.createChangeset();
+      self.addChange(docData.documentId, changeset[0], docData.userId, function(err) {
+        if(err) return cb(err);
+        cb(null, doc);
+      });
+    });
+  };
+
+  /*
+    Internal method to create a document
+  */
+  this._createDocument = function(id, schemaConfig, userId, cb) {
+    var doc = {
+      documentId: id,
+      schemaName: schemaConfig.name,
+      schemaVersion: schemaConfig.version,
+      userId: userId
+    };
+
+    this.db.table('documents').insert(doc)
+      .asCallback(function(err) {
+        if (err) return cb(err);
+        cb(null, doc);
+      });
+  };
+
+  /*
+    Get document snapshot.
+    @param {String} id document id
+
+    Uses schema information stored at the doc entry and
+    constructs a document using the corresponding documentFactory
+    that is available as a schema config object.
+  */
+  this.getDocument = function(id, cb) {
+    var self = this;
+
+    this._getDocument(id, function(err, docData){
+      if(err) return cb(err);
+
+      var schemaConfig = self.config.schemas[docData.schemaName];
+      
+      if (!schemaConfig) {
+        cb(new Error('Schema ' + docData.schemaName + ' not found'));
+      }
+
+      self.getChanges(id, 0, function(err, version, changes) {
+        if(err) return cb(err);
+        var docFactory = schemaConfig.documentFactory;
+        var doc = docFactory.createEmptyArticle();
+        _.each(changes, function(change) {
+          _.each(change.ops, function(op){
+            doc.data.apply(op);
+          });
+        });
+
+        var converter = new JSONConverter();
+        cb(null, converter.exportDocument(doc), version);
+      });
+    });
+  };
+
+  /*
+    Internal method to get a document
+  */
+  this._getDocument = function(id, cb) {
+    var query = this.db('documents')
+                .where('documentId', id);
+
+    query.asCallback(function(err, doc) {
+      if (err) return cb(err);
+      doc = doc[0]; // query result is an array
+      if (!doc) return cb(new Error('No document found for documentId ' + id));
+      cb(null, doc);
+    });
+  };
+
+  /*
+    Check if document exists
+  */
+
+  this._documentExists = function(id, cb) {
+    var query = this.db('documents')
+                .where('documentId', id)
+                .limit(1);
+    query.asCallback(function(err, doc) {
+      if (err) return cb(err);
+      if(doc.length === 0) return cb(null, false);
+      cb(null, true);
     });
   };
 
@@ -105,28 +223,6 @@ Backend.Prototype = function() {
                 .del();
     query.asCallback(function(err) {
       return cb(err);
-    });
-  };
-
-  /*
-    Get latest snapshot of document
-    @param {String} id document id
-
-    TODO: we should find a way to optimize this.
-  */
-  this.getDocument = function(id, cb) {
-    var self = this;
-    this.getChanges(id, 0, function(err, version, changes) {
-      if(err) return cb(err);
-      var doc = new self.model();
-      _.each(changes, function(change) {
-        _.each(change.ops, function(op){
-          doc.data.apply(op);
-        });
-      });
-
-      var converter = new JSONConverter();
-      cb(null, converter.exportDocument(doc), version);
     });
   };
 
@@ -375,8 +471,8 @@ Backend.Prototype = function() {
   */
   this.seed = function(seed, cb) {
     var self = this;
-
-    this.connect();
+    
+    var documents = {};
 
     function wipe(callback) {
       self.cleanDb.call(self, callback);
@@ -393,18 +489,18 @@ Backend.Prototype = function() {
     }
 
     function seedDocuments(callback) {
-      async.eachSeries(seed.documents, function(data, callback) {
-        self.addChange(data.id, data.document, 1, callback);
+      async.eachSeries(documents, function(data, callback) {
+        self.createDocument(data.id, data.schemaName, callback);
       }, callback);
     }
 
     function prepareSeed(callback) {
       each(seed.documents, function(document, id) {
         var result = {
-          document: document,
+          schemaName: document.schema.name,
           id: id,
         };
-        seed.documents[id] = result;
+        documents[id] = result;
       });
       callback(null);
     }
