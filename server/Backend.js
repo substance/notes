@@ -1,5 +1,9 @@
 "use strict";
 
+var fs = require('fs');
+var path = require('path');
+var each = require('lodash/each');
+var async = require('async');
 var connect = require('./connect');
 var localFiles = require('./localFiles');
 var EventEmitter = require('substance/util/EventEmitter');
@@ -330,24 +334,89 @@ Backend.Prototype = function() {
   };
 
   /*
+    Remove sqlite file for current environment
+  */
+  this.cleanDb = function(cb) {
+    var env = process.env.NODE_ENV || 'development';
+    var filePath = path.resolve('./db/'+env+'.hub.sqlite3');
+    fs.stat(filePath, function(err, stats) {
+      //if(err) return cb(new Error('Database is not exists'));
+      fs.unlink(filePath);
+      cb(null);
+    });
+  };
+
+  /*
+    Run migrations
+  */
+  this.runMigration = function(cb) {
+    this.db.migrate.latest({directory: './db/migrations'}).asCallback(function(err,rows){
+      if(err) return cb(err);
+      console.log('Database Migrations completed:');
+      console.log(rows);
+      cb(null);
+    });
+  };
+
+  /*
     Resets the database and loads a given seed object
 
     Be careful with running this in production
   */
   this.seed = function(seed, cb) {
-    // 1. Clear existing database
+    var self = this;
 
-    // TODO: maybe we can do this via API in a more elegant way
-    var env = process.env.NODE_ENV;
-    var execSync = require('child_process').execSync;
-    execSync('rm -rf ./db/'+env+'.sqlite3 && knex migrate:latest');
-    
-    // 2. Fill it with provided seed
-    // - seed.users has the users
-    // - seed.changesets has the changesets
+    function migrate(callback) {
+      self.runMigration.call(self, callback);
+    };
 
-    cb(null); // if succesful
-    // cb(err); if there was an error
+    function seedUsers(callback) {
+      async.eachSeries(seed.users, function(user, callback) {
+        self.createUser(user, function(err, session) {
+          if(err) return callback(err);
+          console.log(session);
+          console.log(
+            'User and session successfully seeded. Use following login key to access notepad:',
+            session.loginKey ,
+            '. Session Id: ',
+            session.session.sessionToken
+          );
+          callback(null);
+        });
+      }, callback);
+    };
+
+    function seedChanges(callback) {
+      async.eachSeries(seed.changesets, function(data, callback) {
+        self.addChange(data.id, data.changeset, 1, function(err, version) {
+          if(err) return callback(err);
+          console.log('Changes successfully seeded. Version of example document: ', version);
+          callback(null);
+        });
+      }, callback);
+    };
+
+    function prepareSeed(callback) {
+      each(seed.changesets, function(changeset, id) {
+        var result = {
+          changeset: changeset,
+          id: id,
+        }
+        seed.changesets[id] = result;
+      });
+      callback(null);
+    };
+
+    async.series([
+      self.cleanDb,
+      migrate,
+      prepareSeed,
+      seedUsers,
+      seedChanges
+      ], function(err) {
+      if (err) return cb(err);
+      cb(null);
+    });
   };
 
 };
