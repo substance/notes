@@ -340,8 +340,7 @@ Backend.Prototype = function() {
     var env = process.env.NODE_ENV || 'development';
     var filePath = path.resolve('./db/'+env+'.hub.sqlite3');
     fs.stat(filePath, function(err, stats) {
-      //if(err) return cb(new Error('Database is not exists'));
-      fs.unlink(filePath);
+      if(stats) fs.unlink(filePath);
       cb(null);
     });
   };
@@ -350,10 +349,8 @@ Backend.Prototype = function() {
     Run migrations
   */
   this.runMigration = function(cb) {
-    this.db.migrate.latest({directory: './db/migrations'}).asCallback(function(err,rows){
+    this.db.migrate.latest({directory: './db/migrations'}).asCallback(function(err){
       if(err) return cb(err);
-      console.log('Database Migrations completed:');
-      console.log(rows);
       cb(null);
     });
   };
@@ -368,44 +365,30 @@ Backend.Prototype = function() {
 
     function migrate(callback) {
       self.runMigration.call(self, callback);
-    };
+    }
 
     function seedUsers(callback) {
       async.eachSeries(seed.users, function(user, callback) {
-        self.createUser(user, function(err, session) {
-          if(err) return callback(err);
-          console.log(session);
-          console.log(
-            'User and session successfully seeded. Use following login key to access notepad:',
-            session.loginKey ,
-            '. Session Id: ',
-            session.session.sessionToken
-          );
-          callback(null);
-        });
+        self.createUser(user, callback);
       }, callback);
-    };
+    }
 
     function seedChanges(callback) {
       async.eachSeries(seed.changesets, function(data, callback) {
-        self.addChange(data.id, data.changeset, 1, function(err, version) {
-          if(err) return callback(err);
-          console.log('Changes successfully seeded. Version of example document: ', version);
-          callback(null);
-        });
+        self.addChange(data.id, data.changeset, 1, callback);
       }, callback);
-    };
+    }
 
     function prepareSeed(callback) {
       each(seed.changesets, function(changeset, id) {
         var result = {
           changeset: changeset,
           id: id,
-        }
+        };
         seed.changesets[id] = result;
       });
       callback(null);
-    };
+    }
 
     async.series([
       self.cleanDb,
