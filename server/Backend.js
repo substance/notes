@@ -45,26 +45,28 @@ Backend.Prototype = function() {
 
   /*
     Add a change to a document
-    @param {String} id document id
-    @param {Object} change JSON object
-    @param {String} userId user id
+
+    @param {Object} args arguments
+    @param {String} args.documentId document id
+    @param {Object} args.change JSON object
+    @param {String} args.userId user id
     @param {Function} cb callback
   */
-  this.addChange = function(id, change, userId, cb) {
+  this.addChange = function(args, cb) {
     var self = this;
     
-    this._documentExists(id, function(err) {
+    this._documentExists(args.documentId, function(err) {
       if (err) return cb(err);
-      self.getVersion(id, function(err, headVersion) {
+      self.getVersion(args.documentId, function(err, headVersion) {
         if (err) return cb(err);
         var version = headVersion + 1;
         var record = {
-          id: id + '/' + version,
-          document: id,
+          id: args.documentId + '/' + version,
+          document: args.documentId,
           pos: version,
-          data: JSON.stringify(change),
+          data: JSON.stringify(args.change),
           timestamp: Date.now(),
-          userId: userId
+          userId: args.userId
         };
 
         self.db.table('changes').insert(record)
@@ -78,27 +80,33 @@ Backend.Prototype = function() {
 
   /*
     Get changes from the DB
-    @param {String} id document id
-    @param {String} sinceVersion changes since version (0 = all changes, 1 all except first change)
+
+    @param {Object} args arguments
+    @param {String} args.documentId document id
+    @param {String} args.sinceVersion changes since version (0 = all changes, 1 all except first change)
     @param {Function} cb callback
   */
-  this.getChanges = function(id, sinceVersion, cb) {
+  this.getChanges = function(args, cb) {
     var self = this;
 
-    this._documentExists(id, function(err) {
+    this._documentExists(args.documentId, function(err) {
       if(err) return cb(err);
       
       var query = self.db('changes')
                   .select('data', 'id')
-                  .where('document', id)
-                  .andWhere('pos', '>=', sinceVersion)
+                  .where('document', args.documentId)
+                  .andWhere('pos', '>=', args.sinceVersion)
                   .orderBy('pos', 'asc');
 
       query.asCallback(function(err, changes) {
         if (err) return cb(err);
         changes = _.map(changes, function(c) {return JSON.parse(c.data); });
-        self.getVersion(id, function(err, headVersion) {
-          return cb(null, headVersion, changes);
+        self.getVersion(args.documentId, function(err, headVersion) {
+          var res = {
+            currentVersion: headVersion,
+            changes: changes
+          };
+          return cb(null, res);
         });
       });
     });
@@ -106,6 +114,7 @@ Backend.Prototype = function() {
 
   /*
     Remove all changes of a document
+
     @param {String} id document id
     @param {Function} cb callback
   */
@@ -113,6 +122,7 @@ Backend.Prototype = function() {
     var query = this.db('changes')
                 .where('document', id)
                 .del();
+
     query.asCallback(function(err) {
       return cb(err);
     });
@@ -127,25 +137,31 @@ Backend.Prototype = function() {
     Writes the initial change into the database.
     Returns the JSON serialized version, as a starting point
 
-    @param {String} documentId document id
-    @param {String} schemaName document schema name
-    @param {String} userId user id
+    @param {Object} args arguments
+    @param {String} args.documentId document id
+    @param {String} args.schemaName document schema name
+    @param {String} args.userId user id
     @param {Function} cb callback
   */
-  this.createDocument = function(documentId, schemaName, userId, cb) {
+  this.createDocument = function(args, cb) {
     var self = this;
 
-    var schemaConfig = this.config.schemas[schemaName];
+    var schemaConfig = this.config.schemas[args.schemaName];
     if (!schemaConfig) {
-      cb(new Error('Schema '+ schemaName +' not found'));
+      cb(new Error('Schema '+ args.schemaName +' not found'));
     }
     var docFactory = schemaConfig.documentFactory;
     var doc = docFactory.createArticle();
 
-    this._createDocument(documentId, schemaConfig, userId, function(err, docData){
+    this._createDocument(args.documentId, schemaConfig, args.userId, function(err, docData){
       if(err) return cb(err);
       var changeset = docFactory.createChangeset();
-      self.addChange(docData.documentId, changeset[0], docData.userId, function(err, version) {
+      var req = {
+        documentId: docData.documentId,
+        change: changeset[0],
+        userId: docData.userId
+      };
+      self.addChange(req, function(err, version) {
         if(err) return cb(err);
         var res = {
           data: doc,
@@ -191,25 +207,30 @@ Backend.Prototype = function() {
         cb(new Error('Schema ' + docData.schemaName + ' not found'));
       }
 
-      self.getChanges(id, 0, function(err, version, changes) {
+      var req = {
+        documentId: id,
+        sinceVersion: 0
+      };
+
+      self.getChanges(req, function(err, res) {
         if(err) return cb(err);
         
         var docFactory = schemaConfig.documentFactory;
         var doc = docFactory.createEmptyArticle();
         
-        _.each(changes, function(change) {
+        _.each(res.changes, function(change) {
           _.each(change.ops, function(op){
             doc.data.apply(op);
           });
         });
         
         var converter = new JSONConverter();
-        var res = {
+        var output = {
           data: converter.exportDocument(doc),
-          version: version,
+          version: res.currentVersion,
           userId: docData.userId
         };
-        cb(null, res);
+        cb(null, output);
       });
     });
   };
@@ -638,7 +659,12 @@ Backend.Prototype = function() {
 
     function seedDocuments(callback) {
       async.eachSeries(documents, function(data, callback) {
-        self.createDocument(data.id, data.schemaName, data.userId, callback);
+        var req = {
+          documentId: data.id,
+          schemaName: data.schemaName,
+          userId: data.userId
+        };
+        self.createDocument(req, callback);
       }, callback);
     }
 
