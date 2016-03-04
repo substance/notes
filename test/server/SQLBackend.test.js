@@ -38,4 +38,17 @@ QUnit.moduleDone(function() {
 // Runs the offical backend test suite
 runBackendTests(backend, QUnit);
 
+QUnit.test('Create two users with same emails', function(assert) {
+  var done = assert.async();
+  backend.createUser({'userId': '3', email: 'notes@substance.io'}, function(err, newUser) {
+    assert.notOk(err, 'Creating a new user should not error');
+    assert.equal(newUser.email, 'notes@substance.io', 'New user should have email notes@substance.io');
+
+    backend.createUser({'userId': '4', email: 'notes@substance.io'}, function(err, newUser) {
+      assert.ok(err, 'Creating a new user with same email shold return error');
+      done();
+    });
+  });
+});
+
 // TODO: Add notes app specific tests (e.g. authentication related etc)

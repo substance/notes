@@ -378,6 +378,7 @@ Backend.Prototype = function() {
     var loginKey = userData.loginKey || uuid();
     var user = {
       name: userData.name,
+      email: userData.email,
       createdAt: Date.now(),
       loginKey: loginKey
     };
