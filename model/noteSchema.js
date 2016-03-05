@@ -30,6 +30,22 @@ Todo.static.defineSchema({
 });
 
 /**
+  Comment item for inline commenting
+*/
+
+function Comment() {
+  Comment.super.apply(this, arguments);
+}
+
+TextBlock.extend(Comment);
+Comment.static.name = "comment";
+
+Comment.static.defineSchema({
+  "author": { type: "string", default: "" },
+  "date": { type: "string", default: new Date().toISOString() }
+});
+
+/**
   Schema instance
 */
 var schema = new DocumentSchema('substance-note', '1.0.0');
@@ -46,6 +62,7 @@ schema.addNodes([
   require('substance/packages/emphasis/Emphasis'),
   require('substance/packages/strong/Strong'),
   require('substance/packages/link/Link'),
+  Comment,
   Todo,
   Mark
 ]);
