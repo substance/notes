@@ -1,7 +1,7 @@
 var async = require('async');
 var knexConfig = require('./knexfile');
-var Backend = require('./hub/Backend');
-var exampleNoteChangeset = require('./note/exampleNoteChangeset')();
+var Backend = require('./server/Backend');
+var exampleNoteChangeset = require('./model/exampleNoteChangeset')();
 var backend = new Backend({knexConfig: knexConfig});
 var change = exampleNoteChangeset[0].toJSON();
 
