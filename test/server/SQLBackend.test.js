@@ -15,7 +15,8 @@ var backend = new Backend({
       version: '1.0.0',
       documentFactory: twoParagraphs
     }
-  }
+  },
+  snapshotFrequency: 10
 });
 
 QUnit.module('server/SQLBackend', {
