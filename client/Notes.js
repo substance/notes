@@ -36,6 +36,7 @@ function Notes() {
   // this.state, which is used for routing
   this._state = {
     initialized: false,
+    error: null,
     authenticated: false
   };
 
@@ -108,6 +109,7 @@ Notes.Prototype = function() {
     var storedToken = this._getSessionToken();
     var loginData;
 
+    debugger;
     if (loginKey) {
       loginData = {loginKey: loginKey};
     } else if (storedToken) {

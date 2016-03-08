@@ -4,26 +4,42 @@ var fs = require('fs');
 var path = require('path');
 var each = require('lodash/each');
 var async = require('async');
-var connect = require('./connect');
-var localFiles = require('./localFiles');
+
 var EventEmitter = require('substance/util/EventEmitter');
 var JSONConverter = require('substance/model/JSONConverter');
 var _ = require('substance/util/helpers');
-var uuid = require('substance/util/uuid');
 var knexConfig = require('../knexfile');
 
 
+// Please integrate here directly
+
+// var Knex = require('knex');
+// var environment = process.env.NODE_ENV || 'development';
+
+// var connect = function(knexConfig) {
+//   var config = knexConfig[environment];
+//   if (!config) {
+//     throw new Error('Could not find config for environment', environment);
+//   }
+//   return new Knex(config);
+// };
+
+// module.exports = connect;
+
+
+
+
 /*
-  Implements example of Substance Backend API.
+  Implements the Substance DocumentStore API.
 */
-function Backend(config) {
+function DocumentStore(config) {
   this.config = config;
-  this.storage = localFiles;
+  
   this.connect();
-  Backend.super.apply(this);
+  DocumentStore.super.apply(this);
 }
 
-Backend.Prototype = function() {
+DocumentStore.Prototype = function() {
 
   /*
     Connect to the db
@@ -38,7 +54,6 @@ Backend.Prototype = function() {
   this.shutdown = function(cb) {
     this.db.destroy(cb);
   };
-
 
   // Changes API
   // -----------
@@ -422,264 +437,6 @@ Backend.Prototype = function() {
     query.asCallback(cb);
   };
 
-  // Users API
-  // ---------
-
-  /*
-    Create a new user record (aka signup)
-
-    @param {Object} userData JSON object
-    @param {Function} cb callback
-  */
-  this.createUser = function(userData, cb) {
-    var self = this;
-    
-    this._userExists(userData.userId, function(err, exists) {
-      if(err) return cb(err);
-      if(exists) return cb(new Error('User already exists'));
-      self._createUser(userData, cb);
-    });
-  };
-
-  /*
-    Get user record for a given userId
-
-    @param {String} userId user id
-    @param {Function} cb callback
-  */
-  this.getUser = function(userId, cb) {
-    var query = this.db('users')
-                .where('userId', userId);
-
-    query.asCallback(function(err, user) {
-      if (err) return cb(err);
-      if (user.length === 0) return cb(new Error('No user found for userId ' + userId));
-      user = user[0];
-      user.userId = user.userId.toString();
-      cb(null, user);
-    });
-  };
-
-  // Users API helpers
-  // -----------------
-
-  /*
-    Internal method to create a user entry
-  */
-  this._createUser = function(userData, cb) {
-    // at some point we should make this more secure
-    var loginKey = userData.loginKey || uuid();
-    var user = {
-      name: userData.name,
-      email: userData.email,
-      createdAt: Date.now(),
-      loginKey: loginKey
-    };
-
-    this.db.table('users').insert(user)
-      .asCallback(function(err, userIds) {
-        if (err) return cb(err);
-        user.userId = userIds[0];
-        cb(null, user);
-      });
-  };
-
-  /*
-    Check if user exists
-  */
-  this._userExists = function(id, cb) {
-    var query = this.db('users')
-                .where('userId', id)
-                .limit(1);
-    query.asCallback(function(err, user) {
-      if (err) return cb(err);
-      if(user.length === 0) return cb(null, false);
-      cb(null, true);
-    });
-  };
-
-  /*
-    Get user record for a given loginKey
-  */
-  this._getUserByLoginKey = function(loginKey, cb) {
-    var query = this.db('users')
-                .where('loginKey', loginKey);
-
-    query.asCallback(function(err, user) {
-      if (err) return cb(err);
-      user = user[0]; // query result is an array
-      if (!user) return cb(new Error('Your provided login key was invalid.'));
-      cb(null, user);
-    });
-  };
-
-  // Session API
-  // -----------
-
-  /*
-    Create a session record for a given user
-
-    @param {String} userId user id
-    @param {Function} cb callback
-  */
-  this.createSession = function(userId, cb) {
-    var newSession = {
-      sessionToken: uuid(),
-      timestamp: Date.now(),
-      userId: userId
-    };
-
-    this._createSession(newSession, cb);
-  };
-
-  /*
-    Get session entry based on a session token
-
-    @param {String} sessionToken session token
-    @param {Function} cb callback
-  */
-  this.getSession = function(sessionToken, cb) {
-    var self = this;
-
-    this._getSession(sessionToken, function(err, session) {
-      if (err) return cb(err);
-      self._getRichSession(session, cb);
-    });
-  };
-
-  /*
-    Remove session entry based with a given session token
-
-    @param {String} sessionToken session token
-    @param {Function} cb callback
-  */
-  this.deleteSession = function(sessionToken, cb) {
-    var self = this;
-
-    this._sessionExists(sessionToken, function(err) {
-      if (err) return cb(err);
-      var query = self.db('sessions')
-            .where('sessionToken', sessionToken)
-            .del();
-
-      query.asCallback(cb);
-    });
-  };
-
-  /*
-    Checks given login data and creates an entry in the session store for valid logins
-    Returns a an object with a user record and a session token
-
-    @param {Object} loginData JSON object
-    @param {Function} cb callback
-  */
-  this.authenticate = function(loginData, cb) {
-    if (loginData.sessionToken) {
-      this._authenticateWithToken(loginData.sessionToken, cb);
-    } else {
-      this._authenticateWithLoginKey(loginData.loginKey, cb);
-    }
-  };
-
-  // Session API helpers
-  // -------------------
-
-  /*
-    Internal method to create a session record
-  */
-  this._createSession = function(session, cb) {
-    this.db.table('sessions').insert(session)
-      .asCallback(function(err) {
-        if (err) return cb(err);
-        cb(null, session);
-      });
-  };
-
-  /*
-    Refreshes session for an authenticated user
-
-    Returns a rich session including a user object
-  */
-  this._createSessionFromOldSession = function(oldSession, cb) {
-    var self = this;
-    this.deleteSession(oldSession.sessionToken, function(err) {
-      if (err) return cb(err);
-      self.createSession(oldSession.userId, function(err, session) {
-        if (err) return cb(err);
-        self._getRichSession(session, cb);
-      });
-    });
-  };
-
-  /*
-    Internal method to get a session record
-  */
-  this._getSession = function(sessionToken, cb) {
-    var query = this.db('sessions')
-                .where('sessionToken', sessionToken);
-
-    query.asCallback(function(err, session) {
-      if (err) return cb(err);
-      session = session[0];
-      if (!session) return cb(new Error('No session found for that token'));
-      cb(null, session);
-    });
-  };
-
-  /*
-    Just turns the session db record into an expanded version that contains
-    the complete user record.
-  */
-  this._getRichSession = function(session, cb) {
-    this.getUser(session.userId, function(err, user) {
-      if (err) return cb(err);
-      session.user = user;
-      cb(null, session);
-    });
-  };
-
-  /*
-    Check if session exists
-  */
-  this._sessionExists = function(sessionToken, cb) {
-    var query = this.db('sessions')
-                .where('sessionToken', sessionToken)
-                .limit(1);
-    
-    query.asCallback(function(err, session) {
-      if (err) return cb(err);
-      if(session.length === 0) return cb(new Error('Session does not exist'));
-      cb(null);
-    });
-  };
-
-  /*
-    Creates a new user session based on an existing sessionToken
-  */
-  this._authenticateWithToken = function(sessionToken, cb) {
-    var self = this;
-    this._getSession(sessionToken, function(err, session) {
-      if (err) return cb(new Error('No session found for '+sessionToken));
-      // Delete existing session and create a new one
-      self._createSessionFromOldSession(session, cb);
-    });
-  };
-
-  /*
-    Authenicate based on login key
-  */
-  this._authenticateWithLoginKey = function(loginKey, cb) {
-    var self = this;
-    this._getUserByLoginKey(loginKey, function(err, user) {
-      if (err) return cb(err);
-      self.createSession(user.userId, function(err, session) {
-        if (err) return cb(err);
-        session.user = user;
-        cb(null, session);
-      });
-    });
-  };
-
   // Seed API
   // --------
 
@@ -785,26 +542,8 @@ Backend.Prototype = function() {
       cb(null);
     });
   };
-
-  // Storage helpers
-  // ---------------
-
-  /*
-    Returns middleware for file uploading
-  */
-  this.getFileUploader = function(fieldname) {
-    return this.storage.uploader.single(fieldname);
-  };
-
-  /*
-    Get name of stored file
-  */
-  this.getFileName = function(req) {
-    return req.file.filename;
-  };
-
 };
 
-EventEmitter.extend(Backend);
+EventEmitter.extend(DocumentStore);
 
-module.exports = Backend;
+module.exports = DocumentStore;

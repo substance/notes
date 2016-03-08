@@ -2,8 +2,12 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var server = require('substance/util/server');
-var CollabHub = require('substance/collab/CollabHub');
+var exampleNote = require('./model/exampleNote');
+var CollabServer = require('substance/collab/CollabServer');
 var Backend = require('./server/Backend');
+var defaultSeed = require('./data/defaultSeed');
+var MemoryBackend = require('substance/collab/MemoryBackend');
+
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
@@ -12,17 +16,38 @@ var knexConfig = require('./knexfile');
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
+var backend;
 
-var backend = new Backend({
-  knexConfig: knexConfig,
-  ArticleClass: require('./model/Note.js')
-});
-
-// If seed option provided we should remove db, run migration and seed script
-if(process.argv[2] == 'seed') {
-	var execSync = require('child_process').execSync;
-	execSync("node seed");
-  console.log('Seeding the db...');
+// Use the in memory backend for more lightweight development
+if (process.argv[2] === 'memory') {
+  backend = new MemoryBackend({
+    schemas: {
+      'substance-note': {
+        name: 'substance-note',
+        version: '1.0.0',
+        documentFactory: exampleNote
+      }
+    }
+  });
+  // Provide see data
+  backend.seed(defaultSeed);
+} else {
+  // If seed option provided we should remove db, run migration and seed script
+  if(process.argv[2] == 'seed') {
+    var execSync = require('child_process').execSync;
+    execSync("node seed");
+    console.log('Seeding the db...');
+  }
+  // Instantiate SQLBackend
+  backend = new Backend({
+    schemas: {
+      'substance-note': {
+        name: 'substance-note',
+        version: '1.0.0',
+        documentFactory: exampleNote
+      }
+    }
+  });
 }
 
 /*
@@ -55,14 +80,53 @@ app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome
 
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
-var hub = new CollabHub(wss, backend);
 
-// Adds http routes that CollabHub implements
-hub.addRoutes(app);
+// Set up collab server
+// ----------------
+
+var collabServer = new CollabServer({backend: backend});
+collabServer.start(wss);
+
+var userServer = new UserServer({
+  path: '/users',
+  userStore: userStore,
+  sessionStore: sessionStore
+});
+
+userServer.start(app);
+
+// Substance Notes API
+// ----------------
+// 
+// We just moved that out of the Collab hub as it's app specific code
+
+
+
+
+
+// Should go into DocumentServer module
+// ----------------
+
+app.get('/hub/api/documents/:id', function(req, res, next) {
+
+  documentStore.getSnapshot(req.params.id, function(err, doc, version) {
+    if(err) return next(err);
+    res.json({
+      document: doc,
+      version: version
+    });
+  });
+});
+
+// app.post('/hub/api/upload', backend.getFileUploader('files'), function(req, res) {
+//   res.json({name: backend.getFileName(req)});
+// });
 
 // Error handling
 // We send JSON to the client so they can display messages in the UI.
+
 app.use(function(err, req, res, next) {
+  console.log('Server error: ', err);
   res.status(500).json({errorMessage: err.message});
 });
 
