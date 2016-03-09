@@ -1,7 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var uuid = require('../util/uuid');
+var uuid = require('substance/util/uuid');
 
 /*
   A simple SQL Session Store implementation
