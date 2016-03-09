@@ -49,8 +49,31 @@ UserStore.Prototype = function() {
       });
   };
 
-  this.updateUser = function(userId, props) {
+  /*
+    Update a user record with given userId
 
+    @param {String} userId user id
+    @param {Object} props properties to update
+  */
+  this.updateUser = function(userId, props) {
+    var query = this.db('users')
+                .where('userId', userId)
+                .update(props);
+
+    return query;
+  };
+
+  /*
+    Remove a user from the db
+
+    @param {String} userId user id
+  */
+  this.deleteUser = function(userId) {
+    var query = this.db('users')
+                .where('userId', userId)
+                .del();
+    
+    return query;
   };
 
   /*

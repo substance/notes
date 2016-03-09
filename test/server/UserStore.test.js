@@ -30,17 +30,10 @@ QUnit.moduleDone(function() {
 });
 
 QUnit.test('Get user', function(assert) {
-  // Looks like you jQunit supports returning promises then the test
-  // would be as simple as this:
-  // See: https://api.qunitjs.com/QUnit.test/
-  // @Daniel pls test if that's true
-
-  // assert.expect('ok');
   return userStore.getUser('1')
     .then(function(user) {
       assert.equal(user.userId, '1');
     });
-  //assert.ok(true, 'ddd');
 });
 
 QUnit.test('Get user that does not exist', function(assert) {
@@ -53,22 +46,68 @@ QUnit.test('Get user that does not exist', function(assert) {
 });
 
 QUnit.test('Create a new user', function(assert) {
-  return userStore.createUser({'userId': '3'})
+  return userStore.createUser({'email': 'test@subtsnce.io'})
     .then(function(user) {
-      assert.equal(user.userId, '3', 'New user should have userId 3');
-      return userStore.getUser('3');
+      assert.equal(user.userId, '2', 'New user should have userId 2');
+      return userStore.getUser('2');
     }).then(function(user) {
-      assert.equal(user.userId, '3', 'userId should be "3"');
+      assert.equal(user.email, 'test@subtsnce.io', 'email should be "test@subtsnce.io"');
     }).catch(function(error) {
       assert.notOk(error, 'Creating and getting a new user should not error');
     });
 });
 
-// QUnit.test('Create a new user that already exists', function(assert) {
-//   var done = assert.async();
-//   backend.createUser({'userId': '1'}, function(err, newUser) {
-//     assert.ok(err, 'Creating a new user should error');
-//     assert.isNullOrUndefined(newUser, 'newUser should be undefined');
-//     done();
-//   });
-// });
+QUnit.test('Create a new user that already exists', function(assert) {
+  return userStore.createUser({'userId': '1'})
+    .then(function(user) {
+      assert.isNullOrUndefined(user, 'user should be undefined');
+    }).catch(function(error) {
+      assert.ok(error, 'Creating a new user should error');
+    });
+});
+
+QUnit.test('Create a new user with same email', function(assert) {
+  return userStore.createUser({'email': 'test@subtsnce.io'})
+    .then(function(user) {
+      assert.equal(user.userId, '2', 'New user should have userId 2');
+      return userStore.createUser({'email': 'test@subtsnce.io'});
+    }).then(function(user) {
+      assert.isNullOrUndefined(user, 'user should be undefined');
+    }).catch(function(error) {
+      assert.ok(error, 'Creating a new user with existing email should error');
+    });
+});
+
+QUnit.test('Update a user record', function(assert) {
+  return userStore.updateUser('1', {'name': 'voodoo'})
+    .then(function() {
+      return userStore.getUser('1');
+    }).then(function(user) {
+      assert.equal(user.name, 'voodoo', 'user name should be "voodoo"');
+    }).catch(function(error) {
+      assert.notOk(error, 'Updating a user should not give an error');
+    });
+});
+
+QUnit.test('Update an email of user record', function(assert) {
+  return userStore.createUser({'email': 'test@subtsnce.io'})
+    .then(function(user) {
+      assert.equal(user.userId, '2', 'New user should have userId 2');
+      return userStore.updateUser('1', {'email': 'test@subtsnce.io'});
+    }).then(function(user) {
+      assert.isNullOrUndefined(user, 'user should be undefined');
+    }).catch(function(error) {
+      assert.ok(error, 'Updating a user with existing email should give an error');
+    });
+});
+
+QUnit.test('Remove a user record', function(assert) {
+  return userStore.deleteUser('1')
+    .then(function() {
+      return userStore.getUser('1')
+    }).then(function(user) {
+      assert.isNullOrUndefined(user, 'user should be undefined');
+    }).catch(function(error) {
+      assert.ok(error, 'Getting a removed user should give an error');
+    });
+});
