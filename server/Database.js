@@ -22,14 +22,14 @@ Database.Prototype = function() {
     if (!this.config) {
       throw new Error('Could not find config for environment', env);
     }
-    this.db = new Knex(this.config);
+    this.connection = new Knex(this.config);
   };
 
   /*
     Disconnect from the db and shut down
   */
   this.shutdown = function(cb) {
-    this.db.destroy(cb);
+    this.connection.destroy(cb);
   };
 
 
@@ -41,7 +41,7 @@ Database.Prototype = function() {
   this.reset = function() {
     var self = this;
 
-    return self.db.schema
+    return self.connection.schema
       .dropTableIfExists('changes')
       .dropTableIfExists('documents')
       .dropTableIfExists('sessions')
@@ -50,7 +50,7 @@ Database.Prototype = function() {
       // to rerun the same migration again
       .dropTableIfExists('knex_migrations')
       .then(function() {
-        return self.db.migrate.latest(self.config);
+        return self.connection.migrate.latest(self.config);
       }).catch(function(error) {
         console.error(error);
       });
