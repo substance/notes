@@ -1,6 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
+var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
 
 /*
@@ -79,6 +80,20 @@ SessionStore.Prototype = function() {
       if(session.length === 0) return false;
       return session;
     });
+  };
+
+  /*
+    Resets the database and loads a given seed object
+
+    Be careful with running this in production
+
+    @param {Object} seed JSON object
+  */
+  this.seed = function(seed) {
+    var self = this;
+    var actions = map(seed, self.createSession.bind(self));
+
+    return Promise.all(actions);
   };
 };
 
