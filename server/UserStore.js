@@ -81,7 +81,7 @@ UserStore.Prototype = function() {
 
     @param {String} loginKey login key
   */
-  this._getUserByLoginKey = function(loginKey) {
+  this.getUserByLoginKey = function(loginKey) {
     var query = this.db('users')
                 .where('loginKey', loginKey);
 
@@ -89,6 +89,25 @@ UserStore.Prototype = function() {
       .then(function(user) {
         if (user.length === 0) {
           throw new Error('Provided login key was invalid.');
+        }
+        user = user[0];
+        return user;
+      });
+  };
+
+  /*
+    Get user record for a given email
+
+    @param {String} email user email
+  */
+  this.getUserByEmail = function(email) {
+    var query = this.db('users')
+                .where('email', email);
+
+    return query
+      .then(function(user) {
+        if (user.length === 0) {
+          throw new Error('There is no user with email ' + email);
         }
         user = user[0];
         return user;
