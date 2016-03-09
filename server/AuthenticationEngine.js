@@ -1,6 +1,6 @@
 'use strict';
 
-var path = require('path');
+var uuid = require('substance/util/uuid');
 
 /*
   Implements authentication logic
@@ -18,11 +18,15 @@ AuthenticationEngine.Prototype = function() {
   /*
     Generate new loginKey for user and send email with a link
   */
-  this.requestLoginUrl = function(args) {
-
-    // TODO: Daniel, implement,
-    // if no user exists we create the user
-    // how can we test this?
+  this.requestLoginLink = function(args) {
+    var userStore = this.userStore;
+    userStore.getUserbyEmail(args.email)
+      .catch(function(err) {
+        // User does not exist, we create a new one
+        return userStore.createUser({email: args.email});
+      }).then(function(user) {
+        return this._sendLoginLink(user);
+      });
   };
 
   /*
@@ -35,6 +39,28 @@ AuthenticationEngine.Prototype = function() {
       return this._authenticateWithToken(loginData.sessionToken);
     }
   };
+
+  /*
+    Generates a new login key for a given email
+  */
+  this._updateLoginKey = function(user) {
+    var userStore = this.userStore;
+    return userStore.getUserbyEmail(user.email).then(function(user) {
+      var newLoginKey = uuid();
+      return userStore.updateUser(user.userId, {loginKey: newLoginKey});
+    }).then(function(updatedUser) {
+  };
+
+  /*
+    Send a login link via email
+  */
+  this._sendLoginLink = function(user) {
+    return new Promise(function(resolve, reject) {
+      // TODO: send email instead
+      console.log('YOUR NEW LOGIN KEY IS ', user.loginKey);
+      resolve();
+    });
+  }
 
   /*
     Creates a new session based on an existing sessionToken
