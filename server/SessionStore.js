@@ -32,7 +32,7 @@ SessionStore.Prototype = function() {
 
     @param {String} sessionToken session token
   */
-  this.getSession = function(sessionToken, cb) {
+  this.getSession = function(sessionToken) {
     var query = this.db('sessions')
                 .where('sessionToken', sessionToken);
 
@@ -59,18 +59,18 @@ SessionStore.Prototype = function() {
       .then(function(session){
         if(!session) throw new Error('Session does not exist');
         deletedSession = session;
-        return query = self.db('sessions')
+        return self.db('sessions')
             .where('sessionToken', sessionToken)
             .del();
       }).then(function(){
-        return deletedSession
+        return deletedSession;
       });
   };
 
   /*
     Check if session exists
   */
-  this._sessionExists = function(sessionToken, cb) {
+  this._sessionExists = function(sessionToken) {
     var query = this.db('sessions')
                 .where('sessionToken', sessionToken)
                 .limit(1);
