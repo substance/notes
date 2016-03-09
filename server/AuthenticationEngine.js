@@ -22,7 +22,7 @@ AuthenticationEngine.Prototype = function() {
   this.requestLoginLink = function(args) {
     var userStore = this.userStore;
     userStore.getUserbyEmail(args.email)
-      .then(this._updateLoginKey)
+      .then(this._updateLoginKey.bind(this))
       .catch(function() {
         // User does not exist, we create a new one
         return userStore.createUser({email: args.email});
@@ -41,6 +41,12 @@ AuthenticationEngine.Prototype = function() {
     } else {
       return this._authenticateWithToken(loginData.sessionToken);
     }
+  };
+
+  this.getSession = function(sessionToken) {
+    return this.sessionStore.getSession(sessionToken).then(
+      this._enrichSession.bind(this)
+    );
   };
 
   /*

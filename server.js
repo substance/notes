@@ -22,7 +22,7 @@ var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 var db = new Database();
 
 // If seed option provided we should remove db, run migration and seed script
-if(process.argv[2] == 'seed') {
+if (process.argv[2] == 'seed') {
   var execSync = require('child_process').execSync;
   execSync("node seed");
   console.log('Seeding the db...');
@@ -86,7 +86,34 @@ var wss = new WebSocketServer({ server: httpServer });
 // Set up collab server
 // ----------------
 
-var collabServer = new CollabServer({documentStore: documentStore});
+var collabServer = new CollabServer({
+  documentStore: documentStore,
+
+  /*
+    Checks for authentication based on message.sessionToken
+  */
+  authenticate: function(message, cb) {
+    var sessionToken = message.sessionToken;
+    authenticationEngine.getSession(sessionToken).then(function(session) {
+      cb(null, session);
+    }).catch(function(err) {
+      cb(err);
+    });
+  },
+
+  /*
+    Add some user info to the collaborator object (e.g. user.name)
+  */
+  enhanceCollaborator: function(message, cb) {
+    var sessionToken = message.sessionToken;
+    authenticationEngine.getSession(sessionToken).then(function(session) {
+      cb(null, {user: {name: session.user.name}});
+    }).catch(function(err) {
+      // no user info found for this collaborator
+      cb(null, {});
+    });
+  }
+});
 collabServer.bind(wss);
 
 var authenticationServer = new AuthenticationServer({
@@ -115,6 +142,9 @@ app.get('/hub/api/documents/:id', function(req, res, next) {
     });
   });
 });
+
+// Should go into FileServer module
+// ----------------
 
 // app.post('/hub/api/upload', backend.getFileUploader('files'), function(req, res) {
 //   res.json({name: backend.getFileName(req)});
