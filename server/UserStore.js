@@ -17,7 +17,6 @@ UserStore.Prototype = function() {
     Create a new user record (aka signup)
 
     @param {Object} userData JSON object
-    @param {Function} cb callback
   */
   this.createUser = function(userData) {
     var self = this;
@@ -29,18 +28,12 @@ UserStore.Prototype = function() {
       }).catch(function(error) {
         console.error(error);
       });
-    // return this._userExists(userData.userId, function(err, exists) {
-    //   if(err) return cb(err);
-    //   if(exists) return cb(new Error('User already exists'));
-    //   self._createUser(userData, cb);
-    // });
   };
 
   /*
     Get user record for a given userId
 
     @param {String} userId user id
-    @param {Function} cb callback
   */
   this.getUser = function(userId) {
     var query = this.db('users')
@@ -65,17 +58,23 @@ UserStore.Prototype = function() {
 
   /*
     Get user record for a given loginKey
+
+    @param {String} loginKey login key
   */
-  this._getUserByLoginKey = function(loginKey, cb) {
+  this._getUserByLoginKey = function(loginKey) {
     var query = this.db('users')
                 .where('loginKey', loginKey);
 
-    query.asCallback(function(err, user) {
-      if (err) return cb(err);
-      user = user[0]; // query result is an array
-      if (!user) return cb(new Error('Your provided login key was invalid.'));
-      cb(null, user);
-    });
+    return query
+      .then(function(user) {
+        if (user.length === 0) {
+          throw new Error('Provided login key was invalid.');
+        }
+        user = user[0];
+        return user;
+      }).catch(function(error) {
+        console.error(error);
+      });
   };
 
   /*
@@ -112,12 +111,6 @@ UserStore.Prototype = function() {
       if(user.length === 0) return false;
       return true;
     });
-
-    // query.asCallback(function(err, user) {
-    //   if (err) return cb(err);
-    //    return cb(null, false);
-    //   cb(null, true);
-    // });
   };
 
   /*
@@ -126,7 +119,6 @@ UserStore.Prototype = function() {
     Be careful with running this in production
 
     @param {Object} seed JSON object
-    @param {Function} cb callback
   */
   this.seed = function(seed) {
     var self = this;

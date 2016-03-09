@@ -43,14 +43,14 @@ QUnit.test('Get user', function(assert) {
   //assert.ok(true, 'ddd');
 });
 
-// QUnit.test('Get user that does not exist', function(assert) {
-//   var done = assert.async();
-//   backend.getUser('userx', function(err, user) {
-//     assert.ok(err, 'Getting a user that does not exist should error');
-//     assert.isNullOrUndefined(user, 'user should be undefined');
-//     done();
-//   });
-// });
+QUnit.test('Get user that does not exist', function(assert) {
+  return userStore.getUser('userx')
+    .then(function(user) {
+      assert.isNullOrUndefined(user, 'user should be undefined');
+    }).catch(function(error) {
+      assert.ok(error, 'Getting a user that does not exist should error');
+    });
+});
 
 // QUnit.test('Create a new user', function(assert) {
 //   var done = assert.async();
