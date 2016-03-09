@@ -109,7 +109,6 @@ Notes.Prototype = function() {
     var storedToken = this._getSessionToken();
     var loginData;
 
-    debugger;
     if (loginKey) {
       loginData = {loginKey: loginKey};
     } else if (storedToken) {
