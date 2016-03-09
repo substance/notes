@@ -7,8 +7,7 @@ var uuid = require('../util/uuid');
   A simple SQL Session Store implementation
 */
 function SessionStore(config) {
-  SessionStore.super.apply(this, arguments);
-  this.config = config;
+  this.db = config.db.connection;
 }
 
 SessionStore.Prototype = function() {
@@ -17,30 +16,29 @@ SessionStore.Prototype = function() {
     Create a session record for a given user
 
     @param {String} userId user id
-    @param {Function} cb callback
   */
-  this.createSession = function(userId, cb) {
+  this.createSession = function(userId) {
     var newSession = {
       sessionToken: uuid(),
       timestamp: Date.now(),
       userId: userId
     };
 
-    this._createSession(newSession, cb);
+    return this.db.table('sessions').insert(newSession);
   };
 
   /*
     Get session entry based on a session token
 
     @param {String} sessionToken session token
-    @param {Function} cb callback
   */
   this.getSession = function(sessionToken, cb) {
     var self = this;
 
-    this._getSession(sessionToken, function(err, session) {
-      if (err) return cb(err);
-      self._getRichSession(session, cb);
+    return this._getSession(sessionToken)
+      .then(function(session) {
+        return self._getRichSession(session);
+      });
     });
   };
 
@@ -69,12 +67,14 @@ SessionStore.Prototype = function() {
     var query = this.db('sessions')
                 .where('sessionToken', sessionToken);
 
-    query.asCallback(function(err, session) {
-      if (err) return cb(err);
-      session = session[0];
-      if (!session) return cb(new Error('No session found for that token'));
-      cb(null, session);
-    });
+    return query
+      .then(function(session) {
+        if (session.length === 0) {
+          throw new Error('No session found for that token');
+        }
+        session = session[0];
+        return session;
+      });
   };
 
   /*

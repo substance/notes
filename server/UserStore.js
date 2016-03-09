@@ -9,7 +9,7 @@ var uuid = require('substance/util/uuid');
   testing.
 */
 function UserStore(config) {
-  this.db = config.db;
+  this.db = config.db.connection;
 }
 
 UserStore.Prototype = function() {
