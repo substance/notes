@@ -3,7 +3,7 @@
 require('../qunit_extensions');
 
 var Database = require('../../server/Database');
-var db = new Database();
+var db;
 
 var UserStore = require('../../server/UserStore');
 var userStore;
@@ -23,6 +23,10 @@ QUnit.module('server/UserStore', {
         })
       });
   }
+});
+
+QUnit.moduleStart(function() {
+  db = new Database();
 });
 
 QUnit.moduleDone(function() {

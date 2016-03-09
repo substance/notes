@@ -56,7 +56,7 @@ SessionStore.Prototype = function() {
     var self = this;
     var deletedSession;
 
-    return this._sessionExists
+    return this._sessionExists(sessionToken)
       .then(function(session){
         if(!session) throw new Error('Session does not exist');
         deletedSession = session;
@@ -78,8 +78,22 @@ SessionStore.Prototype = function() {
     
     return query.then(function(session) {
       if(session.length === 0) return false;
+      session = session[0];
       return session;
     });
+  };
+
+  /*
+    Create a session record for a seed data
+  */
+  this.createSeedSession = function(session) {
+    var newSession = {
+      sessionToken: session.sessionToken || uuid(),
+      timestamp: Date.now(),
+      userId: session.userId
+    };
+
+    return this.db.table('sessions').insert(newSession);
   };
 
   /*
@@ -91,7 +105,7 @@ SessionStore.Prototype = function() {
   */
   this.seed = function(seed) {
     var self = this;
-    var actions = map(seed, self.createSession.bind(self));
+    var actions = map(seed, self.createSeedSession.bind(self));
 
     return Promise.all(actions);
   };

@@ -28,8 +28,8 @@ Database.Prototype = function() {
   /*
     Disconnect from the db and shut down
   */
-  this.shutdown = function(cb) {
-    this.connection.destroy(cb);
+  this.shutdown = function() {
+    this.connection.destroy();
   };
 
 
