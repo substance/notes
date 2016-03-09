@@ -4,51 +4,53 @@ var app = express();
 var server = require('substance/util/server');
 var exampleNote = require('./model/exampleNote');
 var CollabServer = require('substance/collab/CollabServer');
-var Backend = require('./server/Backend');
-var defaultSeed = require('./data/defaultSeed');
-var MemoryBackend = require('substance/collab/MemoryBackend');
+var DocumentStore = require('./server/DocumentStore');
+var UserStore = require('./server/UserStore');
+var SessionStore = require('./server/SessionStore');
+
+var AuthenticationServer = require('./server/AuthenticationServer');
+var AuthenticationEngine = require('./server/AuthenticationEngine');
+var Database = require('./server/Database');
 
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
-var knexConfig = require('./knexfile');
 
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
-var backend;
+var db = new Database();
 
-// Use the in memory backend for more lightweight development
-if (process.argv[2] === 'memory') {
-  backend = new MemoryBackend({
-    schemas: {
-      'substance-note': {
-        name: 'substance-note',
-        version: '1.0.0',
-        documentFactory: exampleNote
-      }
-    }
-  });
-  // Provide see data
-  backend.seed(defaultSeed);
-} else {
-  // If seed option provided we should remove db, run migration and seed script
-  if(process.argv[2] == 'seed') {
-    var execSync = require('child_process').execSync;
-    execSync("node seed");
-    console.log('Seeding the db...');
-  }
-  // Instantiate SQLBackend
-  backend = new Backend({
-    schemas: {
-      'substance-note': {
-        name: 'substance-note',
-        version: '1.0.0',
-        documentFactory: exampleNote
-      }
-    }
-  });
+// If seed option provided we should remove db, run migration and seed script
+if(process.argv[2] == 'seed') {
+  var execSync = require('child_process').execSync;
+  execSync("node seed");
+  console.log('Seeding the db...');
 }
+
+// Set up stores
+// -------------------------------
+
+var documentStore = new DocumentStore({
+  db: db,
+  schemas: {
+    'substance-note': {
+      name: 'substance-note',
+      version: '1.0.0',
+      documentFactory: exampleNote
+    }
+  }
+});
+
+var userStore = new UserStore({ db: db });
+var sessionStore = new SessionStore({ db: db });
+
+var authenticationEngine = new authenticationEngine({
+  userStore: userStore,
+  sessionStore: sessionStore,
+  emailService: null // TODO
+});
+
 
 /*
   Serve app in development mode
@@ -84,24 +86,20 @@ var wss = new WebSocketServer({ server: httpServer });
 // Set up collab server
 // ----------------
 
-var collabServer = new CollabServer({backend: backend});
-collabServer.start(wss);
+var collabServer = new CollabServer({documentStore: documentStore});
+collabServer.bind(wss);
 
-var userServer = new UserServer({
-  path: '/users',
-  userStore: userStore,
-  sessionStore: sessionStore
+var authenticationServer = new AuthenticationServer({
+  authenticationEngine: authenticationEngine
+  path: '/api/auth',
 });
 
-userServer.start(app);
+authenticationServer.bind(app);
 
 // Substance Notes API
 // ----------------
 // 
 // We just moved that out of the Collab hub as it's app specific code
-
-
-
 
 
 // Should go into DocumentServer module

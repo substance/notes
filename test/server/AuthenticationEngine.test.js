@@ -4,7 +4,6 @@ require('../qunit_extensions');
 
 var Database = require('../../server/Database');
 var db = new Database();
-
 var UserStore = require('../../server/UserStore');
 var SessionStore = require('../../server/SessionStore');
 var AuthenticationEngine = require('../../server/AuthenticationEngine');
@@ -45,11 +44,51 @@ QUnit.moduleDone(function() {
 });
 
 QUnit.test('Authenticate with session token', function(assert) {
-  return engine.authenticate({sessionToken: '1234'})
+  var sessionToken = 'user1token';
+  return engine.authenticate({sessionToken: sessionToken})
     .then(function(session) {
       assert.ok(session, 'Session should be returned');
       assert.ok(session.user, 'Session should have a rich user object');
+      assert.ok(session.sessionToken, 'Session should have a sessionToken');
       assert.equal(session.user.userId,  '1', 'userId should be "1"');
       assert.equal(session.userId,  '1', 'userId should be "1"');
+      assert.notEqual(session.sessionToken, sessionToken, 'There should be a new sessionToken assigned');
+      return sessionStore.getSession(sessionToken);
+    }).then(function(oldSession) {
+      assert.notOk(oldSession, 'The old session should be gone');
+    }).catch(function(err) {
+      assert.ok(err, 'There should be no old session');
+    });
+});
+
+QUnit.test('Authenticate with wrong session token', function(assert) {
+  return engine.authenticate({sessionToken: 'xyz'})
+    .then(function(session) {
+      assert.notOk(session, 'There should not be a session for a wrong session token');
+    }).catch(function(err) {
+      assert.ok(err, 'There should be an error');
+    });
+});
+
+QUnit.test('Authenticate with loginKey', function(assert) {
+  var loginKey = '1234';
+  return engine.authenticate({loginKey: loginKey})
+    .then(function(session) {
+      assert.ok(session, 'Session should be returned');
+      assert.ok(session.user, 'Session should have a rich user object');
+      assert.ok(session.sessionToken, 'Session should have a sessionToken');
+      assert.equal(session.user.userId,  '1', 'userId should be "1"');
+      assert.equal(session.userId,  '1', 'userId should be "1"');
+    }).catch(function(err) {
+      assert.notOk(err, 'There should be no error');
+    });
+});
+
+QUnit.test('Authenticate with wrong loginKey', function(assert) {
+  return engine.authenticate({sessionToken: 'xyz'})
+    .then(function(session) {
+      assert.notOk(session, 'There should not be a session for a wrong session token');
+    }).catch(function(err) {
+      assert.ok(err, 'There should be an error');
     });
 });
