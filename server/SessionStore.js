@@ -33,37 +33,6 @@ SessionStore.Prototype = function() {
     @param {String} sessionToken session token
   */
   this.getSession = function(sessionToken, cb) {
-    var self = this;
-
-    return this._getSession(sessionToken)
-      .then(function(session) {
-        return self._getRichSession(session);
-      });
-    });
-  };
-
-  /*
-    Remove session entry based with a given session token
-  
-    TODO: Daniel make deleteSession return the session object one last time
-  */
-  this.deleteSession = function(sessionToken, cb) {
-    var self = this;
-
-    this._sessionExists(sessionToken, function(err) {
-      if (err) return cb(err);
-      var query = self.db('sessions')
-            .where('sessionToken', sessionToken)
-            .del();
-
-      query.asCallback(cb);
-    });
-  };
-
-  /*
-    Internal method to get a session record
-  */
-  this._getSession = function(sessionToken, cb) {
     var query = this.db('sessions')
                 .where('sessionToken', sessionToken);
 
@@ -78,6 +47,27 @@ SessionStore.Prototype = function() {
   };
 
   /*
+    Remove session entry based with a given session token
+  
+    TODO: Daniel make deleteSession return the session object one last time
+  */
+  this.deleteSession = function(sessionToken) {
+    var self = this;
+    var deletedSession;
+
+    return this._sessionExists
+      .then(function(session){
+        if(!session) throw new Error('Session does not exist');
+        deletedSession = session;
+        return query = self.db('sessions')
+            .where('sessionToken', sessionToken)
+            .del();
+      }).then(function(){
+        return deletedSession
+      });
+  };
+
+  /*
     Check if session exists
   */
   this._sessionExists = function(sessionToken, cb) {
@@ -85,15 +75,13 @@ SessionStore.Prototype = function() {
                 .where('sessionToken', sessionToken)
                 .limit(1);
     
-    query.asCallback(function(err, session) {
-      if (err) return cb(err);
-      if(session.length === 0) return cb(new Error('Session does not exist'));
-      cb(null);
+    return query.then(function(session) {
+      if(session.length === 0) return false;
+      return session;
     });
   };
 };
 
 oo.initClass(SessionStore);
-
 
 module.exports = SessionStore;
