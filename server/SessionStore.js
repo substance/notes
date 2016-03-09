@@ -1,11 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var matches = require('lodash/matches');
-var filter = require('lodash/filter');
-var map = require('lodash/map');
 var uuid = require('../util/uuid');
-var extend = require('lodash/extend');
 
 /*
   A simple SQL Session Store implementation
