@@ -45,7 +45,7 @@ DocumentStore.Prototype = function() {
     Connect to the db
   */
   this.connect = function() {
-    this.db = connect(knexConfig);
+    // this.db = connect(knexConfig);
   };
 
   /*

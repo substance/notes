@@ -30,7 +30,7 @@ var oo = require('substance/util/oo');
 function FileStore(config) {
   FileStore.super.apply(this, arguments);
   this.config = config;
-  this.storage = localFiles;
+  // this.storage = localFiles;
 }
 
 FileStore.Prototype = function() {

@@ -1,6 +1,7 @@
 'use strict';
 
 var uuid = require('substance/util/uuid');
+var oo = require('substance/util/oo');
 
 /*
   Implements authentication logic
@@ -21,10 +22,12 @@ AuthenticationEngine.Prototype = function() {
   this.requestLoginLink = function(args) {
     var userStore = this.userStore;
     userStore.getUserbyEmail(args.email)
-      .catch(function(err) {
+      .then(this._updateLoginKey)
+      .catch(function() {
         // User does not exist, we create a new one
         return userStore.createUser({email: args.email});
-      }).then(function(user) {
+      })
+      .then(function(user) {
         return this._sendLoginLink(user);
       });
   };
@@ -48,19 +51,19 @@ AuthenticationEngine.Prototype = function() {
     return userStore.getUserbyEmail(user.email).then(function(user) {
       var newLoginKey = uuid();
       return userStore.updateUser(user.userId, {loginKey: newLoginKey});
-    }).then(function(updatedUser) {
+    });
   };
 
   /*
     Send a login link via email
   */
   this._sendLoginLink = function(user) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve/*, reject*/) {
       // TODO: send email instead
       console.log('YOUR NEW LOGIN KEY IS ', user.loginKey);
       resolve();
     });
-  }
+  };
 
   /*
     Creates a new session based on an existing sessionToken
@@ -78,9 +81,30 @@ AuthenticationEngine.Prototype = function() {
       sessionStore.getSession(sessionToken).then(function(session) {
         // Delete old session
         return sessionStore.deleteSession(session.sessionToken);
-      }).then(function(deletedSession) {
+      }).then(function(session) {
         // Create a new session
         return sessionStore.createSession({userId: session.userId});
+      }).then(function(newSession) {
+        return self._enrichSession(newSession);
+      }).then(function(richSession) {
+        resolve(richSession);
+      }).catch(function(err) {
+        reject(err);
+      });
+    });
+  };
+
+  /*
+    Authenicate based on login key
+  */
+  this._authenticateWithLoginKey = function(loginKey) {
+    var sessionStore = this.sessionStore;
+    var userStore = this.userStore;
+    var self = this;
+
+    return new Promise(function(resolve, reject) {
+      userStore.getUserByLoginKey(loginKey).then(function(user) {
+        return sessionStore.createSession({userId: user.userId});
       }).then(function(newSession) {
         return self._enrichSession(newSession);
       }).then(function(richSession) {
@@ -100,26 +124,6 @@ AuthenticationEngine.Prototype = function() {
       userStore.getUser(session.userId).then(function(user) {
         session.user = user;
         resolve(session);
-      }).catch(function(err) {
-        reject(err);
-      });
-    });
-  };
-
-  /*
-    Authenicate based on login key
-  */
-  this._authenticateWithLoginKey = function(loginKey) {
-    var sessionStore = this.sessionStore;
-    var self = this;
-
-    return new Promise(function(resolve, reject) {
-      userStore.getUserByLoginKey(loginKey).then(function(user) {
-        return this.createSession({userId: session.userId});
-      }).then(function(newSession) {
-        return self._enrichSession(newSession);
-      }).then(function(richSession) {
-        resolve(richSession);
       }).catch(function(err) {
         reject(err);
       });
