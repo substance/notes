@@ -2,6 +2,7 @@
 
 var oo = require('substance/util/oo');
 var map = require('lodash/map');
+var uuid = require('substance/util/uuid');
 
 /*
   Implements Substance Store API. This is just a stub and is used for
@@ -25,8 +26,6 @@ UserStore.Prototype = function() {
       .then(function(exists){
         if(exists) throw new Error('User already exists');
         return self._createUser(userData);
-      }).catch(function(error) {
-        console.error(error);
       });
   };
 
@@ -47,8 +46,6 @@ UserStore.Prototype = function() {
         user = user[0];
         user.userId = user.userId.toString();
         return user;
-      }).catch(function(error) {
-        console.error(error);
       });
   };
 
@@ -72,8 +69,6 @@ UserStore.Prototype = function() {
         }
         user = user[0];
         return user;
-      }).catch(function(error) {
-        console.error(error);
       });
   };
 
@@ -94,8 +89,6 @@ UserStore.Prototype = function() {
       .then(function(userIds) {
         user.userId = userIds[0];
         return user;
-      }).catch(function(error) {
-        console.error(error);
       });
   };
 

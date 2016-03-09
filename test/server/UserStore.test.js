@@ -52,20 +52,17 @@ QUnit.test('Get user that does not exist', function(assert) {
     });
 });
 
-// QUnit.test('Create a new user', function(assert) {
-//   var done = assert.async();
-//   backend.createUser({'userId': '3'}, function(err, newUser) {
-//     assert.notOk(err, 'Creating a new user should not error');
-//     assert.equal(newUser.userId, '3', 'New user should have userId 3');
-
-//     // Let's see if the user is now really in the db
-//     backend.getUser('3', function(err, user) {
-//       assert.notOk(err, 'Getting user after creation should not error');
-//       assert.equal(user.userId, '3', 'userId should be "3"');
-//       done();
-//     });
-//   });
-// });
+QUnit.test('Create a new user', function(assert) {
+  return userStore.createUser({'userId': '3'})
+    .then(function(user) {
+      assert.equal(user.userId, '3', 'New user should have userId 3');
+      return userStore.getUser('3');
+    }).then(function(user) {
+      assert.equal(user.userId, '3', 'userId should be "3"');
+    }).catch(function(error) {
+      assert.notOk(error, 'Creating and getting a new user should not error');
+    });
+});
 
 // QUnit.test('Create a new user that already exists', function(assert) {
 //   var done = assert.async();
