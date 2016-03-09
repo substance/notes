@@ -2,37 +2,16 @@
 
 var oo = require('substance/util/oo');
 var map = require('lodash/map');
-var Knex = require('knex');
-var knexConfig = require('../knexfile');
-var env = process.env.NODE_ENV || 'development';
 
 /*
   Implements Substance Store API. This is just a stub and is used for
   testing.
 */
-function UserStore() {
-  this.connect();
+function UserStore(config) {
+  this.db = config.db;
 }
 
 UserStore.Prototype = function() {
-
-  /*
-    Connect to the db
-  */
-  this.connect = function() {
-    this.config = knexConfig[env];
-    if (!this.config) {
-      throw new Error('Could not find config for environment', env);
-    }
-    this.db = new Knex(this.config);
-  };
-
-  /*
-    Disconnect from the db and shut down
-  */
-  this.shutdown = function(cb) {
-    this.db.destroy(cb);
-  };
 
   /*
     Create a new user record (aka signup)
@@ -139,29 +118,6 @@ UserStore.Prototype = function() {
     //    return cb(null, false);
     //   cb(null, true);
     // });
-  };
-
-  /*
-    Run migrations
-
-    @param {Function} cb callback
-  */
-  this.resetDB = function() {
-    var self = this;
-
-    return self.db.schema
-      .dropTableIfExists('changes')
-      .dropTableIfExists('documents')
-      .dropTableIfExists('sessions')
-      .dropTableIfExists('users')
-      // We should drop migrations table 
-      // to rerun the same migration again
-      .dropTableIfExists('knex_migrations')
-      .then(function() {
-        return self.db.migrate.latest(self.config);
-      }).catch(function(error) {
-        console.error(error);
-      });
   };
 
   /*

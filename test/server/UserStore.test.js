@@ -12,7 +12,7 @@ QUnit.module('server/UserStore', {
   beforeEach: function(assert) {
     return db.reset()
       .then(function() {
-        userStore = new UserStore({ db: db });
+        userStore = new UserStore({ db: db.connection });
         return userStore.seed({
           '1': {
             userId: '1',
