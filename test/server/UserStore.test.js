@@ -8,14 +8,17 @@ var userStore;
 QUnit.module('server/UserStore', {
   beforeEach: function(assert) {
     userStore = new UserStore();
-    userStore.seed({
-      '1': {
-        userId: '1',
-        name: 'Test',
-        loginKey: '1234',
-        email: 'test@example.com'
-      }
-    });
+    return userStore.resetDB()
+      .then(function() {
+        return userStore.seed({
+          '1': {
+            userId: '1',
+            name: 'Test',
+            loginKey: '1234',
+            email: 'test@example.com'
+          }
+        })
+      });
   }
 });
 
@@ -29,8 +32,12 @@ QUnit.test('Get user', function(assert) {
   // See: https://api.qunitjs.com/QUnit.test/
   // @Daniel pls test if that's true
 
-  assert.expect(0);
-  return backend.getUser('1');
+  // assert.expect('ok');
+  return userStore.getUser('1')
+    .then(function(user) {
+      assert.equal(user.userId, '1');
+    });
+  //assert.ok(true, 'ddd');
 });
 
 // QUnit.test('Get user that does not exist', function(assert) {
