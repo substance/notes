@@ -35,16 +35,20 @@ UserStore.Prototype = function() {
     @param {String} userId user id
     @param {Function} cb callback
   */
-  this.getUser = function(userId, cb) {
+  this.getUser = function(userId) {
     var query = this.db('users')
                 .where('userId', userId);
-
-    query.asCallback(function(err, user) {
-      if (err) return cb(err);
-      if (user.length === 0) return cb(new Error('No user found for userId ' + userId));
-      user = user[0];
-      user.userId = user.userId.toString();
-      cb(null, user);
+    return new Promise(function(resolve, reject) {
+      query.then(function(user) {
+        if (user.length === 0) {
+          reject(new Error('No user found for userId ' + userId));
+        }
+        user = user[0];
+        user.userId = user.userId.toString();
+        resolve(user);
+      }).catch(function(error) {
+        console.error(error);
+      });
     });
   };
 
