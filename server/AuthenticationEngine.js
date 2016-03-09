@@ -18,8 +18,7 @@ AuthenticationEngine.Prototype = function() {
   /*
     Generate new loginKey for user and send email with a link
   */
-  this.requestLoginUrl = function(req, res, next) {
-    var args = req.body; // has email and docId (optional) which should be included in the login url.
+  this.requestLoginUrl = function(args) {
 
     // TODO: Daniel, implement,
     // if no user exists we create the user
@@ -29,48 +28,74 @@ AuthenticationEngine.Prototype = function() {
   /*
     Authenticate based on either sessionToken
   */
-  this.authenticate = function(loginData, cb) {
-    // console.log('POST: /hub/api/authenticate');
-    var loginData = req.body;
-
+  this.authenticate = function(loginData) {
     if (loginData.loginKey) {
-      this._authenticateWithLoginKey(loginData.loginKey, cb);
+      return this._authenticateWithLoginKey(loginData.loginKey);
     } else {
-      this._authenticateWithToken(loginData.sessionToken, cb);
+      return this._authenticateWithToken(loginData.sessionToken);
     }
   };
 
   /*
-    Creates a new user session based on an existing sessionToken
+    Creates a new session based on an existing sessionToken
 
-    TODO: Michael implement properly using promises
+    1. old session gets read
+    2. if exists old session gets deleted 
+    3. new session gets created for the same user
+    4. rich user object gets attached
   */
-  this._authenticateWithToken = function(sessionToken, cb) {
-    this.sessionStore.getSession(loginData.sessionToken, function(err, session) {
-      if (err) return next(err);
+  this._authenticateWithToken = function(sessionToken) {
+    var sessionStore = this.sessionStore;
+    var self = this;
 
-      this.sessionStore.deleteSession(session.sessionToken, function(err) {
-        if (err) return next(err);
-        var newSession = this.createSession({userId: session.userId}, function(err, newSession) {
-          if (err) return next(err);
-        });
+    return new Promise(function(resolve, reject) {
+      sessionStore.getSession(sessionToken).then(function(session) {
+        // Delete old session
+        return sessionStore.deleteSession(session.sessionToken);
+      }).then(function(deletedSession) {
+        // Create a new session
+        return sessionStore.createSession({userId: session.userId});
+      }).then(function(newSession) {
+        return self._enrichSession(newSession);
+      }).then(function(richSession) {
+        resolve(richSession);
+      }).catch(function(err) {
+        reject(err);
+      });
+    });
+  };
+
+  /*
+    Attached a full user object to the session record
+  */
+  this._enrichSession = function(session) {
+    var userStore = this.userStore;
+    return new Promise(function(resolve, reject) {
+      userStore.getUser(session.userId).then(function(user) {
+        session.user = user;
+        resolve(session);
+      }).catch(function(err) {
+        reject(err);
       });
     });
   };
 
   /*
     Authenicate based on login key
-
-    TODO: Michael implement properly using promises
   */
-  this._authenticateWithLoginKey = function(loginKey, cb) {
+  this._authenticateWithLoginKey = function(loginKey) {
+    var sessionStore = this.sessionStore;
     var self = this;
-    this._getUserByLoginKey(loginKey, function(err, user) {
-      if (err) return cb(err);
-      self.createSession(user.userId, function(err, session) {
-        if (err) return cb(err);
-        session.user = user;
-        cb(null, session);
+
+    return new Promise(function(resolve, reject) {
+      userStore.getUserByLoginKey(loginKey).then(function(user) {
+        return this.createSession({userId: session.userId});
+      }).then(function(newSession) {
+        return self._enrichSession(newSession);
+      }).then(function(richSession) {
+        resolve(richSession);
+      }).catch(function(err) {
+        reject(err);
       });
     });
   };

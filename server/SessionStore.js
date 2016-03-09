@@ -50,9 +50,8 @@ SessionStore.Prototype = function() {
 
   /*
     Remove session entry based with a given session token
-
-    @param {String} sessionToken session token
-    @param {Function} cb callback
+  
+    TODO: Daniel make deleteSession return the session object one last time
   */
   this.deleteSession = function(sessionToken, cb) {
     var self = this;
