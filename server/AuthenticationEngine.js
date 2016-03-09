@@ -7,8 +7,6 @@ var oo = require('substance/util/oo');
   Implements authentication logic
 */
 function AuthenticationEngine(config) {
-  AuthenticationEngine.super.apply(this, arguments);
-
   this.userStore = config.userStore;
   this.sessionStore = config.sessionStore;
   this.emailService = config.emailService;
