@@ -34,6 +34,16 @@ QUnit.moduleDone(function() {
 // TODO: Change them all to Promise API
 // -------------------
 
+QUnit.test('Create session', function(assert) {
+	return sessionStore.createSession({userId: '1'})
+		.then(function(session) {
+    	assert.equal(session.userId, '1', 'Session should be associated with user 1');
+		}).catch(function(error){
+			assert.notOk(error, 'Should not error');
+		});
+});
+
+
 QUnit.test('Get an existing session', function(assert) {
 	return sessionStore.getSession('user1token')
 		.then(function(session) {
