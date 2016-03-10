@@ -104,14 +104,8 @@ var collabServer = new CollabServer({
   /*
     Add some user info to the collaborator object (e.g. user.name)
   */
-  enhanceCollaborator: function(message, cb) {
-    var sessionToken = message.sessionToken;
-    authenticationEngine.getSession(sessionToken).then(function(session) {
-      cb(null, {user: {name: session.user.name}});
-    }).catch(function(/*err*/) {
-      // no user info found for this collaborator
-      cb(null, {});
-    });
+  enhanceCollaborator: function(req, cb) {
+    cb(null, {user: {name: req.user.name}});
   }
 });
 collabServer.bind(wss);
