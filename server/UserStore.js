@@ -74,17 +74,18 @@ UserStore.Prototype = function() {
     @param {String} userId user id
   */
   this.deleteUser = function(userId) {
-    var self = this;
+    var deletedUser;
     var del = this.db('users')
                 .where('userId', userId)
                 .del();
     
     
     // We fetch the user record before we delete it
-    return self.getUser(userId).then(function(user) {
-      return del.then(function() {
-        return user;
-      });
+    return this.getUser(userId).then(function(user) {
+      deletedUser = user;
+      return del;
+    }).then(function() {
+      return deletedUser;
     });
   };
 
