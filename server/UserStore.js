@@ -22,9 +22,14 @@ UserStore.Prototype = function() {
   this.createUser = function(userData) {
     var self = this;
 
-    return this._userExists(userData.userId)
-      .then(function(exists){
-        if(exists) throw new Error('User already exists');
+    // Generate a userId if not provided
+    if (!userData.userId) {
+      userData.userId = uuid();
+    }
+
+    return this.userExists(userData.userId)
+      .then(function(exists) {
+        if (exists) throw new Error('User already exists');
         return self._createUser(userData);
       });
   };
@@ -38,29 +43,29 @@ UserStore.Prototype = function() {
     var query = this.db('users')
                 .where('userId', userId);
 
-    return query
-      .then(function(user) {
-        if (user.length === 0) {
-          throw new Error('No user found for userId ' + userId);
-        }
-        user = user[0];
-        user.userId = user.userId.toString();
-        return user;
-      });
+    return query.then(function(rows) {
+      if (rows.length === 0) {
+        throw new Error('No user found for userId ' + userId);
+      }
+      return rows[0];
+    });
   };
 
   /*
-    Update a user record with given userId
+    Update a user record with given props
 
     @param {String} userId user id
     @param {Object} props properties to update
   */
   this.updateUser = function(userId, props) {
-    var query = this.db('users')
+    var self = this;
+    var update = this.db('users')
                 .where('userId', userId)
                 .update(props);
 
-    return query;
+    return update.then(function() {
+      return self.getUser(userId);
+    });
   };
 
   /*
@@ -69,11 +74,18 @@ UserStore.Prototype = function() {
     @param {String} userId user id
   */
   this.deleteUser = function(userId) {
-    var query = this.db('users')
+    var self = this;
+    var del = this.db('users')
                 .where('userId', userId)
                 .del();
     
-    return query;
+    
+    // We fetch the user record before we delete it
+    return self.getUser(userId).then(function(user) {
+      return del.then(function() {
+        return user;
+      });
+    });
   };
 
   /*
@@ -88,7 +100,7 @@ UserStore.Prototype = function() {
     return query
       .then(function(user) {
         if (user.length === 0) {
-          throw new Error('Provided login key was invalid.');
+          throw new Error('No user found for provided loginKey.');
         }
         user = user[0];
         return user;
@@ -120,7 +132,9 @@ UserStore.Prototype = function() {
   this._createUser = function(userData) {
     // at some point we should make this more secure
     var loginKey = userData.loginKey || uuid();
+
     var user = {
+      userId: userData.userId,
       name: userData.name,
       email: userData.email,
       createdAt: Date.now(),
@@ -128,8 +142,8 @@ UserStore.Prototype = function() {
     };
 
     return this.db.table('users').insert(user)
-      .then(function(userIds) {
-        user.userId = userIds[0];
+      .then(function() {
+        // We want to confirm the insert with the created user entry
         return user;
       });
   };
@@ -137,13 +151,13 @@ UserStore.Prototype = function() {
   /*
     Check if user exists
   */
-  this._userExists = function(id) {
+  this.userExists = function(id) {
     var query = this.db('users')
                 .where('userId', id)
                 .limit(1);
 
     return query.then(function(user) {
-      if(user.length === 0) return false;
+      if (user.length === 0) return false;
       return true;
     });
   };
@@ -158,7 +172,6 @@ UserStore.Prototype = function() {
   this.seed = function(seed) {
     var self = this;
     var actions = map(seed, self.createUser.bind(self));
-
     return Promise.all(actions);
   };
 
