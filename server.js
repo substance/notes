@@ -108,7 +108,7 @@ var collabServer = new CollabServer({
     var sessionToken = message.sessionToken;
     authenticationEngine.getSession(sessionToken).then(function(session) {
       cb(null, {user: {name: session.user.name}});
-    }).catch(function(err) {
+    }).catch(function(/*err*/) {
       // no user info found for this collaborator
       cb(null, {});
     });
@@ -117,8 +117,8 @@ var collabServer = new CollabServer({
 collabServer.bind(wss);
 
 var authenticationServer = new AuthenticationServer({
-  authenticationEngine: authenticationEngine
-  path: '/api/auth',
+  authenticationEngine: authenticationEngine,
+  path: '/api/auth'
 });
 
 authenticationServer.bind(app);
@@ -153,6 +153,7 @@ app.get('/hub/api/documents/:id', function(req, res, next) {
 // Error handling
 // We send JSON to the client so they can display messages in the UI.
 
+/* jshint unused: false */
 app.use(function(err, req, res, next) {
   console.log('Server error: ', err);
   res.status(500).json({errorMessage: err.message});
