@@ -2,6 +2,7 @@
 
 var uuid = require('substance/util/uuid');
 var oo = require('substance/util/oo');
+var Mail = require('./Mail');
 
 /*
   Implements authentication logic
@@ -62,10 +63,18 @@ AuthenticationEngine.Prototype = function() {
     Send a login link via email
   */
   this._sendLoginLink = function(user) {
-    return new Promise(function(resolve/*, reject*/) {
-      // TODO: send email instead
-      console.log('YOUR NEW LOGIN KEY IS ', user.loginKey);
-      resolve();
+    return new Promise(function(resolve, reject) {
+      var subject = "Welcome to the Substance Notes!";
+      var msg = "Click the following link to login: http://notes.substance.io/login/" + user.loginKey;
+
+      Mail.sendPlain(user.email, subject, msg)
+        .then(function(info){
+          console.log(info);
+          resolve();
+        }).catch(function(err){
+          console.log(err);
+          reject(err);
+        });
     });
   };
 
