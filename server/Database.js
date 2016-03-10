@@ -32,7 +32,6 @@ Database.Prototype = function() {
     this.connection.destroy();
   };
 
-
   /*
     Wipe DB and run lagtest migartion
 
