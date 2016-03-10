@@ -1,41 +1,45 @@
-// 'use strict';
+'use strict';
 
-// require('../qunit_extensions');
+require('../qunit_extensions');
 
-// var backendSeed = require('substance/test/fixtures/collab/backendSeed');
-// var DocumentStore = require('../../server/DocumentStore');
+var documentStoreSeed = require('substance/test/fixtures/collab/documentStoreSeed');
+var DocumentStore = require('../../server/DocumentStore');
+var documentStore;
 
-// var testDocumentStore = require('substance/test/collab/testDocumentStore');
-// var twoParagraphs = require('substance/test/fixtures/collab/two-paragraphs');
+var testDocumentStore = require('substance/test/collab/testDocumentStore');
+var twoParagraphs = require('substance/test/fixtures/collab/two-paragraphs');
 
-// // TODO: Daniel, please require knexConfig directly from within the backend
-// var backend = new Backend({
-//   schemas: {
-//     'prose-article': {
-//       name: 'prose-article',
-//       version: '1.0.0',
-//       documentFactory: twoParagraphs
-//     }
-//   },
-//   snapshotFrequency: 10
-// });
+var Database = require('../../server/Database');
+var db;
 
-// QUnit.module('server/SQLBackend', {
-//   beforeEach: function(assert) {
-//     var done = assert.async();
-//     backend.seed(backendSeed, function(err) {
-//       if (err) {
-//         return console.error(err);
-//       } else {
-//         done();
-//       }
-//     });
-//   }
-// });
+QUnit.module('server/DocumentStore', {
+	beforeEach: function(assert) {
+		return db.reset()
+      .then(function() {
+      	documentStore = new DocumentStore({
+				  schemas: {
+				    'prose-article': {
+				      name: 'prose-article',
+				      version: '1.0.0',
+				      documentFactory: twoParagraphs
+				    }
+				  },
+				  snapshotFrequency: 10,
+				  db: db
+				});
+				var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed));
+				return documentStore.seed(newDocumentStoreSeed);
+  		});
+  	}
+});
 
-// QUnit.moduleDone(function() {
-//   backend.shutdown();
-// });
+QUnit.moduleStart(function() {
+  db = new Database();
+});
 
-// // Runs the offical backend test suite
-// testDocumentStore(backend, QUnit);
+QUnit.moduleDone(function() {
+  db.shutdown();
+});
+
+// Runs the offical document store test suite
+testDocumentStore(documentStore, QUnit);

@@ -1,59 +1,25 @@
 "use strict";
 
-var fs = require('fs');
-var path = require('path');
-var each = require('lodash/each');
-var async = require('async');
+// var fs = require('fs');
+// var path = require('path');
+// var each = require('lodash/each');
+// var async = require('async');
 
 var EventEmitter = require('substance/util/EventEmitter');
 var JSONConverter = require('substance/model/JSONConverter');
 var _ = require('substance/util/helpers');
-var knexConfig = require('../knexfile');
-
-
-// Please integrate here directly
-
-// var Knex = require('knex');
-// var environment = process.env.NODE_ENV || 'development';
-
-// var connect = function(knexConfig) {
-//   var config = knexConfig[environment];
-//   if (!config) {
-//     throw new Error('Could not find config for environment', environment);
-//   }
-//   return new Knex(config);
-// };
-
-// module.exports = connect;
-
-
-
 
 /*
   Implements the Substance DocumentStore API.
 */
 function DocumentStore(config) {
   this.config = config;
-  
-  this.connect();
+  this.db = config.db.connection;
+
   DocumentStore.super.apply(this);
 }
 
 DocumentStore.Prototype = function() {
-
-  /*
-    Connect to the db
-  */
-  this.connect = function() {
-    // this.db = connect(knexConfig);
-  };
-
-  /*
-    Disconnect from the db and shut down
-  */
-  this.shutdown = function(cb) {
-    this.db.destroy(cb);
-  };
 
   // Changes API
   // -----------
@@ -437,42 +403,6 @@ DocumentStore.Prototype = function() {
     query.asCallback(cb);
   };
 
-  // Seed API
-  // --------
-
-  /*
-    Remove sqlite file for current environment
-
-    @param {Function} cb callback
-  */
-  this.cleanDb = function(cb) {
-    var self = this;
-
-    // Close db connection
-    this.shutdown(function() {
-      var env = process.env.NODE_ENV || 'development';
-      var filePath = path.resolve(knexConfig[env].connection.filename);
-      fs.stat(filePath, function(err, stats) {
-        // Remove db file if it is exists
-        if(stats) fs.unlink(filePath);
-        // Establish new connection with db
-        self.connect();
-        cb(null);
-      });
-    });
-  };
-
-  /*
-    Run migrations
-
-    @param {Function} cb callback
-  */
-  this.runMigration = function(cb) {
-    this.db.migrate.latest({directory: './db/migrations'}).asCallback(function(err){
-      if(err) return cb(err);
-      cb(null);
-    });
-  };
 
   /*
     Resets the database and loads a given seed object
@@ -482,66 +412,74 @@ DocumentStore.Prototype = function() {
     @param {Object} seed JSON object
     @param {Function} cb callback
   */
-  this.seed = function(seed, cb) {
-    var self = this;
-    
-    var documents = {};
 
-    function wipe(callback) {
-      self.cleanDb.call(self, callback);
-    }
-
-    function migrate(callback) {
-      self.runMigration.call(self, callback);
-    }
-
-    function seedUsers(callback) {
-      async.eachSeries(seed.users, function(user, callback) {
-        self.createUser(user, callback);
-      }, callback);
-    }
-
-    function seedSessions(callback) {
-      async.eachSeries(seed.sessions, function(session, callback) {
-        self._createSession(session, callback);
-      }, callback);
-    }
-
-    function seedDocuments(callback) {
-      async.eachSeries(documents, function(data, callback) {
-        var req = {
-          documentId: data.id,
-          schemaName: data.schemaName,
-          userId: data.userId
-        };
-        self.createDocument(req, callback);
-      }, callback);
-    }
-
-    function prepareSeed(callback) {
-      each(seed.documents, function(document, id) {
-        var result = {
-          schemaName: document.schema.name,
-          id: id,
-          userId: document.userId
-        };
-        documents[id] = result;
-      });
-      callback(null);
-    }
-
-    async.series([
-      wipe,
-      migrate,
-      prepareSeed,
-      seedUsers,
-      seedSessions,
-      seedDocuments
-      ], function(err) {
-      if (err) return cb(err);
-      cb(null);
-    });
+  this.seed = function(seed) {
+    //var self = this;
+    //var actions = map(seed, self.createUser.bind(self));
+    console.log(seed);
+    //return Promise.all(actions);
   };
+
+  // this.seed = function(seed, cb) {
+  //   var self = this;
+    
+  //   var documents = {};
+
+  //   function wipe(callback) {
+  //     self.cleanDb.call(self, callback);
+  //   }
+
+  //   function migrate(callback) {
+  //     self.runMigration.call(self, callback);
+  //   }
+
+  //   function seedUsers(callback) {
+  //     async.eachSeries(seed.users, function(user, callback) {
+  //       self.createUser(user, callback);
+  //     }, callback);
+  //   }
+
+  //   function seedSessions(callback) {
+  //     async.eachSeries(seed.sessions, function(session, callback) {
+  //       self._createSession(session, callback);
+  //     }, callback);
+  //   }
+
+  //   function seedDocuments(callback) {
+  //     async.eachSeries(documents, function(data, callback) {
+  //       var req = {
+  //         documentId: data.id,
+  //         schemaName: data.schemaName,
+  //         userId: data.userId
+  //       };
+  //       self.createDocument(req, callback);
+  //     }, callback);
+  //   }
+
+  //   function prepareSeed(callback) {
+  //     each(seed.documents, function(document, id) {
+  //       var result = {
+  //         schemaName: document.schema.name,
+  //         id: id,
+  //         userId: document.userId
+  //       };
+  //       documents[id] = result;
+  //     });
+  //     callback(null);
+  //   }
+
+  //   async.series([
+  //     wipe,
+  //     migrate,
+  //     prepareSeed,
+  //     seedUsers,
+  //     seedSessions,
+  //     seedDocuments
+  //     ], function(err) {
+  //     if (err) return cb(err);
+  //     cb(null);
+  //   });
+  // };
 };
 
 EventEmitter.extend(DocumentStore);
