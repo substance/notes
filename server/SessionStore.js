@@ -43,7 +43,7 @@ SessionStore.Prototype = function() {
     return query
       .then(function(session) {
         if (session.length === 0) {
-          throw new Error('No session found for that token');
+          throw new Error('No session found for token ' + sessionToken);
         }
         session = session[0];
         return session;
@@ -52,8 +52,8 @@ SessionStore.Prototype = function() {
 
   /*
     Remove session entry based with a given session token
-  
-    TODO: Daniel make deleteSession return the session object one last time
+
+    @param {String} sessionToken session token
   */
   this.deleteSession = function(sessionToken) {
     var self = this;
