@@ -20,7 +20,6 @@ Mail.sendPlain = function(to, subject, content) {
   };
 
   return transporter.sendMail(message);
-  });
 };
 
 module.exports = Mail;
