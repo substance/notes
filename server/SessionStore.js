@@ -18,14 +18,17 @@ SessionStore.Prototype = function() {
 
     @param {String} userId user id
   */
-  this.createSession = function(userId) {
+  this.createSession = function(session) {
     var newSession = {
-      sessionToken: uuid(),
+      sessionToken: session.sessionToken || uuid(),
       timestamp: Date.now(),
-      userId: userId
+      userId: session.userId
     };
 
-    return this.db.table('sessions').insert(newSession);
+    return this.db.table('sessions').insert(newSession)
+      .then(function() {
+        return newSession;
+      });
   };
 
   /*
@@ -84,19 +87,6 @@ SessionStore.Prototype = function() {
   };
 
   /*
-    Create a session record for a seed data
-  */
-  this.createSeedSession = function(session) {
-    var newSession = {
-      sessionToken: session.sessionToken || uuid(),
-      timestamp: Date.now(),
-      userId: session.userId
-    };
-
-    return this.db.table('sessions').insert(newSession);
-  };
-
-  /*
     Resets the database and loads a given seed object
 
     Be careful with running this in production
@@ -105,7 +95,7 @@ SessionStore.Prototype = function() {
   */
   this.seed = function(seed) {
     var self = this;
-    var actions = map(seed, self.createSeedSession.bind(self));
+    var actions = map(seed, self.createSession.bind(self));
 
     return Promise.all(actions);
   };
