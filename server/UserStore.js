@@ -101,7 +101,7 @@ UserStore.Prototype = function() {
     return query
       .then(function(user) {
         if (user.length === 0) {
-          throw new Error('No user found for provided loginKey.');
+          throw new Error('No user found for provided loginKey');
         }
         user = user[0];
         return user;
