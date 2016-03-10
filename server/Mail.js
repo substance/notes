@@ -19,12 +19,7 @@ Mail.sendPlain = function(to, subject, content) {
     text: content
   };
 
-  transporter.sendMail(message, function(error, info){
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Sent: ' + info.response);
-    }
+  return transporter.sendMail(message);
   });
 };
 
