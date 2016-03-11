@@ -3,7 +3,8 @@
 var _ = require('substance/util/helpers');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
-var HubClient = require('substance/collab/HubClient');
+var AuthenticationClient = require('./AuthenticationClient');
+var CollabClient = require('substance/collab/CollabClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
@@ -40,10 +41,12 @@ function Notes() {
     authenticated: false
   };
 
-  // Initialize hubClient
-  this.hubClient = new HubClient({
-    wsUrl: config.wsUrl || 'ws://'+host+':'+port,
-    httpUrl: config.httpUrl || 'http://'+host+':'+port
+  this.collabClient = new CollabClient({
+    wsUrl: config.wsUrl || 'ws://'+host+':'+port
+  });
+
+  this.authenticationClient = new AuthenticationClient({
+    httpUrl: config.authenticationServerUrl || 'http://'+host+':'+port+'/api/auth/'
   });
   
   this.handleActions({
@@ -71,7 +74,8 @@ Notes.Prototype = function() {
   */
   this.getChildContext = function() {
     return {
-      hubClient: this.hubClient
+      authenticationClient: this.authenticationClient,
+      collabClient: this.collabClient
     };
   };
 
@@ -116,7 +120,7 @@ Notes.Prototype = function() {
     }
     
     if (loginData) {
-      this.hubClient.authenticate(loginData, this._authenticateDone.bind(this));
+      this.authenticationClient.authenticate(loginData, this._authenticateDone.bind(this));
     } else {
       this.extendInternalState({initialized: true});
     }
@@ -150,7 +154,7 @@ Notes.Prototype = function() {
     Forget current user session
   */
   this._logout = function() {
-    this.hubClient.logout();
+    this.authenticationClient.logout();
     this.extendInternalState({
       authenticated: false
     });

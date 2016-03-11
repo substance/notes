@@ -7,8 +7,8 @@ var oo = require('substance/util/oo');
   reuse for other Substance projects.
 */
 function AuthenticationServer(config) {
-  AuthenticationServer.super.apply(this, arguments);
   this.engine = config.authenticationEngine;
+  this.path = config.path;
 }
 
 AuthenticationServer.Prototype = function() {
@@ -18,15 +18,15 @@ AuthenticationServer.Prototype = function() {
 
     @param {String} mountPath must be something like '/api/auth/'
   */
-  this.mount = function(mountPath, app) {
-    app.post(mountPath + 'requestlogin', this._requestLoginLink.bind(this));
-    app.post(mountPath + 'authenticate', this._authenticate.bind(this));
+  this.bind = function(app) {
+    app.post(this.path + 'requestlogin', this._requestLoginLink.bind(this));
+    app.post(this.path + 'authenticate', this._authenticate.bind(this));
   };
 
   /*
     Generate new loginKey for user and send email with a link
   */
-  this._requestLoginUrl = function(req, res, next) {
+  this._requestLoginLink = function(req, res, next) {
     var args = req.body; // has email and docId (optional) which should be included in the login url.
 
     this.engine.requestLoginLink(args).then(function(result) {
