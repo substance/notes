@@ -1,13 +1,19 @@
-var knexConfig = require('./knexfile');
-var Backend = require('./server/Backend');
-var defaultSeed = require('./data/defaultSeed');
-var backend = new Backend({knexConfig: knexConfig});
+var UserStore = require('./server/UserStore');
+var SessionStore = require('./server/SessionStore');
+var Database = require('./server/Database');
+var seed = require('./data/defaultSeed');
+var db = new Database();
 
-backend.seed(defaultSeed, function(err) {
-  if (err) {
-    console.log(err.message);
-    process.exit(1);
-  }
-  console.log('Seeding has been completed!');
-  process.exit(0);
-});
+// Clear the database and setup the schema
+// TODO: Also seed change store and document store once ready
+db.reset()
+  .then(function() {
+    var userStore = new UserStore({ db: db });
+    return userStore.seed(seed.users);
+  }).then(function() {
+    var sessionStore = new SessionStore({ db: db });
+    return sessionStore.seed(seed.sessions);
+  }).then(function() {
+    console.log('Done seeding.');
+    db.shutdown();
+  });

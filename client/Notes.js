@@ -3,7 +3,8 @@
 var _ = require('substance/util/helpers');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
-var HubClient = require('substance/collab/HubClient');
+var AuthenticationClient = require('./AuthenticationClient');
+var DocumentClient = require('substance/collab/DocumentClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
@@ -29,8 +30,8 @@ function Notes() {
     }
   });
 
-  var host = config.host || 'localhost';
-  var port = config.port || 5000;
+  config.host = config.host || 'localhost';
+  config.port = config.port || 5000;
   
   // We need to maintain some extra private/internal state in addition to
   // this.state, which is used for routing
@@ -40,10 +41,11 @@ function Notes() {
     authenticated: false
   };
 
-  // Initialize hubClient
-  this.hubClient = new HubClient({
-    wsUrl: config.wsUrl || 'ws://'+host+':'+port,
-    httpUrl: config.httpUrl || 'http://'+host+':'+port
+  // Store config for later use (e.g. in child components)
+  this.config = config;
+  
+  this.authenticationClient = new AuthenticationClient({
+    httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
   });
   
   this.handleActions({
@@ -71,7 +73,8 @@ Notes.Prototype = function() {
   */
   this.getChildContext = function() {
     return {
-      hubClient: this.hubClient
+      authenticationClient: this.authenticationClient,
+      config: this.config
     };
   };
 
@@ -116,7 +119,7 @@ Notes.Prototype = function() {
     }
     
     if (loginData) {
-      this.hubClient.authenticate(loginData, this._authenticateDone.bind(this));
+      this.authenticationClient.authenticate(loginData, this._authenticateDone.bind(this));
     } else {
       this.extendInternalState({initialized: true});
     }
@@ -150,7 +153,7 @@ Notes.Prototype = function() {
     Forget current user session
   */
   this._logout = function() {
-    this.hubClient.logout();
+    this.authenticationClient.logout();
     this.extendInternalState({
       authenticated: false
     });
@@ -183,20 +186,18 @@ Notes.Prototype = function() {
     }
 
     switch (this.state.mode) {
-      case 'index':
+      case 'edit':
+        el.append($$(EditNote, {
+          docId: this.state.docId
+        }).ref('editNote'));
+        break;
+      default: // mode=index or default
         if (this._state.authenticated) {
           el.append($$(Dashboard).ref('dashboard'));
         } else {
           el.append($$(Welcome).ref('welcome'));
         }
         break;
-      case 'edit':
-        el.append($$(EditNote, {
-          docId: this.state.docId
-        }).ref('editNote'));
-        break;
-      default:
-        console.error('Unsupported mode', this.state.mode);
     }
     return el;
   };

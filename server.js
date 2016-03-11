@@ -4,14 +4,16 @@ var app = express();
 var server = require('substance/util/server');
 var exampleNote = require('./model/exampleNote');
 var CollabServer = require('substance/collab/CollabServer');
-var DocumentStore = require('./server/DocumentStore');
+var DocumentEngine = require('substance/collab/DocumentEngine');
+var DocumentStore = require('substance/collab/DocumentStore');
+var ChangeStore = require('substance/collab/ChangeStore');
+var defaultSeed = require('./data/defaultSeed');
 var UserStore = require('./server/UserStore');
 var SessionStore = require('./server/SessionStore');
-
 var AuthenticationServer = require('./server/AuthenticationServer');
+var DocumentServer = require('substance/collab/DocumentServer');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
 var Database = require('./server/Database');
-
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
@@ -19,6 +21,7 @@ var WebSocketServer = require('ws').Server;
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
+
 var db = new Database();
 
 // If seed option provided we should remove db, run migration and seed script
@@ -31,8 +34,20 @@ if (process.argv[2] == 'seed') {
 // Set up stores
 // -------------------------------
 
-var documentStore = new DocumentStore({
+var userStore = new UserStore({ db: db });
+var sessionStore = new SessionStore({ db: db });
+
+// We use the in-memory versions for now, thus we need to seed
+// each time.
+var changeStore = new ChangeStore();
+changeStore.seed(defaultSeed.changes);
+var documentStore = new DocumentStore();
+documentStore.seed(defaultSeed.documents);
+
+var documentEngine = new DocumentEngine({
   db: db,
+  documentStore: documentStore,
+  changeStore: changeStore,
   schemas: {
     'substance-note': {
       name: 'substance-note',
@@ -42,15 +57,11 @@ var documentStore = new DocumentStore({
   }
 });
 
-var userStore = new UserStore({ db: db });
-var sessionStore = new SessionStore({ db: db });
-
-var authenticationEngine = new authenticationEngine({
+var authenticationEngine = new AuthenticationEngine({
   userStore: userStore,
   sessionStore: sessionStore,
   emailService: null // TODO
 });
-
 
 /*
   Serve app in development mode
@@ -66,6 +77,7 @@ var config = {
   port: port,
   wsUrl: wsUrl
 };
+
 server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
 server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
 server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
@@ -77,17 +89,28 @@ server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
+
 // Connect Substance
 // ----------------
 
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
 
-// Set up collab server
+// DocumentServer
+// ----------------
+
+var documentServer = new DocumentServer({
+  documentEngine: documentEngine,
+  path: '/api/documents'
+});
+documentServer.bind(app);
+
+
+// CollabServer
 // ----------------
 
 var collabServer = new CollabServer({
-  documentStore: documentStore,
+  documentEngine: documentEngine,
 
   /*
     Checks for authentication based on message.sessionToken
@@ -95,6 +118,7 @@ var collabServer = new CollabServer({
   authenticate: function(message, cb) {
     var sessionToken = message.sessionToken;
     authenticationEngine.getSession(sessionToken).then(function(session) {
+      console.log('server.js authenticate successful!');
       cb(null, session);
     }).catch(function(err) {
       cb(err);
@@ -105,14 +129,17 @@ var collabServer = new CollabServer({
     Add some user info to the collaborator object (e.g. user.name)
   */
   enhanceCollaborator: function(req, cb) {
-    cb(null, {user: {name: req.user.name}});
+    cb(null, {name: req.session.user.name});
   }
 });
 collabServer.bind(wss);
 
+// Set up AuthenticationServer
+// ----------------
+
 var authenticationServer = new AuthenticationServer({
   authenticationEngine: authenticationEngine,
-  path: '/api/auth'
+  path: '/api/auth/'
 });
 
 authenticationServer.bind(app);
@@ -121,21 +148,6 @@ authenticationServer.bind(app);
 // ----------------
 // 
 // We just moved that out of the Collab hub as it's app specific code
-
-
-// Should go into DocumentServer module
-// ----------------
-
-app.get('/hub/api/documents/:id', function(req, res, next) {
-
-  documentStore.getSnapshot(req.params.id, function(err, doc, version) {
-    if(err) return next(err);
-    res.json({
-      document: doc,
-      version: version
-    });
-  });
-});
 
 // Should go into FileServer module
 // ----------------
@@ -148,10 +160,11 @@ app.get('/hub/api/documents/:id', function(req, res, next) {
 // We send JSON to the client so they can display messages in the UI.
 
 /* jshint unused: false */
-app.use(function(err, req, res, next) {
-  console.log('Server error: ', err);
-  res.status(500).json({errorMessage: err.message});
-});
+
+// app.use(function(err, req, res, next) {
+//   console.log('Server error: ', err);
+//   res.status(500).json({errorMessage: err.message});
+// });
 
 // Delegate http requests to express app
 httpServer.on('request', app);

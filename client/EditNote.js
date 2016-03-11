@@ -2,6 +2,8 @@ var CollabSession = require('substance/collab/CollabSession');
 var JSONConverter = require('substance/model/JSONConverter');
 var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
+var CollabClient = require('substance/collab/CollabClient');
+var DocumentClient = require('substance/collab/DocumentClient');
 var LoginStatus = require('./LoginStatus');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
@@ -10,6 +12,21 @@ var $$ = Component.$$;
 
 function EditNote() {
   Component.apply(this, arguments);
+
+  var config = this.context.config;
+  var authenticationClient = this.context.authenticationClient;
+  
+  this.documentClient = new DocumentClient({
+    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
+  });
+
+  this.collabClient = new CollabClient({
+    wsUrl: config.wsUrl || 'ws://'+config.host+':'+config.port,
+    enhanceMessage: function(message) {
+      message.sessionToken = authenticationClient.getSessionToken();
+      return message;
+    }.bind(this)
+  });
 }
 
 EditNote.Prototype = function() {
@@ -25,14 +42,14 @@ EditNote.Prototype = function() {
   // ------------------------------------
 
   this.didMount = function() {
-    console.log('did mount');
     this._init();
   };
 
   this.willReceiveProps = function() {
     console.log('willreceive props');
     this.dispose();
-    // TODO: In React it's possible
+    // TODO: This is a bit bad taste. but we need to reset to initial state if we are looking at a different
+    // document
     this.state = this.getInitialState();
     this._init();
   };
@@ -52,7 +69,7 @@ EditNote.Prototype = function() {
 
   this.render = function() {
     console.log('EditNote.render', this.state);
-    var hubClient = this.context.hubClient;
+    var authenticationClient = this.context.authenticationClient;
 
     var el = $$('div').addClass('sc-notepad-wrapper');
 
@@ -66,7 +83,7 @@ EditNote.Prototype = function() {
             $$('button').addClass('se-action').append('New Note') // .on('click', this.send.bind(this, 'newNote'))
           ),
           $$(LoginStatus, {
-            user: hubClient.getUser()
+            user: authenticationClient.getUser()
           }),
           $$(Collaborators, {
             session: this.state.session
@@ -74,7 +91,7 @@ EditNote.Prototype = function() {
         ),
         $$(NoteWriter, {
           documentSession: this.state.session,
-          onUploadFile: hubClient.uploadFile
+          // onUploadFile: hubClient.uploadFile
         }).ref('notepad')
       );
     } else {
@@ -90,11 +107,10 @@ EditNote.Prototype = function() {
     Loads a document and initializes a CollabSession
   */
   this._loadDocument = function() {
-    var hubClient = this.context.hubClient;
+    var collabClient = this.collabClient;
+    var documentClient = this.documentClient;
 
-    // TODO: API could be improved. Maybe better call it jsonDoc and 
-    // provide version just via property
-    hubClient.getDocument(this.props.docId, function(err, rawDoc) {
+    documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({
           error: new Error('Document could not be loaded')
@@ -104,11 +120,11 @@ EditNote.Prototype = function() {
       }
       
       var doc = new Note();
-      doc = converter.importDocument(doc, rawDoc.document);
+      doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {
         docId: this.props.docId,
-        docVersion: rawDoc.version,
-        hubClient: hubClient
+        docVersion: docRecord.version,
+        collabClient: collabClient
       });
 
       // HACK: For debugging purposes
@@ -118,7 +134,6 @@ EditNote.Prototype = function() {
       this.extendState({
         session: session
       });
-
     }.bind(this));
   };
 
