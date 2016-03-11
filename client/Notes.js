@@ -4,7 +4,6 @@ var _ = require('substance/util/helpers');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var AuthenticationClient = require('./AuthenticationClient');
-var CollabClient = require('substance/collab/CollabClient');
 var DocumentClient = require('substance/collab/DocumentClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
@@ -31,8 +30,8 @@ function Notes() {
     }
   });
 
-  var host = config.host || 'localhost';
-  var port = config.port || 5000;
+  config.host = config.host || 'localhost';
+  config.port = config.port || 5000;
   
   // We need to maintain some extra private/internal state in addition to
   // this.state, which is used for routing
@@ -42,16 +41,11 @@ function Notes() {
     authenticated: false
   };
 
-  this.collabClient = new CollabClient({
-    wsUrl: config.wsUrl || 'ws://'+host+':'+port
-  });
-
-  this.documentClient = new DocumentClient({
-    httpUrl: config.documentServerUrl || 'http://'+host+':'+port+'/api/documents/'
-  });
-
+  // Store config for later use (e.g. in child components)
+  this.config = config;
+  
   this.authenticationClient = new AuthenticationClient({
-    httpUrl: config.authenticationServerUrl || 'http://'+host+':'+port+'/api/auth/'
+    httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
   });
   
   this.handleActions({
@@ -80,8 +74,7 @@ Notes.Prototype = function() {
   this.getChildContext = function() {
     return {
       authenticationClient: this.authenticationClient,
-      collabClient: this.collabClient,
-      documentClient: this.documentClient
+      config: this.config
     };
   };
 

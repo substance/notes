@@ -2,6 +2,8 @@ var CollabSession = require('substance/collab/CollabSession');
 var JSONConverter = require('substance/model/JSONConverter');
 var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
+var CollabClient = require('substance/collab/CollabClient');
+var DocumentClient = require('substance/collab/DocumentClient');
 var LoginStatus = require('./LoginStatus');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
@@ -10,6 +12,21 @@ var $$ = Component.$$;
 
 function EditNote() {
   Component.apply(this, arguments);
+
+  var config = this.context.config;
+  var authenticationClient = this.context.authenticationClient;
+  
+  this.documentClient = new DocumentClient({
+    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
+  });
+
+  this.collabClient = new CollabClient({
+    wsUrl: config.wsUrl || 'ws://'+config.host+':'+config.port,
+    enhanceMessage: function(message) {
+      message.sessionToken = authenticationClient.getSessionToken();
+      return message;
+    }.bind(this)
+  });
 }
 
 EditNote.Prototype = function() {
@@ -25,14 +42,14 @@ EditNote.Prototype = function() {
   // ------------------------------------
 
   this.didMount = function() {
-    console.log('did mount');
     this._init();
   };
 
   this.willReceiveProps = function() {
     console.log('willreceive props');
     this.dispose();
-    // TODO: In React it's possible
+    // TODO: This is a bit bad taste. but we need to reset to initial state if we are looking at a different
+    // document
     this.state = this.getInitialState();
     this._init();
   };
@@ -90,8 +107,8 @@ EditNote.Prototype = function() {
     Loads a document and initializes a CollabSession
   */
   this._loadDocument = function() {
-    var collabClient = this.context.collabClient;
-    var documentClient = this.context.documentClient;
+    var collabClient = this.collabClient;
+    var documentClient = this.documentClient;
 
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {

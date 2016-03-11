@@ -4,21 +4,16 @@ var app = express();
 var server = require('substance/util/server');
 var exampleNote = require('./model/exampleNote');
 var CollabServer = require('substance/collab/CollabServer');
-
 var DocumentEngine = require('substance/collab/DocumentEngine');
 var DocumentStore = require('substance/collab/DocumentStore');
 var ChangeStore = require('substance/collab/ChangeStore');
-
 var defaultSeed = require('./data/defaultSeed');
-
 var UserStore = require('./server/UserStore');
 var SessionStore = require('./server/SessionStore');
-
 var AuthenticationServer = require('./server/AuthenticationServer');
 var DocumentServer = require('substance/collab/DocumentServer');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
 var Database = require('./server/Database');
-
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
@@ -48,7 +43,6 @@ var changeStore = new ChangeStore();
 changeStore.seed(defaultSeed.changes);
 var documentStore = new DocumentStore();
 documentStore.seed(defaultSeed.documents);
-
 
 var documentEngine = new DocumentEngine({
   db: db,
@@ -95,14 +89,14 @@ server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
+
 // Connect Substance
 // ----------------
 
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
 
-
-// Set up DocumentServer
+// DocumentServer
 // ----------------
 
 var documentServer = new DocumentServer({
@@ -111,7 +105,8 @@ var documentServer = new DocumentServer({
 });
 documentServer.bind(app);
 
-// Set up collab server
+
+// CollabServer
 // ----------------
 
 var collabServer = new CollabServer({
@@ -123,6 +118,7 @@ var collabServer = new CollabServer({
   authenticate: function(message, cb) {
     var sessionToken = message.sessionToken;
     authenticationEngine.getSession(sessionToken).then(function(session) {
+      console.log('server.js authenticate successful!');
       cb(null, session);
     }).catch(function(err) {
       cb(err);
@@ -133,7 +129,7 @@ var collabServer = new CollabServer({
     Add some user info to the collaborator object (e.g. user.name)
   */
   enhanceCollaborator: function(req, cb) {
-    cb(null, {user: {name: req.session.user.name}});
+    cb(null, {name: req.session.user.name});
   }
 });
 collabServer.bind(wss);

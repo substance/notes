@@ -26,7 +26,8 @@ Collaborators.Prototype = function() {
   };
 
   this._extractInitials = function(collaborator) {
-    if (!collaborator.name) {
+    var name = collaborator.name;
+    if (!name) {
       return 'A';
     }
     var parts = name.split(' ');
