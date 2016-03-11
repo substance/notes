@@ -1,6 +1,7 @@
 "use strict";
 
 var oo = require('substance/util/oo');
+var _ = require('substance/util/helpers');
 
 /*
   Implements the Substance DocumentStore API.
@@ -8,8 +9,6 @@ var oo = require('substance/util/oo');
 function DocumentStore(config) {
   this.config = config;
   this.db = config.db.connection;
-
-  DocumentStore.super.apply(this);
 }
 
 DocumentStore.Prototype = function() {
@@ -24,16 +23,13 @@ DocumentStore.Prototype = function() {
     @param {Function} cb callback
   */
   this.deleteDocument = function(id, cb) {
-    var self = this;
-
     var query = this.db('documents')
                 .where('documentId', id)
                 .del();
-    query.asCallback(function(err) {
+    
+    this.documentExists(id, function(err) {
       if(err) return cb(err);
-      self.removeChanges(id, function(err) {
-        cb(err);
-      });
+      query.asCallback(cb);
     });
   };
 
@@ -44,12 +40,21 @@ DocumentStore.Prototype = function() {
     Internal method to create a document record
   */
   this.createDocument = function(props, cb) {
+    var self = this;
+    if(props.info) props.info = JSON.stringify(props.info);
     this.db.table('documents').insert(props)
       .asCallback(function(err) {
         if (err) return cb(err);
-        // TODO: return inserted document record
-        cb(null);
+        self.getDocument(props.documentId, cb);
       });
+  };
+
+  /*
+    Promise version
+  */
+  this._createDocument = function(props) {
+    if(props.info) props.info = JSON.stringify(props.info);
+    return this.db.table('documents').insert(props);
   };
 
   this.documentExists = function(documentId, cb) {
@@ -59,7 +64,7 @@ DocumentStore.Prototype = function() {
   /*
     Internal method to get a document
   */
-  this._getDocument = function(documentId, cb) {
+  this.getDocument = function(documentId, cb) {
     var query = this.db('documents')
                 .where('documentId', documentId);
 
@@ -69,6 +74,18 @@ DocumentStore.Prototype = function() {
       if (!doc) return cb(new Error('No document found for documentId ' + documentId));
       cb(null, doc);
     });
+  };
+
+  /*
+    List available documents
+    @param {Object} filters filters
+    @param {Function} cb callback
+  */
+  this.listDocuments = function(filters, cb) {
+    var query = this.db('documents')
+                .where(filters);
+
+    query.asCallback(cb);
   };
 
   /*
@@ -96,10 +113,10 @@ DocumentStore.Prototype = function() {
   */
 
   this.seed = function(seed) {
-    //var self = this;
-    //var actions = map(seed, self.createUser.bind(self));
-    console.log(seed);
-    //return Promise.all(actions);
+    var self = this;
+    var actions = _.map(seed, self._createDocument.bind(self));
+
+    return Promise.all(actions);
   };
 };
 
