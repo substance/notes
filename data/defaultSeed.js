@@ -23,7 +23,9 @@ var defaultSeed = {
       schemaName: 'prose-article',
       schemaVersion: '1.0.0',
       version: 1,
-      userId: 1
+      info: {
+        userId: 1
+      }
     }
   },
   changes: {

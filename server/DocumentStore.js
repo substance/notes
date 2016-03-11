@@ -41,7 +41,10 @@ DocumentStore.Prototype = function() {
   */
   this.createDocument = function(props, cb) {
     var self = this;
-    if(props.info) props.info = JSON.stringify(props.info);
+    if(props.info) {
+      if(props.info.userId) props.userId = props.info.userId;
+      props.info = JSON.stringify(props.info);
+    }
     this.db.table('documents').insert(props)
       .asCallback(function(err) {
         if (err) return cb(err);
@@ -53,7 +56,10 @@ DocumentStore.Prototype = function() {
     Promise version
   */
   this._createDocument = function(props) {
-    if(props.info) props.info = JSON.stringify(props.info);
+    if(props.info) {
+      if(props.info.userId) props.userId = props.info.userId;
+      props.info = JSON.stringify(props.info);
+    }
     return this.db.table('documents').insert(props);
   };
 
@@ -80,6 +86,9 @@ DocumentStore.Prototype = function() {
       if (err) return cb(err);
       doc = doc[0];
       if (!doc) return cb(new Error('No document found for documentId ' + documentId));
+      if(doc.info) {
+        doc.info = JSON.parse(doc.info);
+      }
       cb(null, doc);
     });
   };
