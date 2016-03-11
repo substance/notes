@@ -4,7 +4,6 @@ var _ = require('substance/util/helpers');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var AuthenticationClient = require('./AuthenticationClient');
-var DocumentClient = require('substance/collab/DocumentClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
@@ -43,7 +42,7 @@ function Notes() {
 
   // Store config for later use (e.g. in child components)
   this.config = config;
-  
+
   this.authenticationClient = new AuthenticationClient({
     httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
   });
