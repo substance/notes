@@ -1,11 +1,6 @@
 "use strict";
 
-// var fs = require('fs');
-// var path = require('path');
-// var each = require('lodash/each');
-// var async = require('async');
 var oo = require('substance/util/oo');
-
 var _ = require('substance/util/helpers');
 
 /*

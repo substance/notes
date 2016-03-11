@@ -7,7 +7,6 @@ var UserStore = require('../../server/UserStore');
 var SessionStore = require('../../server/SessionStore');
 var AuthenticationEngine = require('../../server/AuthenticationEngine');
 
-
 var db, userStore, sessionStore, engine;
 
 QUnit.module('server/AuthenticationEngine', {
