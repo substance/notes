@@ -1,11 +1,6 @@
 "use strict";
 
-// var fs = require('fs');
-// var path = require('path');
-// var each = require('lodash/each');
-// var async = require('async');
 var oo = require('substance/util/oo');
-
 var _ = require('substance/util/helpers');
 
 /*
@@ -27,40 +22,58 @@ ChangeStore.Prototype = function() {
     @param {Object} args arguments
     @param {String} args.documentId document id
     @param {Object} args.change JSON object
-    @param {String} args.userId user id
     @param {Function} cb callback
   */
   this.addChange = function(args, cb) {
     var self = this;
     
-    this._documentExists(args.documentId, function(err) {
+    self.getVersion(args.documentId, function(err, headVersion) {
       if (err) return cb(err);
-      self.getVersion(args.documentId, function(err, headVersion) {
-        if (err) return cb(err);
-        var version = headVersion + 1;
+      var version = headVersion + 1;
+      var record = {
+        id: args.documentId + '/' + version,
+        document: args.documentId,
+        pos: version,
+        data: JSON.stringify(args.change),
+        timestamp: Date.now()
+      };
+
+      self.db.table('changes').insert(record)
+        .asCallback(function(err) {
+          if (err) return cb(err);
+          cb(null, version);
+        });
+    });
+  };
+
+  /*
+    Add a change to a document
+
+    Promise based version
+
+    @param {Object} args arguments
+    @param {String} args.documentId document id
+    @param {Object} args.change JSON object
+  */
+  this._addChange = function(args) {
+    var self = this;
+    var version;
+
+    return self._getVersion(args.documentId)
+      .then(function(headVersion) {
+        version = headVersion + 1;
         var record = {
           id: args.documentId + '/' + version,
           document: args.documentId,
           pos: version,
           data: JSON.stringify(args.change),
-          timestamp: Date.now(),
-          userId: args.userId
+          timestamp: Date.now()
         };
-
-        self.db.table('changes').insert(record)
-          .asCallback(function(err) {
-            if (err) return cb(err);
-            var req = {
-              documentId: args.documentId,
-              version: version
-            };
-            self.requestSnapshotCreation(req, function(err) {
-              if (err) return cb(err);
-              cb(null, version);
-            });
-          });
+        return self.db.table('changes').insert(record);
+      })
+      .then(function() {
+        return version;
       });
-    });
   };
 
   /*
@@ -73,27 +86,23 @@ ChangeStore.Prototype = function() {
   */
   this.getChanges = function(args, cb) {
     var self = this;
-
-    this._documentExists(args.documentId, function(err) {
-      if(err) return cb(err);
       
-      var query = self.db('changes')
-                  .select('data', 'id')
-                  .where('document', args.documentId)
-                  .andWhere('pos', '>=', args.sinceVersion)
-                  .orderBy('pos', 'asc');
+    var query = self.db('changes')
+                .select('data', 'id')
+                .where('document', args.documentId)
+                .andWhere('pos', '>=', args.sinceVersion)
+                .orderBy('pos', 'asc');
 
-      query.asCallback(function(err, changes) {
+    query.asCallback(function(err, changes) {
+      if (err) return cb(err);
+      changes = _.map(changes, function(c) {return JSON.parse(c.data); });
+      self.getVersion(args.documentId, function(err, headVersion) {
         if (err) return cb(err);
-        changes = _.map(changes, function(c) {return JSON.parse(c.data); });
-        self.getVersion(args.documentId, function(err, headVersion) {
-          if (err) return cb(err);
-          var res = {
-            currentVersion: headVersion,
-            changes: changes
-          };
-          return cb(null, res);
-        });
+        var res = {
+          version: headVersion,
+          changes: changes
+        };
+        return cb(null, res);
       });
     });
   };
@@ -113,7 +122,6 @@ ChangeStore.Prototype = function() {
       return cb(err);
     });
   };
-
 
   /*
     Get the version number for a document
@@ -137,6 +145,24 @@ ChangeStore.Prototype = function() {
   };
 
   /*
+    Get the version number for a document
+
+    Promise based version
+
+    @param {String} id document id
+  */
+  this._getVersion = function(id) {
+    var query = this.db('changes')
+                .where('document', id)
+                .count();
+
+    return query.then(function(count) {
+      var result = count[0]['count(*)'];
+      return result;
+    });
+  };
+
+  /*
     Resets the database and loads a given seed object
 
     Be careful with running this in production
@@ -146,14 +172,19 @@ ChangeStore.Prototype = function() {
   */
 
   this.seed = function(changes) {
-    //var self = this;
-    //var actions = map(seed, self.createUser.bind(self));
-    console.log(changes);
-    //return Promise.all(actions);
+    var self = this;
+    var actions = _.map(changes, function(change, docId) {
+      var args = {
+        documentId: docId,
+        change: change
+      };
+      return self._addChange(args);
+    });
+
+    return Promise.all(actions);
   };
 };
 
 oo.initClass(ChangeStore);
 
 module.exports = ChangeStore;
-
