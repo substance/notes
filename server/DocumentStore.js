@@ -58,7 +58,15 @@ DocumentStore.Prototype = function() {
   };
 
   this.documentExists = function(documentId, cb) {
-    this._documentExists(documentId, cb);
+    var query = this.db('documents')
+            .where('documentId', documentId)
+            .limit(1);
+
+    query.asCallback(function(err, doc) {
+      if (err) return cb(err);
+      if(doc.length === 0) return cb(new Error('Document does not exist'));
+      cb(null);
+    });
   };
 
   /*
@@ -87,21 +95,6 @@ DocumentStore.Prototype = function() {
 
     query.asCallback(cb);
   };
-
-  /*
-    Check if document exists
-  */
-  this._documentExists = function(documentId, cb) {
-    var query = this.db('documents')
-                .where('documentId', documentId)
-                .limit(1);
-    query.asCallback(function(err, doc) {
-      if (err) return cb(err);
-      if(doc.length === 0) return cb(new Error('Document does not exist'));
-      cb(null);
-    });
-  };
-
 
   /*
     Resets the database and loads a given seed object
