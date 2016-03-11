@@ -40,19 +40,14 @@ if (process.argv[2] == 'seed') {
 // -------------------------------
 
 var userStore = new UserStore({ db: db });
-userStore.seed({
-  'testuser': {
-    userId: 'testuser',
-    name: 'Test User',
-    loginKey: '1234',
-    email: 'test@example.com'
-  }
-});
 var sessionStore = new SessionStore({ db: db });
+
+// We use the in-memory versions for now, thus we need to seed
+// each time.
 var changeStore = new ChangeStore();
 changeStore.seed(changeStoreSeed);
 var documentStore = new DocumentStore();
-documentStore.seed(documentStore);
+documentStore.seed(documentStoreSeed);
 
 
 var documentEngine = new DocumentEngine({
@@ -153,7 +148,7 @@ authenticationServer.bind(app);
 
 app.get('/hub/api/documents/:id', function(req, res, next) {
   documentStore.getSnapshot(req.params.id, function(err, doc, version) {
-    if(err) return next(err);
+    if (err) return next(err);
     res.json({
       document: doc,
       version: version

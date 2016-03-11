@@ -69,7 +69,6 @@ AuthenticationClient.Prototype = function() {
       if (err) return cb(err);
       this._session = hubSession;
       cb(null, hubSession);
-      this.emit('authenticate');
     }.bind(this));
   };
 
@@ -80,7 +79,6 @@ AuthenticationClient.Prototype = function() {
   */
   this.logout = function() {
     this._session = null;
-    this.emit('unauthenticate');
   };
 
   /*

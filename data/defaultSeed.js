@@ -1,23 +1,13 @@
 var exampleNote = require('../model/exampleNote');
 
-// Fixture for backend
+// App seed
 var defaultSeed = {
   users: {
-    '1': {
-      userId: '1',
-      name: 'Demo',
-      loginKey: '1234'
-    }
-  },
-  documents: {
-    'note-1': {
-      documentId: 'note-1',
-      userId: '1',
-      schema: {
-        name: 'substance-note',
-        version: '1.0.0'
-      },
-      changes: exampleNote.createChangeset()
+    'testuser': {
+      userId: 'testuser',
+      name: 'Test User',
+      loginKey: '1234',
+      email: 'test@example.com'
     }
   },
   // TODO: that's a security issue
@@ -26,8 +16,18 @@ var defaultSeed = {
       'userId': '1',
       'sessionToken': 'user1token'
     }
+  },
+  documents: {
+    'note-1': {
+      documentId: 'note-1',
+      schemaName: 'substance-note',
+      schemaVersion: '1.0.0',
+      version: 1 // document has one change = version 1
+    }
+  },
+  changes: {
+    'note-1': exampleNote.createChangeset()
   }
 };
-
 
 module.exports = defaultSeed;

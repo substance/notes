@@ -187,19 +187,18 @@ Notes.Prototype = function() {
     }
 
     switch (this.state.mode) {
-      case 'index':
+      case 'edit':
+        el.append($$(EditNote, {
+          docId: this.state.docId
+        }).ref('editNote'));
+        break;
+      default: // mode=index or default
         if (this._state.authenticated) {
           el.append($$(Dashboard).ref('dashboard'));
         } else {
           el.append($$(Welcome).ref('welcome'));
         }
         break;
-      case 'edit':
-        el.append($$(EditNote, {
-          docId: this.state.docId
-        }).ref('editNote'));
-        break;
-      default:
         console.error('Unsupported mode', this.state.mode);
     }
     return el;
