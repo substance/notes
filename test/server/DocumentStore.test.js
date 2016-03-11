@@ -8,20 +8,17 @@ var DocumentStore = require('../../server/DocumentStore');
 var documentStore = new DocumentStore({ db: db });
 
 QUnit.module('server/DocumentStore', {
-	beforeEach: function() {
-		return db.reset()
+  beforeEach: function() {
+    return db.reset()
       .then(function() {
-				var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed.documents));
-				return documentStore.seed(newDocumentStoreSeed);
-  		});
-  	}
+        var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed.documents));
+        return documentStore.seed(newDocumentStoreSeed);
+      });
+    }
 });
 
 // Runs the offical document store test suite
 testDocumentStore(documentStore, QUnit);
-
-
-// TODO: activate app specific APIs.
 
 QUnit.test('List documents', function(assert) {
   var done = assert.async();
