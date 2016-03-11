@@ -18,14 +18,11 @@ var defaultSeed = {
     }
   },
   documents: {
-    'test-doc': {
-      documentId: 'test-doc',
-      schemaName: 'prose-article',
+    'note-1': {
+      documentId: 'note-1',
+      schemaName: 'substance-note',
       schemaVersion: '1.0.0',
-      version: 1,
-      info: {
-        userId: 1
-      }
+      version: 1 // document has one change = version 1
     }
   },
   changes: {

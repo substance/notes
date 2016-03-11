@@ -2,7 +2,17 @@
 
 require('../qunit_extensions');
 
-var documentStoreSeed = require('../../data/defaultSeed');
+var documentStoreSeed = {
+  'test-doc': {
+    documentId: 'test-doc',
+    schemaName: 'prose-article',
+    schemaVersion: '1.0.0',
+    version: 1,
+    info: {
+      userId: 1
+    }
+  }
+};
 var testDocumentStore = require('substance/test/collab/testDocumentStore');
 var DocumentStore = require('../../server/DocumentStore');
 var documentStore = new DocumentStore({ db: db });
@@ -11,7 +21,7 @@ QUnit.module('server/DocumentStore', {
   beforeEach: function() {
     return db.reset()
       .then(function() {
-        var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed.documents));
+        var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed));
         return documentStore.seed(newDocumentStoreSeed);
       });
     }
