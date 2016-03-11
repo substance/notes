@@ -4,6 +4,10 @@ var each = require('lodash/each');
 var QUnit = require('qunitjs');
 var colors = require('colors');
 
+var Database = require('../server/Database');
+var db = new Database();
+
+global.db = db;
 global.QUnit = QUnit;
 
 var files = glob.sync('**/*/*.test.js', {cwd: 'test'});
@@ -42,6 +46,7 @@ QUnit.log(function(data) {
 });
 
 QUnit.done(function(data) {
+  db.shutdown();
   if (fails > 0) {
     console.error('FAILED: %d tests of %d failed'.red, fails, count);
     process.exit(1);
