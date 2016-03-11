@@ -5,6 +5,7 @@ var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var AuthenticationClient = require('./AuthenticationClient');
 var CollabClient = require('substance/collab/CollabClient');
+var DocumentClient = require('substance/collab/DocumentClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
@@ -45,6 +46,10 @@ function Notes() {
     wsUrl: config.wsUrl || 'ws://'+host+':'+port
   });
 
+  this.documentClient = new DocumentClient({
+    httpUrl: config.documentServerUrl || 'http://'+host+':'+port+'/api/documents/'
+  });
+
   this.authenticationClient = new AuthenticationClient({
     httpUrl: config.authenticationServerUrl || 'http://'+host+':'+port+'/api/auth/'
   });
@@ -75,7 +80,8 @@ Notes.Prototype = function() {
   this.getChildContext = function() {
     return {
       authenticationClient: this.authenticationClient,
-      collabClient: this.collabClient
+      collabClient: this.collabClient,
+      documentClient: this.documentClient
     };
   };
 
@@ -199,7 +205,6 @@ Notes.Prototype = function() {
           el.append($$(Welcome).ref('welcome'));
         }
         break;
-        console.error('Unsupported mode', this.state.mode);
     }
     return el;
   };

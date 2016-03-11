@@ -7,15 +7,15 @@ var CollabServer = require('substance/collab/CollabServer');
 
 var DocumentEngine = require('substance/collab/DocumentEngine');
 var DocumentStore = require('substance/collab/DocumentStore');
-var ChangeStore = require('substance/collab/DocumentStore');
+var ChangeStore = require('substance/collab/ChangeStore');
 
-var documentStoreSeed = require('substance/test/fixtures/collab/documentStoreSeed');
-var changeStoreSeed = require('substance/test/fixtures/collab/changeStoreSeed');
+var defaultSeed = require('./data/defaultSeed');
 
 var UserStore = require('./server/UserStore');
 var SessionStore = require('./server/SessionStore');
 
 var AuthenticationServer = require('./server/AuthenticationServer');
+var DocumentServer = require('substance/collab/DocumentServer');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
 var Database = require('./server/Database');
 
@@ -45,9 +45,9 @@ var sessionStore = new SessionStore({ db: db });
 // We use the in-memory versions for now, thus we need to seed
 // each time.
 var changeStore = new ChangeStore();
-changeStore.seed(changeStoreSeed);
+changeStore.seed(defaultSeed.changes);
 var documentStore = new DocumentStore();
-documentStore.seed(documentStoreSeed);
+documentStore.seed(defaultSeed.documents);
 
 
 var documentEngine = new DocumentEngine({
@@ -101,11 +101,21 @@ app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
 
+
+// Set up DocumentServer
+// ----------------
+
+var documentServer = new DocumentServer({
+  documentEngine: documentEngine,
+  path: '/api/documents'
+});
+documentServer.bind(app);
+
 // Set up collab server
 // ----------------
 
 var collabServer = new CollabServer({
-  documentStore: documentStore,
+  documentEngine: documentEngine,
 
   /*
     Checks for authentication based on message.sessionToken
@@ -143,19 +153,6 @@ authenticationServer.bind(app);
 // 
 // We just moved that out of the Collab hub as it's app specific code
 
-// Should go into DocumentServer module
-// ----------------
-
-app.get('/hub/api/documents/:id', function(req, res, next) {
-  documentStore.getSnapshot(req.params.id, function(err, doc, version) {
-    if (err) return next(err);
-    res.json({
-      document: doc,
-      version: version
-    });
-  });
-});
-
 // Should go into FileServer module
 // ----------------
 
@@ -167,10 +164,11 @@ app.get('/hub/api/documents/:id', function(req, res, next) {
 // We send JSON to the client so they can display messages in the UI.
 
 /* jshint unused: false */
-app.use(function(err, req, res, next) {
-  console.log('Server error: ', err);
-  res.status(500).json({errorMessage: err.message});
-});
+
+// app.use(function(err, req, res, next) {
+//   console.log('Server error: ', err);
+//   res.status(500).json({errorMessage: err.message});
+// });
 
 // Delegate http requests to express app
 httpServer.on('request', app);

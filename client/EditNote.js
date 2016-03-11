@@ -52,7 +52,7 @@ EditNote.Prototype = function() {
 
   this.render = function() {
     console.log('EditNote.render', this.state);
-    var hubClient = this.context.hubClient;
+    var authenticationClient = this.context.authenticationClient;
 
     var el = $$('div').addClass('sc-notepad-wrapper');
 
@@ -66,7 +66,7 @@ EditNote.Prototype = function() {
             $$('button').addClass('se-action').append('New Note') // .on('click', this.send.bind(this, 'newNote'))
           ),
           $$(LoginStatus, {
-            user: hubClient.getUser()
+            user: authenticationClient.getUser()
           }),
           $$(Collaborators, {
             session: this.state.session
@@ -74,7 +74,7 @@ EditNote.Prototype = function() {
         ),
         $$(NoteWriter, {
           documentSession: this.state.session,
-          onUploadFile: hubClient.uploadFile
+          // onUploadFile: hubClient.uploadFile
         }).ref('notepad')
       );
     } else {
@@ -90,11 +90,10 @@ EditNote.Prototype = function() {
     Loads a document and initializes a CollabSession
   */
   this._loadDocument = function() {
-    var hubClient = this.context.hubClient;
+    var collabClient = this.context.collabClient;
+    var documentClient = this.context.documentClient;
 
-    // TODO: API could be improved. Maybe better call it jsonDoc and 
-    // provide version just via property
-    hubClient.getDocument(this.props.docId, function(err, rawDoc) {
+    documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({
           error: new Error('Document could not be loaded')
@@ -104,11 +103,11 @@ EditNote.Prototype = function() {
       }
       
       var doc = new Note();
-      doc = converter.importDocument(doc, rawDoc.document);
+      doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {
         docId: this.props.docId,
-        docVersion: rawDoc.version,
-        hubClient: hubClient
+        docVersion: docRecord.version,
+        collabClient: collabClient
       });
 
       // HACK: For debugging purposes
@@ -118,7 +117,6 @@ EditNote.Prototype = function() {
       this.extendState({
         session: session
       });
-
     }.bind(this));
   };
 
