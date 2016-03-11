@@ -25,7 +25,10 @@ Collaborators.Prototype = function() {
     this.props.session.off(this);
   };
 
-  this._extractInitials = function(name) {
+  this._extractInitials = function(collaborator) {
+    if (!collaborator.name) {
+      return 'A';
+    }
     var parts = name.split(' ');
     return parts.map(function(part) {
       return part[0].toUpperCase(); // only use the first letter of a part
@@ -37,9 +40,9 @@ Collaborators.Prototype = function() {
 
     var collaborators = this.props.session.collaborators;
     forEach(collaborators, function(collaborator) {
-      var initials = this._extractInitials(collaborator.user.name);
+      var initials = this._extractInitials(collaborator);
       el.append(
-        $$('div').addClass('se-collaborator sm-collaborator-'+collaborator.colorIndex).attr({title: collaborator.user.name}).append(
+        $$('div').addClass('se-collaborator sm-collaborator-'+collaborator.colorIndex).attr({title: collaborator.name || 'Anonymous'}).append(
           initials
         )
       );
