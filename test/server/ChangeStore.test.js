@@ -18,13 +18,5 @@ QUnit.module('server/ChangeStore', {
     }
 });
 
-// QUnit.moduleStart(function() {
-//   db = new Database();
-// });
-
-// QUnit.moduleDone(function() {
-//   db.shutdown();
-// });
-
 // Runs the offical document store test suite
 testChangeStore(changeStore, QUnit);
