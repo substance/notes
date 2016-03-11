@@ -2,17 +2,13 @@
 
 require('../qunit_extensions');
 
-var Database = require('../../server/Database');
-var db;
-
 var UserStore = require('../../server/UserStore');
-var userStore;
+var userStore = new UserStore({ db: db });
 
 QUnit.module('server/UserStore', {
   beforeEach: function() {
     return db.reset()
       .then(function() {
-        userStore = new UserStore({ db: db });
         return userStore.seed({
           'testuser': {
             userId: 'testuser',
@@ -23,14 +19,6 @@ QUnit.module('server/UserStore', {
         });
       });
   }
-});
-
-QUnit.moduleStart(function() {
-  db = new Database();
-});
-
-QUnit.moduleDone(function() {
-  db.shutdown();
 });
 
 QUnit.test('Get user', function(assert) {

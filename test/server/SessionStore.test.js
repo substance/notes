@@ -2,17 +2,13 @@
 
 require('../qunit_extensions');
 
-var Database = require('../../server/Database');
-var db;
-
 var SessionStore = require('../../server/SessionStore');
-var sessionStore;
+var sessionStore = new SessionStore({ db: db });
 
 QUnit.module('server/SessionStore', {
   beforeEach: function() {
     return db.reset()
       .then(function() {
-        sessionStore = new SessionStore({ db: db });
         return sessionStore.seed({
           'user1token': {
 			      'userId': 'testuser',
@@ -21,14 +17,6 @@ QUnit.module('server/SessionStore', {
         });
       });
   }
-});
-
-QUnit.moduleStart(function() {
-  db = new Database();
-});
-
-QUnit.moduleDone(function() {
-  db.shutdown();
 });
 
 QUnit.test('Create session', function(assert) {

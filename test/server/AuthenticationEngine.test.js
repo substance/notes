@@ -2,13 +2,11 @@
 
 require('../qunit_extensions');
 
-var Database = require('../../server/Database');
 var UserStore = require('../../server/UserStore');
 var SessionStore = require('../../server/SessionStore');
 var AuthenticationEngine = require('../../server/AuthenticationEngine');
 
-
-var db, userStore, sessionStore, engine;
+var userStore, sessionStore, engine;
 
 QUnit.module('server/AuthenticationEngine', {
   beforeEach: function(assert) {
@@ -38,14 +36,6 @@ QUnit.module('server/AuthenticationEngine', {
         });
       });
   }
-});
-
-QUnit.moduleStart(function() {
-  db = new Database();
-});
-
-QUnit.moduleDone(function() {
-  db.shutdown();
 });
 
 QUnit.test('Authenticate with session token', function(assert) {
