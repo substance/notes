@@ -176,7 +176,7 @@ ChangeStore.Prototype = function() {
     var actions = _.map(changes, function(change, docId) {
       var args = {
         documentId: docId,
-        change: change
+        change: change[0]
       };
       return self._addChange(args);
     });
