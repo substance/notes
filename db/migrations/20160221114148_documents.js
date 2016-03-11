@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
     table.string('schemaName');
     table.string('schemaVersion');
     table.string('snapshot');
+    table.string('info');
     table.integer('version');
     table.integer('userId');
   });
