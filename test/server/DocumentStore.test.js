@@ -2,6 +2,10 @@
 
 require('../qunit_extensions');
 
+var db = require('../db');
+var testDocumentStore = require('substance/test/collab/testDocumentStore');
+var DocumentStore = require('../../server/DocumentStore');
+
 var documentStoreSeed = {
   'test-doc': {
     documentId: 'test-doc',
@@ -13,8 +17,7 @@ var documentStoreSeed = {
     }
   }
 };
-var testDocumentStore = require('substance/test/collab/testDocumentStore');
-var DocumentStore = require('../../server/DocumentStore');
+
 var documentStore = new DocumentStore({ db: db });
 
 QUnit.module('server/DocumentStore', {

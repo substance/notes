@@ -5,11 +5,11 @@ require('../qunit_extensions');
 var UserStore = require('../../server/UserStore');
 var SessionStore = require('../../server/SessionStore');
 var AuthenticationEngine = require('../../server/AuthenticationEngine');
-
+var db = require('../db');
 var userStore, sessionStore, engine;
 
 QUnit.module('server/AuthenticationEngine', {
-  beforeEach: function(assert) {
+  beforeEach: function() {
     return db.reset()
       .then(function() {
         userStore = new UserStore({ db: db});
@@ -80,5 +80,29 @@ QUnit.test('Authenticate with wrong loginKey', function(assert) {
 	assert.expect(1);
   return engine.authenticate({loginKey: 'xyz'}).catch(function(err) {
 		assert.equal(err.message, 'No user found for provided loginKey', 'Should be no user found error');
+  });
+});
+
+QUnit.test('Request login link for an existing email', function(assert) {
+  assert.expect(1);
+  return engine.requestLoginLink({email: 'test@example.com'}).then(function(result) {
+    assert.ok(result.loginKey, 'There should be a new login key');
+  });
+});
+
+QUnit.test('Request login link for an email that does not exist', function(assert) {
+  assert.expect(2);
+  return engine.requestLoginLink({email: 'other@email.com'}).then(function(result) {
+    assert.ok(result.loginKey, 'There should be a new login key');
+    return userStore.getUserByEmail('other@email.com');
+  }).then(function(user) {
+    assert.ok(user, 'There should be a new user in the database');
+  });
+});
+
+QUnit.test('Request login link for an invalid email should error', function(assert) {
+  assert.expect(1);
+  return engine.requestLoginLink({email: 'foo/bar'}).catch(function(err) {
+    assert.equal(err.message, 'invalid-email');
   });
 });

@@ -11,7 +11,11 @@ Welcome.Prototype = function() {
     Send Dashboard link including one-time loginKey
   */
   this._sendEmail = function() {
-    console.log('send email');
+    var email = this.refs.email.val();
+    var authenticationClient = this.context.authenticationClient;
+    authenticationClient.requestLoginLink(email, function(err, res) {
+      console.log('Email link requested', res);
+    });
   };
 
   this.render = function() {

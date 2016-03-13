@@ -2,6 +2,7 @@
 
 require('../qunit_extensions');
 
+var db = require('../db');
 var SessionStore = require('../../server/SessionStore');
 var sessionStore = new SessionStore({ db: db });
 

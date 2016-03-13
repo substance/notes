@@ -65,7 +65,7 @@ AuthenticationClient.Prototype = function() {
     Logindata consists of an object (usually with login/password properties)
   */
   this.authenticate = function(loginData, cb) {
-    this._request('POST', this.config.httpUrl +'authenticate', loginData, function(err, hubSession) {
+    this._request('POST', this.config.httpUrl + 'authenticate', loginData, function(err, hubSession) {
       if (err) return cb(err);
       this._session = hubSession;
       cb(null, hubSession);
@@ -82,16 +82,14 @@ AuthenticationClient.Prototype = function() {
   };
 
   /*
-    Signup a new user
+    Request a login link for a given email address
   */
-  // this.signup = function(userData, cb) {
-  //   this._request('POST', '/hub/api/signup', userData, function(err, res) {
-  //     if (err) return cb(err);
-  //     this._session = res.session;
-  //     cb(null, res.loginKey);
-  //     this.emit('authenticate');
-  //   }.bind(this));
-  // };
+  this.requestLoginLink = function(email, cb) {
+    this._request('POST', this.config.httpUrl + 'loginlink', {email: email}, function(err, res) {
+      if (err) return cb(err);
+      cb(null, res);
+    }.bind(this));
+  };
 
 };
 

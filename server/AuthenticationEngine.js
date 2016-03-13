@@ -20,15 +20,13 @@ AuthenticationEngine.Prototype = function() {
   */
   this.requestLoginLink = function(args) {
     var userStore = this.userStore;
-    userStore.getUserbyEmail(args.email)
-      .then(this._updateLoginKey.bind(this))
+    return userStore.getUserByEmail(args.email)
       .catch(function() {
         // User does not exist, we create a new one
         return userStore.createUser({email: args.email});
       })
-      .then(function(user) {
-        return this._sendLoginLink(user);
-      });
+      .then(this._updateLoginKey.bind(this))
+      .then(this._sendLoginLink.bind(this));
   };
 
   /*
@@ -53,29 +51,28 @@ AuthenticationEngine.Prototype = function() {
   */
   this._updateLoginKey = function(user) {
     var userStore = this.userStore;
-    return userStore.getUserbyEmail(user.email).then(function(user) {
-      var newLoginKey = uuid();
-      return userStore.updateUser(user.userId, {loginKey: newLoginKey});
-    });
+    var newLoginKey = uuid();
+    return userStore.updateUser(user.userId, {loginKey: newLoginKey});
   };
 
   /*
     Send a login link via email
   */
   this._sendLoginLink = function(user) {
-    return new Promise(function(resolve, reject) {
-      var subject = "Welcome to the Substance Notes!";
-      var msg = "Click the following link to login: http://notes.substance.io/login/" + user.loginKey;
+    var subject = "Welcome to the Substance Notes!";
+    var msg = "Click the following link to login: http://notes.substance.io/#loginKey=" + user.loginKey;
+    console.log('Message', msg);
 
-      Mail.sendPlain(user.email, subject, msg)
-        .then(function(info){
-          console.log(info);
-          resolve();
-        }).catch(function(err){
-          console.log(err);
-          reject(err);
-        });
-    });
+    return Mail.sendPlain(user.email, subject, msg)
+      .then(function(info){
+        console.log(info);
+        return {
+          loginKey: user.loginKey
+        };
+      }).catch(function(err) {
+        console.log(err);
+        throw new Error('email-error');
+      });
   };
 
   /*

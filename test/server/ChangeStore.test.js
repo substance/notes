@@ -2,6 +2,7 @@
 
 require('../qunit_extensions');
 
+var db = require('../db');
 var changeStoreSeed = require('substance/test/fixtures/collab/changeStoreSeed');
 var ChangeStore = require('../../server/ChangeStore');
 var changeStore = new ChangeStore({ db: db });

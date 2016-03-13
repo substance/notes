@@ -3,6 +3,7 @@
 require('../qunit_extensions');
 
 var UserStore = require('../../server/UserStore');
+var db = require('../db');
 var userStore = new UserStore({ db: db });
 
 QUnit.module('server/UserStore', {

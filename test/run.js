@@ -4,10 +4,9 @@ var each = require('lodash/each');
 var QUnit = require('qunitjs');
 var colors = require('colors');
 
-var Database = require('../server/Database');
-var db = new Database();
-
+var db = require('./db');
 global.db = db;
+
 global.QUnit = QUnit;
 
 var files = glob.sync('**/*/*.test.js', {cwd: 'test'});
