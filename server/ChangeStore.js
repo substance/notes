@@ -2,6 +2,8 @@
 
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
+var has = require('lodash/has');
+var Err = require('substance/util/Error');
 
 /*
   Implements the Substance DocumentStore API.
@@ -26,9 +28,17 @@ ChangeStore.Prototype = function() {
   */
   this.addChange = function(args, cb) {
     var self = this;
+
+    if(!has(args, 'documentId')) {
+      return cb(new Err('ChangeStore.CreateError', {
+        message: 'documentId is mandatory'
+      }));
+    }
     
     self.getVersion(args.documentId, function(err, headVersion) {
-      if (err) return cb(err);
+      if (err) return cb(new Err('ChangeStore.GetVersionError', {
+        cause: err
+      }));
       var version = headVersion + 1;
       var record = {
         id: args.documentId + '/' + version,
@@ -40,7 +50,9 @@ ChangeStore.Prototype = function() {
 
       self.db.table('changes').insert(record)
         .asCallback(function(err) {
-          if (err) return cb(err);
+          if (err) return cb(new Err('ChangeStore.CreateError', {
+            cause: err
+          }));
           cb(null, version);
         });
     });
@@ -86,6 +98,12 @@ ChangeStore.Prototype = function() {
   */
   this.getChanges = function(args, cb) {
     var self = this;
+
+    if(!has(args, 'sinceVersion') || args.sinceVersion < 0) {
+      return cb(new Err('ChangeStore.ReadError', {
+        message: 'sinceVersion is mandatory and should be grater or equal then 0'
+      }));
+    }
       
     var query = self.db('changes')
                 .select('data', 'id')
@@ -94,10 +112,14 @@ ChangeStore.Prototype = function() {
                 .orderBy('pos', 'asc');
 
     query.asCallback(function(err, changes) {
-      if (err) return cb(err);
+      if (err) return cb(new Err('ChangeStore.ReadError', {
+        cause: err
+      }));
       changes = _.map(changes, function(c) {return JSON.parse(c.data); });
       self.getVersion(args.documentId, function(err, headVersion) {
-        if (err) return cb(err);
+        if (err) return cb(new Err('ChangeStore.GetVersionError', {
+          cause: err
+        }));
         var res = {
           version: headVersion,
           changes: changes
@@ -113,13 +135,16 @@ ChangeStore.Prototype = function() {
     @param {String} id document id
     @param {Function} cb callback
   */
-  this.removeChanges = function(id, cb) {
+  this.deleteChanges = function(id, cb) {
     var query = this.db('changes')
                 .where('document', id)
                 .del();
 
-    query.asCallback(function(err) {
-      return cb(err);
+    query.asCallback(function(err, deletedCount) {
+      if (err) return cb(new Err('ChangeStore.DeleteError', {
+        cause: err
+      }));
+      return cb(null, deletedCount);
     });
   };
 
@@ -138,7 +163,9 @@ ChangeStore.Prototype = function() {
                 .count();
 
     query.asCallback(function(err, count) {
-      if (err) return cb(err);
+      if (err) return cb(new Err('ChangeStore.GetVersionError', {
+        cause: err
+      }));
       var result = count[0]['count(*)'];
       return cb(null, result);
     });
