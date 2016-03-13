@@ -8,11 +8,12 @@ var LoginStatus = require('./LoginStatus');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
 var Component = require('substance/ui/Component');
+var Err = require('substance/util/Error');
 var $$ = Component.$$;
 
 function EditNote() {
   Component.apply(this, arguments);
-
+  
   var config = this.context.config;
   var authenticationClient = this.context.authenticationClient;
   
@@ -113,9 +114,12 @@ EditNote.Prototype = function() {
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({
-          error: new Error('Document could not be loaded')
+          error: new Err('EditNote.LoadingError', {
+            message: 'Document could not be loaded.',
+            cause: err
+          })
         });
-        console.log('ERROR', err);
+        console.error('ERROR', err);
         return;
       }
       

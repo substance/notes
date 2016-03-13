@@ -2,6 +2,7 @@
 
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
+var Err = require('substance/util/Error');
 
 /*
   Implements the Substance DocumentStore API.
@@ -14,22 +15,31 @@ function DocumentStore(config) {
 DocumentStore.Prototype = function() {
 
   /*
-    Remove a document from the db
+    Remove a document record from the db
 
-    Removes a document and all changes
-    belonged to this document
-
-    @param {String} id document id
+    @param {String} documentId document id
     @param {Function} cb callback
   */
-  this.deleteDocument = function(id, cb) {
+  this.deleteDocument = function(documentId, cb) {
     var query = this.db('documents')
-                .where('documentId', id)
+                .where('documentId', documentId)
                 .del();
     
-    this.documentExists(id, function(err) {
-      if(err) return cb(err);
-      query.asCallback(cb);
+    this.getDocument(documentId, function(err, doc) {
+      if (err) {
+        return cb(new Err('DocumentStore.DeleteError', {
+          cause: err
+        }));
+      }
+
+      query.asCallback(function(err) {
+        if (err) {
+          return cb(new Err('DocumentStore.DeleteError', {
+            cause: err
+          }));          
+        }
+        cb(null, doc);
+      });
     });
   };
 
@@ -69,9 +79,13 @@ DocumentStore.Prototype = function() {
             .limit(1);
 
     query.asCallback(function(err, doc) {
-      if (err) return cb(err);
-      if(doc.length === 0) return cb(new Error('Document does not exist'));
-      cb(null);
+      if (err) {
+        return cb(new Err('DocumentStore.ReadError', {
+          cause: err,
+          info: 'Happened within documentExists.'
+        }));
+      }
+      cb(null, doc.length > 0);
     });
   };
 

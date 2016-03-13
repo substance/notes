@@ -59,7 +59,7 @@ QUnit.test('Create a new user that already exists', function(assert) {
   assert.expect(1);
   return userStore.createUser({userId: 'testuser'})
     .catch(function(err) {
-      assert.equal(err.message, 'User already exists', 'Should throw the right error');
+      assert.equal(err.name, 'UserStore.CreateError', 'Should throw the right error');
     });
 });
 

@@ -3,7 +3,7 @@
 var oo = require('substance/util/oo');
 var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
-
+var Err = require('substance/util/Error');
 /*
   Implements Substance Store API. This is just a stub and is used for
   testing.
@@ -29,7 +29,11 @@ UserStore.Prototype = function() {
 
     return this.userExists(userData.userId)
       .then(function(exists) {
-        if (exists) throw new Error('User already exists');
+        if (exists) {
+          throw new Err('UserStore.CreateError', {
+            message: 'User already exists.'
+          });
+        }
         return self._createUser(userData);
       });
   };
@@ -65,6 +69,11 @@ UserStore.Prototype = function() {
 
     return update.then(function() {
       return self.getUser(userId);
+    }).catch(function(err) {
+      throw new Err('UserStore.UpdateError', {
+        // Pass the original error as a cause, so caller can inspect it
+        cause: err
+      });
     });
   };
 
@@ -86,6 +95,11 @@ UserStore.Prototype = function() {
       return del;
     }).then(function() {
       return deletedUser;
+    }).catch(function(err) {
+      throw new Err('UserStore.DeleteError', {
+        // Pass the original error as a cause, so caller can inspect it
+        cause: err
+      });
     });
   };
 
@@ -105,6 +119,11 @@ UserStore.Prototype = function() {
         }
         user = user[0];
         return user;
+      }).catch(function(err) {
+        throw new Err('UserStore.ReadError', {
+          // Pass the original error as a cause, so caller can inspect it
+          cause: err
+        });
       });
   };
 
@@ -120,7 +139,10 @@ UserStore.Prototype = function() {
     return query
       .then(function(user) {
         if (user.length === 0) {
-          throw new Error('There is no user with email ' + email);
+          throw new Err('UserStore.ReadError', {
+            // Pass the original error as a cause
+            message: 'There is no user with email ' + email
+          });
         }
         user = user[0];
         return user;
@@ -146,6 +168,11 @@ UserStore.Prototype = function() {
       .then(function() {
         // We want to confirm the insert with the created user entry
         return user;
+      }).catch(function(err) {
+        throw new Err('UserStore.CreateError', {
+          // Pass the original error as a cause
+          cause: err
+        });
       });
   };
 
