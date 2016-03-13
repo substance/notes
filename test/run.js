@@ -5,7 +5,6 @@ var QUnit = require('qunitjs');
 var colors = require('colors');
 
 var db = require('./db');
-global.db = db;
 
 global.QUnit = QUnit;
 
