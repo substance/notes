@@ -2,6 +2,7 @@
 
 var uuid = require('substance/util/uuid');
 var oo = require('substance/util/oo');
+var Err = require('substance/util/Error');
 var Mail = require('./Mail');
 
 /*
@@ -70,8 +71,10 @@ AuthenticationEngine.Prototype = function() {
           loginKey: user.loginKey
         };
       }).catch(function(err) {
-        console.log(err);
-        throw new Error('email-error');
+        throw new Err('AuthenticationEngine.SendLoginLinkError', {
+          message: 'invalid-email',
+          cause: err
+        });
       });
   };
 
@@ -99,7 +102,9 @@ AuthenticationEngine.Prototype = function() {
       }).then(function(richSession) {
         resolve(richSession);
       }).catch(function(err) {
-        reject(err);
+        reject(new Err('AuthenticationEngine.AuthenticateWithTokenError', {
+          cause: err
+        }));
       });
     });
   };
@@ -120,7 +125,9 @@ AuthenticationEngine.Prototype = function() {
       }).then(function(richSession) {
         resolve(richSession);
       }).catch(function(err) {
-        reject(err);
+        reject(new Err('AuthenticationEngine.AuthenticateWithLoginKeyError', {
+          cause: err
+        }));
       });
     });
   };
@@ -135,7 +142,9 @@ AuthenticationEngine.Prototype = function() {
         session.user = user;
         resolve(session);
       }).catch(function(err) {
-        reject(err);
+        reject(new Err('AuthenticationEngine.EnrichSessionError', {
+          cause: err
+        }));
       });
     });
   };
