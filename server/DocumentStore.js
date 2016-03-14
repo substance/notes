@@ -57,7 +57,11 @@ DocumentStore.Prototype = function() {
     }
     this.db.table('documents').insert(props)
       .asCallback(function(err) {
-        if (err) return cb(err);
+        if (err) {
+          return cb(new Err('DocumentStore.CreateError', {
+            cause: err
+          }));
+        }
         self.getDocument(props.documentId, cb);
       });
   };
@@ -97,13 +101,53 @@ DocumentStore.Prototype = function() {
                 .where('documentId', documentId);
 
     query.asCallback(function(err, doc) {
-      if (err) return cb(err);
+      if (err) {
+        return cb(new Err('DocumentStore.ReadError', {
+          cause: err
+        }));
+      }
       doc = doc[0];
-      if (!doc) return cb(new Error('No document found for documentId ' + documentId));
+      if (!doc) {
+        return cb(new Err('DocumentStore.ReadError', {
+          message: 'No document found for documentId ' + documentId,
+        }));
+      }
       if(doc.info) {
         doc.info = JSON.parse(doc.info);
       }
       cb(null, doc);
+    });
+  };
+
+  /*
+    Update a document record
+  */
+  this.updateDocument = function(documentId, props, cb) {
+    var self = this;
+    if(props.info) {
+      if(props.info.userId) props.userId = props.info.userId;
+      props.info = JSON.stringify(props.info);
+    }
+    this.documentExists(documentId, function(err, exists) {
+      if (err) {
+        return cb(new Err('DocumentStore.UpdateError', {
+          cause: err
+        }));
+      }
+      if (!exists) {
+        return cb(new Err('DocumentStore.UpdateError', {
+          message: 'Document ' + documentId + ' does not exists'
+        }));
+      }
+      self.db.table('documents').where('documentId', documentId).update(props)
+        .asCallback(function(err) {
+          if (err) {
+            return cb(new Err('DocumentStore.UpdateError', {
+              cause: err
+            }));
+          }
+          self.getDocument(documentId, cb);
+        });
     });
   };
 
