@@ -3,6 +3,7 @@
 var oo = require('substance/util/oo');
 var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
+var Err = require('substance/util/Error');
 
 /*
   A simple SQL Session Store implementation
@@ -43,7 +44,9 @@ SessionStore.Prototype = function() {
     return query
       .then(function(session) {
         if (session.length === 0) {
-          throw new Error('No session found for token ' + sessionToken);
+          throw new Err('SessionStore.ReadError', {
+            message: 'No session found for token ' + sessionToken
+          });
         }
         session = session[0];
         return session;
@@ -61,7 +64,7 @@ SessionStore.Prototype = function() {
 
     return this._sessionExists(sessionToken)
       .then(function(session){
-        if(!session) throw new Error('Session does not exist');
+        if(!session) throw new Err('Session does not exist');
         deletedSession = session;
         return self.db('sessions')
             .where('sessionToken', sessionToken)
