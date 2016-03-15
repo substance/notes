@@ -115,8 +115,8 @@ var collabServer = new CollabServer({
   /*
     Checks for authentication based on message.sessionToken
   */
-  authenticate: function(message, cb) {
-    var sessionToken = message.sessionToken;
+  authenticate: function(req, cb) {
+    var sessionToken = req.message.sessionToken;
     authenticationEngine.getSession(sessionToken).then(function(session) {
       console.log('server.js authenticate successful!');
       cb(null, session);
@@ -156,15 +156,26 @@ authenticationServer.bind(app);
 //   res.json({name: backend.getFileName(req)});
 // });
 
+
 // Error handling
 // We send JSON to the client so they can display messages in the UI.
 
 /* jshint unused: false */
 
-// app.use(function(err, req, res, next) {
-//   console.log('Server error: ', err);
-//   res.status(500).json({errorMessage: err.message});
-// });
+app.use(function(err, req, res, next) {
+  if (err.inspect) {
+    // This is a SubstanceError where we have detailed info
+    console.error(err.inspect());
+  } else {
+    // For all other errors, let's just print the stack trace
+    console.error(err.stack);
+  }
+  
+  res.status(500).json({
+    errorName: err.name,
+    errorMessage: err.message || err.name
+  });
+});
 
 // Delegate http requests to express app
 httpServer.on('request', app);
