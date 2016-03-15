@@ -62,15 +62,19 @@ SessionStore.Prototype = function() {
     var self = this;
     var deletedSession;
 
-    return this._sessionExists(sessionToken)
-      .then(function(session){
-        if(!session) throw new Err('Session does not exist');
+    return this.getSession(sessionToken)
+      .then(function(session) {
         deletedSession = session;
         return self.db('sessions')
             .where('sessionToken', sessionToken)
             .del();
-      }).then(function(){
+      }).then(function() {
         return deletedSession;
+      }).catch(function(err) {
+        throw new Err('SessionStore.DeleteError', {
+          message: 'Could not delete session ' + sessionToken,
+          cause: err
+        });
       });
   };
 
@@ -83,9 +87,7 @@ SessionStore.Prototype = function() {
                 .limit(1);
     
     return query.then(function(session) {
-      if(session.length === 0) return false;
-      session = session[0];
-      return session;
+      return session.length > 0;
     });
   };
 
