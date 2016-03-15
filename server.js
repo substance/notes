@@ -161,8 +161,11 @@ authenticationServer.bind(app);
 // We send JSON to the client so they can display messages in the UI.
 
 /* jshint unused: false */
-
 app.use(function(err, req, res, next) {
+  if (res.headersSent) {
+    return next(err);
+  }
+  
   if (err.inspect) {
     // This is a SubstanceError where we have detailed info
     console.error(err.inspect());
