@@ -59,7 +59,6 @@ QUnit.test('Delete existing session', function(assert) {
 QUnit.test('Delete a non-existent session', function(assert) {
 	assert.expect(1);
 	return sessionStore.deleteSession('user2token').catch(function(err) {
-      console.log(err);
-			assert.equal(err.message, 'Session does not exist', 'Should return session does not exist error');
-	  });
+    assert.equal(err.name, 'SessionStore.DeleteError', 'Should throw the right error');
+  });
 });
