@@ -21,6 +21,11 @@ Welcome.Prototype = function() {
   this.render = function() {
     var el = $$('div').addClass('sc-welcome');
     
+    // Topbar with branding
+    el.append(
+      $$('div').addClass('sc-topbar').html(this.i18n.t('sc-welcome.brand'))
+    );
+
     // Intro
     el.append(
       $$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.intro'))
