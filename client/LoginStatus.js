@@ -12,9 +12,14 @@ LoginStatus.Prototype = function() {
   };
 
   this.render = function() {
-    var el = $$('div').addClass('sc-login-status');
-    el.append(this.props.user.name);
-    el.append($$('button').on('click', this._logout).append('Logout'));
+    var el = $$('div').addClass('sc-login-status sc-dropdown');
+    el.append(
+      this.props.user.name,
+      $$('span').addClass('sc-caret fa fa-caret-down')
+    );
+    el.append($$('ul').append(
+      $$('li').on('click', this._logout).append('Logout')
+    ));
     return el;
   };
 };
