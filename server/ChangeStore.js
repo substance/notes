@@ -99,17 +99,33 @@ ChangeStore.Prototype = function() {
   this.getChanges = function(args, cb) {
     var self = this;
 
-    if(!has(args, 'sinceVersion') || args.sinceVersion < 0) {
+    if(args.sinceVersion < 0) {
       return cb(new Err('ChangeStore.ReadError', {
-        message: 'sinceVersion is mandatory and should be grater or equal then 0'
+        message: 'sinceVersion should be grater or equal then 0'
       }));
     }
+
+    if(args.toVersion < 0) {
+      return cb(new Err('ChangeStore.ReadError', {
+        message: 'toVersion should be grater then 0'
+      }));
+    }
+
+    if(args.sinceVersion >= args.toVersion) {
+      return cb(new Err('ChangeStore.ReadError', {
+        message: 'toVersion should be greater then sinceVersion'
+      }));
+    }
+
+    if(!has(args, 'sinceVersion')) args.sinceVersion = 0;
       
     var query = self.db('changes')
                 .select('data', 'id')
                 .where('document', args.documentId)
                 .andWhere('pos', '>=', args.sinceVersion)
                 .orderBy('pos', 'asc');
+
+    if(args.toVersion) query.andWhere('pos', '<', args.toVersion);
 
     query.asCallback(function(err, changes) {
       if (err) return cb(new Err('ChangeStore.ReadError', {
@@ -198,17 +214,25 @@ ChangeStore.Prototype = function() {
     @param {Function} cb callback
   */
 
-  this.seed = function(changes) {
+  this.seed = function(changesets) {
     var self = this;
-    var actions = _.map(changes, function(change, docId) {
-      var args = {
-        documentId: docId,
-        change: change[0]
-      };
-      return self._addChange(args);
+    var changes = [];
+    _.each(changesets, function(set, docId) {
+      _.each(set, function(change) {
+        var args = {
+          documentId: docId,
+          change: change
+        };
+        changes.push(args);
+      });
     });
 
-    return Promise.all(actions);
+    // Seed changes in sequence
+    return changes.reduce(function(promise, change) {
+      return promise.then(function() {
+        return self._addChange(change);
+      });
+    }, Promise.resolve());
   };
 };
 
