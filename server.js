@@ -4,14 +4,14 @@ var app = express();
 var server = require('substance/util/server');
 var exampleNote = require('./model/exampleNote');
 var CollabServer = require('substance/collab/CollabServer');
-var DocumentEngine = require('substance/collab/DocumentEngine');
-var DocumentStore = require('substance/collab/DocumentStore');
-var ChangeStore = require('substance/collab/ChangeStore');
+var DocumentEngine = require('./server/NotesDocumentEngine');
+var DocumentStore = require('./server/DocumentStore');
+var ChangeStore = require('./server/ChangeStore');
 var defaultSeed = require('./data/defaultSeed');
 var UserStore = require('./server/UserStore');
 var SessionStore = require('./server/SessionStore');
 var AuthenticationServer = require('./server/AuthenticationServer');
-var DocumentServer = require('substance/collab/DocumentServer');
+var DocumentServer = require('./server/NotesDocumentServer');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
 var Database = require('./server/Database');
 var bodyParser = require('body-parser');
@@ -39,9 +39,9 @@ var sessionStore = new SessionStore({ db: db });
 
 // We use the in-memory versions for now, thus we need to seed
 // each time.
-var changeStore = new ChangeStore();
+var changeStore = new ChangeStore({db: db});
 changeStore.seed(defaultSeed.changes);
-var documentStore = new DocumentStore();
+var documentStore = new DocumentStore({db: db});
 documentStore.seed(defaultSeed.documents);
 
 var documentEngine = new DocumentEngine({
