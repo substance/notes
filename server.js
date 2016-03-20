@@ -23,13 +23,6 @@ var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 
 var db = new Database();
 
-// If seed option provided we should remove db, run migration and seed script
-if (process.argv[2] == 'seed') {
-  var execSync = require('child_process').execSync;
-  execSync("node seed");
-  console.log('Seeding the db...');
-}
-
 // Set up stores
 // -------------------------------
 
