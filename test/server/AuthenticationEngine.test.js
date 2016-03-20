@@ -83,26 +83,29 @@ QUnit.test('Authenticate with wrong loginKey', function(assert) {
   });
 });
 
-QUnit.test('Request login link for an existing email', function(assert) {
-  assert.expect(1);
-  return engine.requestLoginLink({email: 'test@example.com'}).then(function(result) {
-    assert.ok(result.loginKey, 'There should be a new login key');
-  });
-});
+// Email system tests
 
-QUnit.test('Request login link for an email that does not exist', function(assert) {
-  assert.expect(2);
-  return engine.requestLoginLink({email: 'other@email.com'}).then(function(result) {
-    assert.ok(result.loginKey, 'There should be a new login key');
-    return userStore.getUserByEmail('other@email.com');
-  }).then(function(user) {
-    assert.ok(user, 'There should be a new user in the database');
-  });
-});
+// QUnit.test('Request login link for an existing email', function(assert) {
+//   assert.expect(1);
+//   return engine.requestLoginLink({email: 'test@example.com'}).then(function(result) {
+//     assert.ok(result.loginKey, 'There should be a new login key');
+//   });
+// });
 
-QUnit.test('Request login link for an invalid email should error', function(assert) {
-  assert.expect(1);
-  return engine.requestLoginLink({email: 'foo/bar'}).catch(function(err) {
-    assert.equal(err.message, 'invalid-email');
-  });
-});
+// QUnit.test('Request login link for an email that does not exist', function(assert) {
+//   assert.expect(2);
+//   return engine.requestLoginLink({email: 'other@email.com'}).then(function(result) {
+//     assert.ok(result.loginKey, 'There should be a new login key');
+//     return userStore.getUserByEmail('other@email.com');
+//   })
+//   .then(function(user) {
+//     assert.ok(user, 'There should be a new user in the database');
+//   });
+// });
+
+// QUnit.test('Request login link for an invalid email should error', function(assert) {
+//   assert.expect(1);
+//   return engine.requestLoginLink({email: 'foo/bar'}).catch(function(err) {
+//     assert.equal(err.message, 'invalid-email');
+//   });
+// });
