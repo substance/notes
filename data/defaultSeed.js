@@ -23,11 +23,18 @@ var defaultSeed = {
       schemaName: 'substance-note',
       schemaVersion: '1.0.0',
       version: 1,
-      userId: 'testuser'
+      info: {
+        userId: 'testuser'
+      }
     }
   },
   changes: {
-    'note-1': exampleNote.createChangeset()
+    'note-1': exampleNote.createChangeset().map(function(c) {
+      c.info = {
+        userId: 'testuser'
+      };
+      return c;
+    })
   }
 };
 
