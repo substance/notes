@@ -49,6 +49,7 @@ function Notes() {
   
   this.handleActions({
     'openNote': this._openNote,
+    'newNote': this._newNote,
     'logout': this._logout
   });
 }
@@ -142,6 +143,16 @@ Notes.Prototype = function() {
     Open an existing note
   */
   this._openNote = function(docId) {
+    this.extendState({
+      mode: 'edit',
+      docId: docId
+    });
+  };
+
+  /*
+    Create a new note
+  */
+  this._newNote = function(docId) {
     this.extendState({
       mode: 'edit',
       docId: docId
