@@ -31,7 +31,8 @@ var defaultSeed = {
   changes: {
     'note-1': exampleNote.createChangeset().map(function(c) {
       c.info = {
-        userId: 'testuser'
+        userId: 'testuser',
+        createdAt: new Date()
       };
       return c;
     })
