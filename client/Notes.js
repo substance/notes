@@ -4,6 +4,7 @@ var _ = require('substance/util/helpers');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var AuthenticationClient = require('./AuthenticationClient');
+var DocumentClient = require('substance/collab/DocumentClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
@@ -46,6 +47,10 @@ function Notes() {
   this.authenticationClient = new AuthenticationClient({
     httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
   });
+
+  this.documentClient = new DocumentClient({
+    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
+  });
   
   this.handleActions({
     'openNote': this._openNote,
@@ -74,6 +79,7 @@ Notes.Prototype = function() {
   this.getChildContext = function() {
     return {
       authenticationClient: this.authenticationClient,
+      documentClient: this.documentClient,
       config: this.config
     };
   };
@@ -152,11 +158,22 @@ Notes.Prototype = function() {
   /*
     Create a new note
   */
-  this._newNote = function(docId) {
-    this.extendState({
-      mode: 'edit',
-      docId: docId
-    });
+  this._newNote = function() {
+    // console.log('NEW NOTE', docId);
+    this.documentClient.createDocument({
+      schemaName: 'substance-note',
+      // TODO: Find a way not to do this statically
+      info: {
+        title: 'Untitled'
+      }
+    }, function(err, result) {
+      this.extendState({
+        mode: 'edit',
+        docId: result.documentId
+      });
+      // console.log('doc created', err, result);
+    }.bind(this));
+
   };
 
   /*

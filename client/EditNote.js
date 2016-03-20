@@ -3,7 +3,6 @@ var JSONConverter = require('substance/model/JSONConverter');
 var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
 var CollabClient = require('substance/collab/CollabClient');
-var DocumentClient = require('substance/collab/DocumentClient');
 var LoginStatus = require('./LoginStatus');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
@@ -16,10 +15,6 @@ function EditNote() {
   
   var config = this.context.config;
   var authenticationClient = this.context.authenticationClient;
-  
-  this.documentClient = new DocumentClient({
-    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
-  });
 
   this.collabClient = new CollabClient({
     wsUrl: config.wsUrl || 'ws://'+config.host+':'+config.port,
@@ -76,13 +71,15 @@ EditNote.Prototype = function() {
 
     if (this.state.error) {
       // TODO: render this in a pop in addition to the regular content
-      el.append('div').addClass('se-error').append(this.state.error.message);
+      el.append(
+        $$('div').addClass('se-error').append(this.state.error.message)
+      );
     } else if (this.state.session) {
       el.append(
         $$('div').addClass('se-header').append(
           $$('div').addClass('se-actions').append(
             $$('button').addClass('se-action').append('Dashboard'),
-            $$('button').addClass('se-action').append('New Note') // .on('click', this.send.bind(this, 'newNote'))
+            $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
           ),
           $$(LoginStatus, {
             user: authenticationClient.getUser()
@@ -110,7 +107,7 @@ EditNote.Prototype = function() {
   */
   this._loadDocument = function() {
     var collabClient = this.collabClient;
-    var documentClient = this.documentClient;
+    var documentClient = this.context.documentClient;
 
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {

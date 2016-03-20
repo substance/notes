@@ -3,6 +3,7 @@
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
 var Err = require('substance/util/Error');
+var uuid = require('substance/util/uuid');
 
 /*
   Implements the Substance DocumentStore API.
@@ -50,6 +51,12 @@ DocumentStore.Prototype = function() {
     Internal method to create a document record
   */
   this.createDocument = function(props, cb) {
+
+    if (!props.documentId) {
+      // We generate a documentId ourselves
+      props.documentId = uuid();
+    }
+
     var self = this;
     if(props.info) {
       if(props.info.userId) props.userId = props.info.userId;
