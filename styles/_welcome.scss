@@ -2,6 +2,7 @@
 
   max-width: 960px;
   margin: 50px auto;
+  padding: 20px;
   font-size: 20px;
 
   h1 {
@@ -73,25 +74,20 @@
     margin-top: -7px;
   } 
 
-  .sc-topbar {
-    
+  .se-topbar {
     position: absolute;
     top: 0px;
     right: 0px;
     left: 0px;
     height: 15px;
     background-image: url(/assets/img/welcome_header.png);
+  }
 
-    .sc-brand {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      margin-left: 400px;
-      font-size: 27px;
-
-      .sc-brand-strong {
-        font-weight: 500;
-      }
+  .se-brand {
+    text-align: right;
+    font-size: 27px;
+    .sc-brand-strong {
+      font-weight: 500;
     }
   }
 

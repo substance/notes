@@ -23,11 +23,12 @@ Welcome.Prototype = function() {
     
     // Topbar with branding
     el.append(
-      $$('div').addClass('sc-topbar').html(this.i18n.t('sc-welcome.brand'))
+      $$('div').addClass('se-topbar').html('')
     );
 
     // Intro
     el.append(
+      $$('div').addClass('se-brand-wrapper').html(this.i18n.t('sc-welcome.brand')),
       $$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.intro'))
     );
 

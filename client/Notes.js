@@ -200,8 +200,12 @@ Notes.Prototype = function() {
         el.append($$(EditNote, {
           docId: this.state.docId
         }).ref('editNote'));
+        // HACK: add the sm-fixed layout class, so the body does not scroll
+        document.body.classList.add('sm-fixed-layout');
         break;
       default: // mode=index or default
+        // HACK: removes the sm-fixed layout class so the body element gets scrollable
+        document.body.classList.remove('sm-fixed-layout');
         if (this._state.authenticated) {
           el.append($$(Dashboard).ref('dashboard'));
         } else {
