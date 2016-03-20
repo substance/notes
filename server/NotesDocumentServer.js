@@ -8,12 +8,13 @@ function NotesDocumentServer() {
 }
 
 NotesDocumentServer.Prototype = function() {
+  var _super = NotesDocumentServer.super.prototype;
 
   this.bind = function(app) {
-    var route = this.path + '/:id';
-    var userRoute = this.path + '/user/:id';
-    app.get(userRoute, this._listUserDocuments.bind(this));
-    app.get(route, this._getDocument.bind(this));
+    _super.bind.apply(this, arguments);
+
+    // Add notes specific routes
+    app.get(this.path + '/user/:id', this._listUserDocuments.bind(this));
   };
 
   this._listUserDocuments = function(req, res, next) {
@@ -23,6 +24,7 @@ NotesDocumentServer.Prototype = function() {
       res.json(result);
     });
   };
+
 };
 
 DocumentServer.extend(NotesDocumentServer);
