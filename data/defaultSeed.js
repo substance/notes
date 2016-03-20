@@ -22,7 +22,8 @@ var defaultSeed = {
       documentId: 'note-1',
       schemaName: 'substance-note',
       schemaVersion: '1.0.0',
-      version: 1 // document has one change = version 1
+      version: 1,
+      userId: 'testuser'
     }
   },
   changes: {
