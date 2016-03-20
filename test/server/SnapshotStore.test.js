@@ -5,8 +5,8 @@ require('../qunit_extensions');
 var snapshotStoreSeed = require('substance/test/fixtures/collab/snapshotStoreSeed');
 var SnapshotStore = require('../../server/SnapshotStore');
 var testSnapshotStore = require('substance/test/collab/testSnapshotStore');
-var snapshotStore = new SnapshotStore();
 var db = require('../db');
+var snapshotStore = new SnapshotStore({db: db});
 
 QUnit.module('collab/SnapshotStore', {
   beforeEach: function() {

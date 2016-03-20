@@ -44,6 +44,7 @@ Database.Prototype = function() {
       .dropTableIfExists('changes')
       .dropTableIfExists('documents')
       .dropTableIfExists('sessions')
+      .dropTableIfExists('snapshots')
       .dropTableIfExists('users')
       // We should drop migrations table 
       // to rerun the same migration again
