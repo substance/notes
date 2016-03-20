@@ -41,7 +41,6 @@ ChangeStore.Prototype = function() {
       }));
       var version = headVersion + 1;
       var record = {
-        id: args.documentId + '/' + version,
         document: args.documentId,
         pos: version,
         data: JSON.stringify(args.change),
@@ -75,7 +74,6 @@ ChangeStore.Prototype = function() {
       .then(function(headVersion) {
         version = headVersion + 1;
         var record = {
-          id: args.documentId + '/' + version,
           document: args.documentId,
           pos: version,
           data: JSON.stringify(args.change),
@@ -120,12 +118,12 @@ ChangeStore.Prototype = function() {
     if(!has(args, 'sinceVersion')) args.sinceVersion = 0;
       
     var query = self.db('changes')
-                .select('data', 'id')
+                .select('data')
                 .where('document', args.documentId)
-                .andWhere('pos', '>=', args.sinceVersion)
+                .andWhere('pos', '>', args.sinceVersion)
                 .orderBy('pos', 'asc');
 
-    if(args.toVersion) query.andWhere('pos', '<', args.toVersion);
+    if(args.toVersion) query.andWhere('pos', '<=', args.toVersion);
 
     query.asCallback(function(err, changes) {
       if (err) return cb(new Err('ChangeStore.ReadError', {
