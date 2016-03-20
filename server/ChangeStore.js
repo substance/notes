@@ -41,8 +41,8 @@ ChangeStore.Prototype = function() {
       }));
       var version = headVersion + 1;
       var record = {
-        document: args.documentId,
-        pos: version,
+        documentId: args.documentId,
+        version: version,
         data: JSON.stringify(args.change),
         timestamp: Date.now()
       };
@@ -74,8 +74,8 @@ ChangeStore.Prototype = function() {
       .then(function(headVersion) {
         version = headVersion + 1;
         var record = {
-          document: args.documentId,
-          pos: version,
+          documentId: args.documentId,
+          version: version,
           data: JSON.stringify(args.change),
           timestamp: Date.now()
         };
@@ -119,11 +119,11 @@ ChangeStore.Prototype = function() {
       
     var query = self.db('changes')
                 .select('data')
-                .where('document', args.documentId)
-                .andWhere('pos', '>', args.sinceVersion)
-                .orderBy('pos', 'asc');
+                .where('documentId', args.documentId)
+                .andWhere('version', '>', args.sinceVersion)
+                .orderBy('version', 'asc');
 
-    if(args.toVersion) query.andWhere('pos', '<=', args.toVersion);
+    if(args.toVersion) query.andWhere('version', '<=', args.toVersion);
 
     query.asCallback(function(err, changes) {
       if (err) return cb(new Err('ChangeStore.ReadError', {
@@ -151,7 +151,7 @@ ChangeStore.Prototype = function() {
   */
   this.deleteChanges = function(id, cb) {
     var query = this.db('changes')
-                .where('document', id)
+                .where('documentId', id)
                 .del();
 
     query.asCallback(function(err, deletedCount) {
@@ -173,7 +173,7 @@ ChangeStore.Prototype = function() {
     // 0 changes: version = 0
     // 1 change:  version = 1
     var query = this.db('changes')
-                .where('document', id)
+                .where('documentId', id)
                 .count();
 
     query.asCallback(function(err, count) {
@@ -194,7 +194,7 @@ ChangeStore.Prototype = function() {
   */
   this._getVersion = function(id) {
     var query = this.db('changes')
-                .where('document', id)
+                .where('documentId', id)
                 .count();
 
     return query.then(function(count) {
