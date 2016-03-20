@@ -7,9 +7,7 @@ var seed = require('./data/defaultSeed');
 var db = new Database();
 var defaultSeed = require('./data/defaultSeed');
 
-// Clear the database and setup the schema
-// TODO: Also seed change store and document store once ready
-db.reset()
+db.reset() // Clear the database, set up the schema
   .then(function() {
     var userStore = new UserStore({ db: db });
     return userStore.seed(seed.users);
