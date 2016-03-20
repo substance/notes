@@ -126,7 +126,6 @@ var collabServer = new CollabServer({
     Will store the userId along with each change
   */
   enhanceChange: function(req, cb) {
-    debugger;
     cb(null, {userId: req.session.userId});
   }
 
