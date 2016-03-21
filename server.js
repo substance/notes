@@ -123,13 +123,47 @@ var collabServer = new CollabServer({
   },
 
   /*
-    Will store the userId along with each change
+    Will store the userId along with each change. We also want to build
+    a documentInfo object to update the document record with some data
   */
-  enhanceChange: function(req, cb) {
-    cb(null, {userId: req.session.userId});
-  }
+  enhanceRequest: function(req, cb) {
+    var message = req.message;
+    if (message.type === 'commit' || message.type === 'connect') {
+      // We fetch the document record to get the old title
+      documentStore.getDocument(message.documentId, function(err, docRecord) {
+        var updatedAt = new Date();
+        var title = docRecord.title;
 
+        if (message.change) {
+          // Update the title if necessary
+          // var change = DocumentChange.fromJSON(message.change);
+          // if (change.isUpdated['meta', 'title']) {
+          //   // get all ops that changed the title
+          //   var titleUpdateOps = change.updated['meta', 'title']; // ??
+          //   titleUpdateOps.forEach(function(op) {
+          //     title = op.apply(title);
+          //   });
+          // }
+          message.change.info = {
+            userId: req.session.userId,
+            updatedAt: updatedAt
+          };
+        }
+        // commit and connect method take optional documentInfo argument
+        message.documentInfo = {
+          updatedAt: updatedAt,
+          updatedBy: req.session.userId,
+          title: title
+        };
+        cb(null);
+      });
+    } else {
+      // Just continue for everything that is not handled
+      cb(null);
+    }
+  }
 });
+
 collabServer.bind(wss);
 
 // Set up AuthenticationServer
