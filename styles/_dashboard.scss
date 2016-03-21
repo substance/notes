@@ -1,0 +1,65 @@
+.sc-dashboard {
+  .se-notes-list {
+    width: 50%;
+    float: left;
+    font-weight: 300;
+    height: 100%;
+
+    &.se-my-notes {
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+
+      .se-section-title {
+        width: 90px;
+      }
+
+      .se-note{
+        &.featured {
+          padding: 50px 20px;      
+          
+          .se-title {
+            font-size: 27px;
+          }
+        }
+      }
+    }
+
+    &.se-shared-notes {
+
+      .se-section-title {
+        width: 150px;
+      }
+
+      .se-note {
+        font-size: 14px;
+
+        .se-title {
+          float: left;
+          padding-right: 5px;
+        }
+      }
+    }
+
+    .se-section-title {
+      border-bottom: 0.5px solid rgba(0,0,0,0.1);
+      padding: 10px 0px;
+      margin-left: 20px;
+    }
+
+    .se-note {
+      padding: 10px 20px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      
+      &.featured {
+        border-top: none;
+      }
+
+      .se-title {
+        font-weight: 400;
+      }
+
+      .se-updated {
+        font-style: italic;
+      }
+    }
+  }
+}
