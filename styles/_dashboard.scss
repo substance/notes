@@ -4,6 +4,7 @@
     float: left;
     font-weight: 300;
     height: 100%;
+    min-height: calc(100vh - 40px);
 
     &.se-my-notes {
       border-right: 1px solid rgba(0, 0, 0, 0.1);
@@ -51,6 +52,7 @@
       
       &.featured {
         border-top: none;
+        padding: 20px 20px 10px;
       }
 
       .se-title {
