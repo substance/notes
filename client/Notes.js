@@ -55,6 +55,7 @@ function Notes() {
   this.handleActions({
     'openNote': this._openNote,
     'newNote': this._newNote,
+    'openDashboard': this._openDashboard,
     'logout': this._logout
   });
 }
@@ -174,6 +175,16 @@ Notes.Prototype = function() {
       // console.log('doc created', err, result);
     }.bind(this));
 
+  };
+
+  /*
+    Open a dashboard
+  */
+  this._openDashboard = function() {
+    this.extendState({
+      mode: 'index',
+      docId: ''
+    });
   };
 
   /*

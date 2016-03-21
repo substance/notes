@@ -78,7 +78,7 @@ EditNote.Prototype = function() {
       el.append(
         $$('div').addClass('se-header').append(
           $$('div').addClass('se-actions').append(
-            $$('button').addClass('se-action').append('Dashboard'),
+            $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
             $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
           ),
           $$(LoginStatus, {
