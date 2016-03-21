@@ -161,11 +161,13 @@ Notes.Prototype = function() {
   */
   this._newNote = function() {
     // console.log('NEW NOTE', docId);
+    var userId = this._getUserId();
     this.documentClient.createDocument({
       schemaName: 'substance-note',
       // TODO: Find a way not to do this statically
       info: {
-        title: 'Untitled'
+        title: 'Untitled',
+        userId: userId
       }
     }, function(err, result) {
       this.extendState({
@@ -260,6 +262,12 @@ Notes.Prototype = function() {
   */
   this._getSessionToken = function() {
     return window.localStorage.getItem('sessionToken');
+  };
+
+  this._getUserId = function() {
+    var authenticationClient = this.authenticationClient;
+    var user = authenticationClient.getUser();
+    return user.userId;
   };
 
   /*
