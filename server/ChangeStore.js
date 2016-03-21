@@ -216,6 +216,41 @@ ChangeStore.Prototype = function() {
   };
 
   /*
+    Get documents where user is collaborator
+  */
+  this.getCollaboratedDocuments = function(userId, cb) {
+    var query = this.db('changes')
+                .where('userId', userId)
+                .distinct('documentId')
+                .select('documentId');
+
+    query.asCallback(function(err, docs) {
+      if (err) return cb(new Err('ChangeStore.getCollaboratedDocumentsError', {
+        cause: err
+      }));
+      docs = _.map(docs, 'documentId');
+      return cb(null, docs);
+    });
+  };
+
+  /*
+    Get collaborators for a document
+  */
+  this.getCollaborators = function(documentId, cb) {
+    var query = this.db('changes')
+                .where('documentId', documentId)
+                .distinct('userId')
+                .select('userId');
+
+    query.asCallback(function(err, users) {
+      if (err) return cb(new Err('ChangeStore.GetCollaboratorsError', {
+        cause: err
+      }));
+      return cb(null, users);
+    });
+  };
+
+  /*
     Resets the database and loads a given seed object
 
     Be careful with running this in production

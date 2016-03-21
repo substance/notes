@@ -14,6 +14,10 @@ NotesDocumentClient.Prototype = function() {
     this._request('GET', this.config.httpUrl+'user/'+userId, null, cb);
   };
 
+  this.listCollaboratedDocuments = function(userId, cb) {
+    this._request('GET', this.config.httpUrl+'user/collaborated/'+userId, null, cb);
+  };
+
 };
 
 DocumentClient.extend(NotesDocumentClient);

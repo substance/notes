@@ -1,5 +1,6 @@
 var DocumentClient = require('./NotesDocumentClient');
 var LoginStatus = require('./LoginStatus');
+var differenceBy = require('lodash/differenceBy');
 var Err = require('substance/util/Error');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
@@ -53,13 +54,14 @@ Dashboard.Prototype = function() {
   };
 
   /*
-    Loads a document and initializes a CollabSession
+    Loads documents
   */
   this._loadDocuments = function() {
+    var self = this;
     var documentClient = this.documentClient;
     var userId = this._getUserId();
 
-    documentClient.listUserDocuments(userId, function(err, docs) {
+    documentClient.listUserDocuments(userId, function(err, myDocs) {
       if (err) {
         this.setState({
           error: new Err('Dashboard.LoadingError', {
@@ -71,11 +73,26 @@ Dashboard.Prototype = function() {
         return;
       }
 
-      // HACK: For debugging purposes
-      window.myDocs = docs;
+      documentClient.listCollaboratedDocuments(userId, function(err, sharedDocs) {
+        if (err) {
+          this.setState({
+            error: new Err('Dashboard.LoadingError', {
+              message: 'Documents could not be loaded.',
+              cause: err
+            })
+          });
+          console.error('ERROR', err);
+          return;
+        }
+        sharedDocs = differenceBy(sharedDocs, myDocs, 'documentId');
+        // HACK: For debugging purposes
+        window.myDocs = myDocs;
+        window.sharedDocs = sharedDocs;
 
-      this.extendState({
-        myDocs: docs
+        self.extendState({
+          myDocs: myDocs,
+          sharedDocs: sharedDocs
+        });
       });
     }.bind(this));
   };
