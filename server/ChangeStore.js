@@ -44,7 +44,7 @@ ChangeStore.Prototype = function() {
         documentId: args.documentId,
         version: version,
         data: JSON.stringify(args.change),
-        timestamp: Date.now()
+        createdAt: args.createdAt || new Date()
       };
 
       self.db.table('changes').insert(record)
@@ -77,7 +77,7 @@ ChangeStore.Prototype = function() {
           documentId: args.documentId,
           version: version,
           data: JSON.stringify(args.change),
-          timestamp: Date.now()
+          createdAt: args.createdAt || new Date()
         };
         return self.db.table('changes').insert(record);
       })

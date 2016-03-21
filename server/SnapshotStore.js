@@ -60,7 +60,7 @@ SnapshotStore.Prototype = function() {
       documentId: args.documentId,
       version: args.version,
       data: JSON.stringify(args.data),
-      timestamp: Date.now()
+      createdAt: args.createdAt || new Date()
     };
     this.db.table('snapshots').insert(record)
       .asCallback(function(err) {
@@ -77,7 +77,7 @@ SnapshotStore.Prototype = function() {
       documentId: args.documentId,
       version: args.version,
       data: JSON.stringify(args.data),
-      timestamp: Date.now()
+      createdAt: args.createdAt || new Date()
     };
     return this.db.table('snapshots').insert(record);
   };

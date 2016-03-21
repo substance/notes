@@ -3,7 +3,7 @@ exports.up = function(knex, Promise) {
     table.string('documentId');
     table.integer('version');
     table.string('data');
-    table.integer('timestamp');
+    table.integer('createdAt');
     table.primary(['documentId', 'version']);
   });
 };
