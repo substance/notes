@@ -12,7 +12,7 @@
     "multer": "1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#ef60e732311ad8a86624bb1c0e5f799ae3c3e032",
+    "substance": "substance/substance#b62091ccf14b51d37da1466972c4ce85545e2eb0",
     "ws": "^1.0.1"
   },
   "devDependencies": {
