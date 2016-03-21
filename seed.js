@@ -5,7 +5,12 @@ var DocumentStore = require('./server/DocumentStore');
 var Database = require('./server/Database');
 var seed = require('./data/defaultSeed');
 var db = new Database();
-var defaultSeed = require('./data/defaultSeed');
+
+// If dev option provided will use another seed file
+if (process.argv[2] == 'dev') {
+  seed = require('./data/devSeed');
+  console.log('Development seeding...');
+}
 
 db.reset() // Clear the database, set up the schema
   .then(function() {

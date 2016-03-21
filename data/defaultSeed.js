@@ -13,7 +13,7 @@ var defaultSeed = {
   // TODO: that's a security issue
   sessions: {
     'user1token': {
-      'userId': '1',
+      'userId': 'testuser',
       'sessionToken': 'user1token'
     }
   },
