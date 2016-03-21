@@ -9,8 +9,8 @@
 // TODO: .sc- is reserved for components, while inside components you
 // would use .se-. So this would be called .se-dropdown and go inside
 // .sc-login-status
-.sc-dropdown {
-  .sc-caret {
+.se-dropdown {
+  .se-caret {
     padding-left: 10px;
     font-size: 24px;
     position: relative;
