@@ -6,7 +6,7 @@ exports.up = function(knex, Promise) {
     table.string('snapshot');
     table.string('info');
     table.integer('version');
-    table.integer('userId');
+    table.string('userId');
   });
 };
 

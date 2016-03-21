@@ -34,6 +34,11 @@ ChangeStore.Prototype = function() {
         message: 'documentId is mandatory'
       }));
     }
+
+    var userId = null;
+    if(args.change.info) {
+      userId = args.change.info.userId;
+    }
     
     self.getVersion(args.documentId, function(err, headVersion) {
       if (err) return cb(new Err('ChangeStore.GetVersionError', {
@@ -44,7 +49,8 @@ ChangeStore.Prototype = function() {
         documentId: args.documentId,
         version: version,
         data: JSON.stringify(args.change),
-        createdAt: args.createdAt || new Date()
+        createdAt: args.createdAt || new Date(),
+        userId: userId
       };
 
       self.db.table('changes').insert(record)
@@ -70,6 +76,11 @@ ChangeStore.Prototype = function() {
     var self = this;
     var version;
 
+    var userId = null;
+    if(args.change.info) {
+      userId = args.change.info.userId;
+    }
+
     return self._getVersion(args.documentId)
       .then(function(headVersion) {
         version = headVersion + 1;
@@ -77,7 +88,8 @@ ChangeStore.Prototype = function() {
           documentId: args.documentId,
           version: version,
           data: JSON.stringify(args.change),
-          createdAt: args.createdAt || new Date()
+          createdAt: args.createdAt || new Date(),
+          userId: userId
         };
         return self.db.table('changes').insert(record);
       })

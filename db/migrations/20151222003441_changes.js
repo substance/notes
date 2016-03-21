@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
     table.integer('version');
     table.string('data');
     table.integer('createdAt');
+    table.string('userId');
     table.primary(['documentId', 'version']);
   });
 };
