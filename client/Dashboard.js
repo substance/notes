@@ -61,7 +61,7 @@ Dashboard.Prototype = function() {
         $$('div').addClass('se-updated').append(updated),
         $$('div').addClass('se-edited').append(edited)
       );
-      if(i == 0) noteItem.addClass('featured');
+      if(i === 0) noteItem.addClass('featured');
       myNotesList.append(noteItem);
     });
 
@@ -70,7 +70,7 @@ Dashboard.Prototype = function() {
 
     _.each(sharedNotes, function(note, i) {
       note.title = 'Blowing in the Wind';
-      note.updatedAt = 1458596224265;
+      note.updatedAt = 1458602662041;
       note.updatedBy = 'oliver';
       note.collaborators = ['michael', 'daniel'];
       var created = "by " + note.userId;
@@ -83,7 +83,7 @@ Dashboard.Prototype = function() {
         $$('div').addClass('se-updated').append(updated),
         $$('div').addClass('se-ed').append(edited)
       );
-      if(i == 0) noteItem.addClass('featured');
+      if(i === 0) noteItem.addClass('featured');
       sharedNotesList.append(noteItem);
     });
     
@@ -161,12 +161,13 @@ Dashboard.Prototype = function() {
     if (diff < 5) return "now";
     
     var i = 0, unit;
-    while (unit = units[i++]) {
+    while (i < units.length) {
+      unit = units[i++];
       if (diff < unit.limit || !unit.limit){
-        var diff =  Math.floor(diff / unit.in_seconds);
+        diff =  Math.floor(diff / unit.in_seconds);
         return diff + " " + unit.name + (diff>1 ? "s" : "") + " ago";
       }
-    };
+    }
   };
 
 };
