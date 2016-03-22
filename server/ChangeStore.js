@@ -234,16 +234,16 @@ ChangeStore.Prototype = function() {
   };
 
   /*
-    Get collaborators for a document
+    Get ten latest except very latest and number of collaborators for a document
   */
   this.getCollaborators = function(documentId, cb) {
+    var result = {};
     var query = this.db('changes')
                 .where('documentId', documentId)
-                .distinct('userId')
-                .select('userId');
+                .distinct('userId');
 
     query.asCallback(function(err, users) {
-      if (err) return cb(new Err('ChangeStore.GetCollaboratorsError', {
+      if (err) return cb(new Err('ChangeStore.getCollaboratorsError', {
         cause: err
       }));
       return cb(null, users);

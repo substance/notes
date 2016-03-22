@@ -83,6 +83,8 @@ DocumentStore.Prototype = function() {
       if(props.info.title) props.title = props.info.title;
       if(props.info.userId) props.userId = props.info.userId;
       if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
+      // Let's keep updatedBy here for seeding
+      if(props.info.updatedAt) props.updatedBy = props.info.updatedBy;
       props.info = JSON.stringify(props.info);
     }
     return this.db.table('documents').insert(props);
@@ -135,7 +137,8 @@ DocumentStore.Prototype = function() {
   */
   this.getDocuments = function(documentIds, cb) {
     var query = this.db('documents')
-                .whereIn('documentId', documentIds);
+                .whereIn('documentId', documentIds)
+                .orderBy('updatedAt', 'desc');
 
     query.asCallback(function(err, docs) {
       if (err) {

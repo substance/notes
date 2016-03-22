@@ -1,5 +1,7 @@
 var DocumentEngine = require('substance/collab/DocumentEngine');
 var Err = require('substance/util/Error');
+var _ = require('substance/util/helpers');
+var async = require('async');
 
 /*
   DocumentEngine
@@ -27,13 +29,22 @@ NotesDocumentEngine.Prototype = function() {
   };
 
 	this.getUserDocuments = function(userId, cb) {
+    var self = this;
+
     this.documentStore.listDocuments({userId: userId}, function(err, docs) {
       if (err) {
         return cb(new Err('DocumentEngine.ListDocumentsError', {
           cause: err
         }));
       }
-      cb(null, docs);
+      self.getCollaborators(docs, function(err){
+        if(err) {
+          return cb(new Err('DocumentEngine.GetCollaboratorsError', {
+            cause: err
+          }));
+        }
+        cb(null, docs);
+      });
     });
   };
 
@@ -52,9 +63,31 @@ NotesDocumentEngine.Prototype = function() {
             cause: err
           }));
         }
-        cb(null, sharedDocs);
+        self.getCollaborators(sharedDocs, function(err){
+          if(err) {
+            return cb(new Err('DocumentEngine.GetCollaboratorsError', {
+              cause: err
+            }));
+          }
+          cb(null, sharedDocs);
+        });
       });
     });
+  };
+
+  this.getCollaborators = function(docs, cb) {
+    var self = this;
+    async.eachSeries(docs, function(doc, callback){
+      self.changeStore.getCollaborators(doc.documentId, function(err, result) {
+        if(err) {
+          return cb(new Err('DocumentEngine.GetCollaboratorsError', {
+            cause: err
+          }));
+        }
+        doc.collaborators = _.map(result, 'userId');
+        callback();
+      });
+    }, cb);
   };
   
 };
