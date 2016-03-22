@@ -3,9 +3,11 @@ exports.up = function(knex, Promise) {
     table.string('documentId').unique().index();
     table.string('schemaName');
     table.string('schemaVersion');
-    table.string('snapshot');
     table.string('info');
     table.integer('version');
+    table.string('title');
+    table.integer('updatedAt');
+    table.string('updatedBy');
     table.string('userId');
   });
 };

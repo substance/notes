@@ -10,6 +10,22 @@ function NotesDocumentEngine() {
 
 NotesDocumentEngine.Prototype = function() {
 
+  var _super = NotesDocumentEngine.super.prototype;
+
+  this.createDocument = function(args, cb) {
+    var schemaConfig = this.schemas[args.schemaName];
+    if (!schemaConfig) {
+      return cb(new Err('SchemaNotFoundError', {
+        message: 'Schema not found for ' + args.schemaName
+      }));
+    }
+    var docFactory = schemaConfig.documentFactory;
+    var doc = docFactory.createArticle();
+    args.info.updatedAt = new Date();
+    args.info.title = doc.get(['metadata', 'title']);
+    _super.createDocument.call(this, args, cb);
+  };
+
 	this.getUserDocuments = function(userId, cb) {
     this.documentStore.listDocuments({userId: userId}, function(err, docs) {
       if (err) {

@@ -59,7 +59,9 @@ DocumentStore.Prototype = function() {
 
     var self = this;
     if(props.info) {
+      if(props.info.title) props.title = props.info.title;
       if(props.info.userId) props.userId = props.info.userId;
+      if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
       props.info = JSON.stringify(props.info);
     }
     this.db.table('documents').insert(props)
@@ -78,7 +80,9 @@ DocumentStore.Prototype = function() {
   */
   this._createDocument = function(props) {
     if(props.info) {
+      if(props.info.title) props.title = props.info.title;
       if(props.info.userId) props.userId = props.info.userId;
+      if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
       props.info = JSON.stringify(props.info);
     }
     return this.db.table('documents').insert(props);
@@ -153,6 +157,8 @@ DocumentStore.Prototype = function() {
     var self = this;
     if(props.info) {
       if(props.info.userId) props.userId = props.info.userId;
+      if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
+      if(props.info.updatedBy) props.updatedBy = props.info.updatedBy;
       props.info = JSON.stringify(props.info);
     }
     this.documentExists(documentId, function(err, exists) {
