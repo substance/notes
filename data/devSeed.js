@@ -34,7 +34,9 @@ var devSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser'
+        userId: 'testuser',
+        title: 'Über Integralinvarianten und Differentialgleichungen',
+        updatedAt: 1458663125909
       }
     },
     'note-2': {
@@ -43,7 +45,9 @@ var devSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser'
+        userId: 'testuser',
+        title: 'Memoirs of Journeys to Venice and the Low Countries',
+        updatedAt: 1458663225909
       }
     },
     'note-3': {
@@ -52,7 +56,9 @@ var devSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser'
+        userId: 'testuser',
+        title: 'Ten Years Later',
+        updatedAt: 1458663325909
       }
     },
     'note-4': {
@@ -61,7 +67,9 @@ var devSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser2'
+        userId: 'testuser2',
+        title: 'Die Potentialfunction und das Potential',
+        updatedAt: 1458662325909
       }
     },
     'note-5': {
@@ -70,7 +78,9 @@ var devSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser2'
+        userId: 'testuser2',
+        title: 'The Life of Michelangelo Buonarroti',
+        updatedAt: 1458662125909
       }
     },
     'note-6': {
@@ -79,7 +89,9 @@ var devSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser2'
+        userId: 'testuser2',
+        title: 'The Battle of Life',
+        updatedAt: 1458662725909
       }
     }
   },
