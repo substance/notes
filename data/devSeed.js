@@ -47,7 +47,8 @@ var devSeed = {
       info: {
         userId: 'testuser',
         title: 'Memoirs of Journeys to Venice and the Low Countries',
-        updatedAt: 1458663225909
+        updatedAt: 1458663225909,
+        updatedBy: 'testuser2'
       }
     },
     'note-3': {
@@ -69,7 +70,8 @@ var devSeed = {
       info: {
         userId: 'testuser2',
         title: 'Die Potentialfunction und das Potential',
-        updatedAt: 1458662325909
+        updatedAt: 1458662325909,
+        updatedBy: 'testuser2'
       }
     },
     'note-5': {
