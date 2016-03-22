@@ -237,7 +237,6 @@ ChangeStore.Prototype = function() {
     Get ten latest except very latest and number of collaborators for a document
   */
   this.getCollaborators = function(documentId, cb) {
-    var result = {};
     var query = this.db('changes')
                 .where('documentId', documentId)
                 .distinct('userId');

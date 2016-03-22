@@ -31,7 +31,6 @@ Dashboard.Prototype = function() {
   };
 
   this.render = function() {
-    var self = this;
   	var authenticationClient = this.context.authenticationClient;
     var user = authenticationClient.getUser();
     var myNotes = this.state.myNotes;
