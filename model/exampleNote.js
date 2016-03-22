@@ -7,6 +7,12 @@ module.exports = createDocumentFactory(Note, function(tx) {
   var body = tx.get('body');
 
   tx.create({
+    id: 'metadata',
+    type: 'metadata',
+    title: 'New Untitled Note'
+  });
+
+  tx.create({
     id: 'p1',
     type: 'paragraph',
     content: 'Substance is a JavaScript library for web-based content editing. Build simple text editors or full-featured publishing systems. Substance provides you building blocks for your very custom editor.'
