@@ -1,6 +1,7 @@
 var DocumentClient = require('./NotesDocumentClient');
 var LoginStatus = require('./LoginStatus');
 var differenceBy = require('lodash/differenceBy');
+var orderBy = require('lodash/orderBy');
 var _ = require('substance/util/helpers');
 var Err = require('substance/util/Error');
 var Component = require('substance/ui/Component');
@@ -32,8 +33,9 @@ Dashboard.Prototype = function() {
   this.render = function() {
     var self = this;
   	var authenticationClient = this.context.authenticationClient;
-    var myNotes = this.state.myDocs;
-    var sharedNotes = this.state.sharedDocs;
+    var user = authenticationClient.getUser();
+    var myNotes = this.state.myNotes;
+    var sharedNotes = this.state.sharedNotes;
     var el = $$('div').addClass('sc-dashboard');
 
     var topbar = $$('div').addClass('se-header').append(
@@ -41,51 +43,18 @@ Dashboard.Prototype = function() {
 	      $$('button').addClass('se-action se-new-note').on('click', this.send.bind(this, 'newNote')).append('New Note')
 	    ),
 	    $$(LoginStatus, {
-        user: authenticationClient.getUser()
+        user: user
       })
     );
 
     var myNotesList = $$('div').addClass('se-my-notes se-notes-list');
     myNotesList.append($$('div').addClass('se-section-title').append('My notes'));
-
-    _.each(myNotes, function(note, i) {
-      note.title = 'Once Upon a Long Ago';
-      note.updatedAt = 1458596224265;
-      note.updatedBy = 'michael';
-      note.collaborators = ['daniel', 'oliver'];
-      var updated = "updated " + self.timeAgo(note.updatedAt);
-      if(authenticationClient.getUser() !== note.updatedBy) updated += " by " + note.updatedBy;
-      var edited = "edited by " + note.collaborators.join(", ") + " and 13 other collaborators"; 
-      var noteItem = $$('div').addClass('se-note').append(
-        $$('div').addClass('se-title').append(note.title),
-        $$('div').addClass('se-updated').append(updated),
-        $$('div').addClass('se-edited').append(edited)
-      );
-      if(i === 0) noteItem.addClass('featured');
-      myNotesList.append(noteItem);
-    });
+    myNotesList.append(this._renderNotesList(myNotes));
 
     var sharedNotesList = $$('div').addClass('se-shared-notes se-notes-list');
     sharedNotesList.append($$('div').addClass('se-section-title').append('Collaborated notes'));
+    sharedNotesList.append(this._renderNotesList(sharedNotes, true));
 
-    _.each(sharedNotes, function(note, i) {
-      note.title = 'Blowing in the Wind';
-      note.updatedAt = 1458602662041;
-      note.updatedBy = 'oliver';
-      note.collaborators = ['michael', 'daniel'];
-      var created = "by " + note.userId;
-      var updated = "updated " + self.timeAgo(note.updatedAt);
-      if(authenticationClient.getUser() !== note.updatedBy) updated += " by " + note.updatedBy;
-      var edited = "edited by " + note.collaborators.join(", ") + " and 13 other collaborators"; 
-      var noteItem = $$('div').addClass('se-note').append(
-        $$('div').addClass('se-title').append(note.title),
-        $$('div').addClass('se-created').append(created),
-        $$('div').addClass('se-updated').append(updated),
-        $$('div').addClass('se-ed').append(edited)
-      );
-      if(i === 0) noteItem.addClass('featured');
-      sharedNotesList.append(noteItem);
-    });
     
     el.append(topbar);
     el.append(myNotesList);
@@ -96,6 +65,38 @@ Dashboard.Prototype = function() {
 
   // Helpers
   // ------------------------------------
+
+  this._renderNotesList = function(notes, shared) {
+    var self = this;
+    var list = [];
+    var authenticationClient = this.context.authenticationClient;
+    var user = authenticationClient.getUser();
+    _.each(notes, function(note, i) {
+      if(!note.updatedBy || note.updatedBy === user) {
+        note.updatedBy = 'me';
+      }
+      var updated = "updated " + self.timeAgo(note.updatedAt);
+      var created = "by " + note.userId;
+      if(user !== note.updatedBy) updated += " by " + note.updatedBy;
+      var latestCollaborators = note.collaborators.slice(0, 2);
+      var restCollaborators = note.collaborators.slice(2, note.collaborators.length);
+      var edited = "edited by " + latestCollaborators.join(", "); 
+      if (restCollaborators.length == 1) edited += " and 1 other collaborator";
+      if (restCollaborators.length > 1) edited += " and " + restCollaborators.length + " other collaborators"; 
+      var noteItem = $$('div').addClass('se-note').append(
+        $$('div').addClass('se-title').append(note.title)
+      );
+      if(shared) noteItem.append($$('div').addClass('se-created').append(created));
+      noteItem.append(
+        $$('div').addClass('se-updated').append(updated),
+        $$('div').addClass('se-edited').append(edited)
+      );
+      if(i === 0) noteItem.addClass('featured');
+      list.push(noteItem);
+    });
+
+    return list;
+  };
 
   this._getUserId = function() {
     var authenticationClient = this.context.authenticationClient;
@@ -111,7 +112,7 @@ Dashboard.Prototype = function() {
     var documentClient = this.documentClient;
     var userId = this._getUserId();
 
-    documentClient.listUserDocuments(userId, function(err, myDocs) {
+    documentClient.listUserDocuments(userId, function(err, myNotes) {
       if (err) {
         this.setState({
           error: new Err('Dashboard.LoadingError', {
@@ -123,7 +124,8 @@ Dashboard.Prototype = function() {
         return;
       }
 
-      documentClient.listCollaboratedDocuments(userId, function(err, sharedDocs) {
+
+      documentClient.listCollaboratedDocuments(userId, function(err, sharedNotes) {
         if (err) {
           this.setState({
             error: new Err('Dashboard.LoadingError', {
@@ -134,14 +136,16 @@ Dashboard.Prototype = function() {
           console.error('ERROR', err);
           return;
         }
-        sharedDocs = differenceBy(sharedDocs, myDocs, 'documentId');
+        sharedNotes = differenceBy(sharedNotes, myNotes, 'documentId');
+        sharedNotes = orderBy(sharedNotes, ['updatedAt'], ['desc']);
+        myNotes = orderBy(myNotes, ['updatedAt'], ['desc']);
         // HACK: For debugging purposes
-        window.myDocs = myDocs;
-        window.sharedDocs = sharedDocs;
+        window.myNotes = myNotes;
+        window.sharedNotes = sharedNotes;
 
         self.extendState({
-          myDocs: myDocs,
-          sharedDocs: sharedDocs
+          myNotes: myNotes,
+          sharedNotes: sharedNotes
         });
       });
     }.bind(this));
