@@ -6,6 +6,11 @@ exports.up = function(knex, Promise) {
     table.integer('createdAt');
     table.string('userId');
     table.primary(['documentId', 'version']);
+
+    // Index so we can query by documentId and or userId (needed to extract collaborators)
+    table.index(['documentId']);
+    table.index(['userId']);
+    table.index(['documentId', 'userId']);
   });
 };
 
