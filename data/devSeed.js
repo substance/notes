@@ -127,10 +127,10 @@ var devSeed = {
   changes: {
     'note-1': [testUserChange],
     'note-2': [testUser2Change],
-    'note-3': [testUserChange],
-    'note-4': [testUser2Change],
+    'note-3': [testUser2Change],
+    'note-4': [testUserChange],
     'note-5': [testUserChange],
-    'note-6': [testUser2Change],
+    'note-6': [testUserChange],
     'note-99': [testUserChange, testUser2Change]
   }
 };
