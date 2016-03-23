@@ -111,6 +111,17 @@ var devSeed = {
         title: 'The Battle of Life',
         updatedAt: 1458662725909
       }
+    },
+    'note-99': {
+      documentId: 'note-99',
+      schemaName: 'substance-note',
+      schemaVersion: '1.0.0',
+      version: 1,
+      info: {
+        userId: 'testuser',
+        title: 'A doc with two changes',
+        updatedAt: 1458662725909
+      }
     }
   },
   changes: {
