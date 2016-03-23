@@ -10,12 +10,8 @@ function NotesDocumentClient() {
 
 NotesDocumentClient.Prototype = function() {
 
-  this.listUserDocuments = function(userId, cb) {
-    this._request('GET', this.config.httpUrl+'user/'+userId, null, cb);
-  };
-
-  this.listCollaboratedDocuments = function(userId, cb) {
-    this._request('GET', this.config.httpUrl+'user/collaborated/'+userId, null, cb);
+  this.listUserDashboard = function(userId, cb) {
+    this._request('GET', '/api/notes/dashboard/user/'+userId, null, cb);
   };
 
 };
