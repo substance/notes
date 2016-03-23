@@ -1,5 +1,21 @@
 var exampleNote = require('../model/exampleNote');
 
+var testUserChange = exampleNote.createChangeset().map(function(c) {
+  c.info = {
+    userId: 'testuser',
+    createdAt: new Date()
+  };
+  return c;
+})[0];
+
+var testUser2Change = exampleNote.createChangeset().map(function(c) {
+  c.info = {
+    userId: 'testuser2',
+    createdAt: new Date()
+  };
+  return c;
+})[0];
+
 // App seed
 var devSeed = {
   users: {
@@ -98,48 +114,13 @@ var devSeed = {
     }
   },
   changes: {
-    'note-1': exampleNote.createChangeset().map(function(c) {
-      c.info = {
-        userId: 'testuser',
-        createdAt: new Date()
-      };
-      return c;
-    }),
-    'note-2': exampleNote.createChangeset().map(function(c) {
-      c.info = {
-        userId: 'testuser2',
-        createdAt: new Date()
-      };
-      return c;
-    }),
-    'note-3': exampleNote.createChangeset().map(function(c) {
-      c.info = {
-        userId: 'testuser2',
-        createdAt: new Date()
-      };
-      return c;
-    }),
-    'note-4': exampleNote.createChangeset().map(function(c) {
-      c.info = {
-        userId: 'testuser',
-        createdAt: new Date()
-      };
-      return c;
-    }),
-    'note-5': exampleNote.createChangeset().map(function(c) {
-      c.info = {
-        userId: 'testuser',
-        createdAt: new Date()
-      };
-      return c;
-    }),
-    'note-6': exampleNote.createChangeset().map(function(c) {
-      c.info = {
-        userId: 'testuser',
-        createdAt: new Date()
-      };
-      return c;
-    })
+    'note-1': [testUserChange],
+    'note-2': [testUser2Change],
+    'note-3': [testUserChange],
+    'note-4': [testUser2Change],
+    'note-5': [testUserChange],
+    'note-6': [testUser2Change],
+    'note-99': [testUserChange, testUser2Change]
   }
 };
 
