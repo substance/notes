@@ -73,7 +73,7 @@ Dashboard.Prototype = function() {
     _.each(notes, function(note, i) {
       var noteItem = $$('div').addClass('se-note').append(
         $$('div').addClass('se-title').append(note.title)
-      );
+      ).on('click', self.send.bind(self, 'openNote', note.documentId));
       
       // Add author inline with title for shared notes
       if (shared) {
