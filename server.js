@@ -12,6 +12,8 @@ var SessionStore = require('./server/SessionStore');
 var AuthenticationServer = require('./server/AuthenticationServer');
 var DocumentServer = require('./server/NotesDocumentServer');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
+var NotesServer = require('./server/NotesServer');
+var NotesEngine = require('./server/NotesEngine');
 var Database = require('./server/Database');
 var bodyParser = require('body-parser');
 var http = require('http');
@@ -52,6 +54,8 @@ var authenticationEngine = new AuthenticationEngine({
   sessionStore: sessionStore,
   emailService: null // TODO
 });
+
+var notesEngine = new NotesEngine({db: db});
 
 /*
   Serve app in development mode
@@ -175,6 +179,15 @@ var authenticationServer = new AuthenticationServer({
 });
 
 authenticationServer.bind(app);
+
+// NotesServer
+// ----------------
+
+var notesServer = new NotesServer({
+  notesEngine: notesEngine,
+  path: '/api/notes'
+});
+notesServer.bind(app);
 
 // Substance Notes API
 // ----------------
