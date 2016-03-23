@@ -133,27 +133,6 @@ DocumentStore.Prototype = function() {
   };
 
   /*
-    Get documents with provided ids
-  */
-  this.getDocuments = function(documentIds, cb) {
-    var query = this.db('documents')
-                .whereIn('documentId', documentIds)
-                .orderBy('updatedAt', 'desc');
-
-    query.asCallback(function(err, docs) {
-      if (err) {
-        return cb(new Err('DocumentStore.ReadError', {
-          cause: err
-        }));
-      }
-      _.each(docs, function(doc) {
-        if(doc.info) doc.info = JSON.parse(doc.info);
-      });
-      cb(null, docs);
-    });
-  };
-
-  /*
     Update a document record
   */
   this.updateDocument = function(documentId, props, cb) {
