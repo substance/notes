@@ -1,4 +1,5 @@
 .sc-comment {
+  position: relative;
   background: #f7f9f9;
   color: #8c9393;
   border-bottom: 1px solid #eaefef;
@@ -6,7 +7,9 @@
   margin-bottom: 20px;
   .sc-comment-symbol {
     color: #e0e2e2;
-    float: right;
+    position: absolute;
+    top: 20px;
+    right: 15px;
   }
   .sc-authored {
     color: #bfc4c4;
