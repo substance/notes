@@ -183,10 +183,7 @@ Notes.Prototype = function() {
     Open a dashboard
   */
   this._openDashboard = function() {
-    this.extendState({
-      mode: 'index',
-      docId: ''
-    });
+    this.setState(this.getInitialState());
   };
 
   /*
