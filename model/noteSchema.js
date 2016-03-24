@@ -1,6 +1,7 @@
 'use strict';
 
 var DocumentSchema = require('substance/model/DocumentSchema');
+var DocumentNode = require('substance/model/DocumentNode');
 var TextBlock = require('substance/model/TextBlock');
 var PropertyAnnotation = require('substance/model/PropertyAnnotation');
 
@@ -46,6 +47,22 @@ Comment.static.defineSchema({
 });
 
 /**
+  Metadata
+*/
+
+function Metadata() {
+  Metadata.super.apply(this, arguments);
+}
+
+DocumentNode.extend(Metadata);
+
+Metadata.static.name = "metadata";
+
+Metadata.static.defineSchema({
+  title: { type: "string", default: "Untitled Note"}
+});
+
+/**
   Schema instance
 */
 var schema = new DocumentSchema('substance-note', '1.0.0');
@@ -64,7 +81,8 @@ schema.addNodes([
   require('substance/packages/link/Link'),
   Comment,
   Todo,
-  Mark
+  Mark,
+  Metadata
 ]);
 
 module.exports = schema;

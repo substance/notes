@@ -21,9 +21,3 @@ Start the app
 ```bash
 npm start
 ```
-
-There's also a shortcut for starting the server and reseeding immediately.
-
-```bash
-npm start seed
-```

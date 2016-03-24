@@ -2,28 +2,60 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var server = require('substance/util/server');
-var CollabHub = require('substance/collab/CollabHub');
-var Backend = require('./server/Backend');
+var exampleNote = require('./model/exampleNote');
+var CollabServer = require('substance/collab/CollabServer');
+var DocumentEngine = require('./server/NotesDocumentEngine');
+var DocumentStore = require('./server/DocumentStore');
+var ChangeStore = require('./server/ChangeStore');
+var UserStore = require('./server/UserStore');
+var SessionStore = require('./server/SessionStore');
+var AuthenticationServer = require('./server/AuthenticationServer');
+var DocumentServer = require('./server/NotesDocumentServer');
+var AuthenticationEngine = require('./server/AuthenticationEngine');
+var NotesServer = require('./server/NotesServer');
+var NotesEngine = require('./server/NotesEngine');
+var Database = require('./server/Database');
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
-var knexConfig = require('./knexfile');
 
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || 'localhost';
 var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 
-var backend = new Backend({
-  knexConfig: knexConfig,
-  ArticleClass: require('./model/Note.js')
+var db = new Database();
+
+// Set up stores
+// -------------------------------
+
+var userStore = new UserStore({ db: db });
+var sessionStore = new SessionStore({ db: db });
+
+// We use the in-memory versions for now, thus we need to seed
+// each time.
+var changeStore = new ChangeStore({db: db});
+var documentStore = new DocumentStore({db: db});
+
+var documentEngine = new DocumentEngine({
+  db: db,
+  documentStore: documentStore,
+  changeStore: changeStore,
+  schemas: {
+    'substance-note': {
+      name: 'substance-note',
+      version: '1.0.0',
+      documentFactory: exampleNote
+    }
+  }
 });
 
-// If seed option provided we should remove db, run migration and seed script
-if(process.argv[2] == 'seed') {
-	var execSync = require('child_process').execSync;
-	execSync("rm -rf ./db/*.sqlite3 && knex migrate:latest && node seed");
-  console.log('Seeding the db...');
-}
+var authenticationEngine = new AuthenticationEngine({
+  userStore: userStore,
+  sessionStore: sessionStore,
+  emailService: null // TODO
+});
+
+var notesEngine = new NotesEngine({db: db});
 
 /*
   Serve app in development mode
@@ -39,6 +71,7 @@ var config = {
   port: port,
   wsUrl: wsUrl
 };
+
 server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
 server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
 server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
@@ -46,24 +79,150 @@ server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
 /*
   Serve static files
 */
-// app.use(express.static(path.join(__dirname, 'notepad')));
+app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
+
 
 // Connect Substance
 // ----------------
 
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
-var hub = new CollabHub(wss, backend);
 
-// Adds http routes that CollabHub implements
-hub.addRoutes(app);
+// DocumentServer
+// ----------------
+
+var documentServer = new DocumentServer({
+  documentEngine: documentEngine,
+  path: '/api/documents'
+});
+documentServer.bind(app);
+
+
+// CollabServer
+// ----------------
+
+var collabServer = new CollabServer({
+  documentEngine: documentEngine,
+
+  /*
+    Checks for authentication based on message.sessionToken
+  */
+  authenticate: function(req, cb) {
+    var sessionToken = req.message.sessionToken;
+    authenticationEngine.getSession(sessionToken).then(function(session) {
+      console.log('server.js authenticate successful!');
+      cb(null, session);
+    }).catch(function(err) {
+      cb(err);
+    });
+  },
+
+  /*
+    Add some user info to the collaborator object (e.g. user.name)
+  */
+  enhanceCollaborator: function(req, cb) {
+    cb(null, {name: req.session.user.name});
+  },
+
+  /*
+    Will store the userId along with each change. We also want to build
+    a documentInfo object to update the document record with some data
+  */
+  enhanceRequest: function(req, cb) {
+    var message = req.message;
+    if (message.type === 'commit' || message.type === 'connect') {
+      // We fetch the document record to get the old title
+      documentStore.getDocument(message.documentId, function(err, docRecord) {
+        var updatedAt = new Date();
+        var title = docRecord.title;
+
+        if (message.change) {
+          // Update the title if necessary
+          // var change = DocumentChange.fromJSON(message.change);
+          // if (change.isUpdated['meta', 'title']) {
+          //   // get all ops that changed the title
+          //   var titleUpdateOps = change.updated['meta', 'title']; // ??
+          //   titleUpdateOps.forEach(function(op) {
+          //     title = op.apply(title);
+          //   });
+          // }
+          message.change.info = {
+            userId: req.session.userId,
+            updatedAt: updatedAt
+          };
+        }
+        // commit and connect method take optional documentInfo argument
+        message.documentInfo = {
+          updatedAt: updatedAt,
+          updatedBy: req.session.userId,
+          title: title
+        };
+        cb(null);
+      });
+    } else {
+      // Just continue for everything that is not handled
+      cb(null);
+    }
+  }
+});
+
+collabServer.bind(wss);
+
+// Set up AuthenticationServer
+// ----------------
+
+var authenticationServer = new AuthenticationServer({
+  authenticationEngine: authenticationEngine,
+  path: '/api/auth/'
+});
+
+authenticationServer.bind(app);
+
+// NotesServer
+// ----------------
+
+var notesServer = new NotesServer({
+  notesEngine: notesEngine,
+  path: '/api/notes'
+});
+notesServer.bind(app);
+
+// Substance Notes API
+// ----------------
+// 
+// We just moved that out of the Collab hub as it's app specific code
+
+// Should go into FileServer module
+// ----------------
+
+// app.post('/hub/api/upload', backend.getFileUploader('files'), function(req, res) {
+//   res.json({name: backend.getFileName(req)});
+// });
+
 
 // Error handling
 // We send JSON to the client so they can display messages in the UI.
+
+/* jshint unused: false */
 app.use(function(err, req, res, next) {
-  res.status(500).json({errorMessage: err.message});
+  if (res.headersSent) {
+    return next(err);
+  }
+  
+  if (err.inspect) {
+    // This is a SubstanceError where we have detailed info
+    console.error(err.inspect());
+  } else {
+    // For all other errors, let's just print the stack trace
+    console.error(err.stack);
+  }
+  
+  res.status(500).json({
+    errorName: err.name,
+    errorMessage: err.message || err.name
+  });
 });
 
 // Delegate http requests to express app

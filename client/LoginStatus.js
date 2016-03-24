@@ -1,5 +1,4 @@
 var Component = require('substance/ui/Component');
-var forEach = require('lodash/forEach');
 var $$ = Component.$$;
 
 function LoginStatus() {
@@ -13,9 +12,14 @@ LoginStatus.Prototype = function() {
   };
 
   this.render = function() {
-    var el = $$('div').addClass('sc-login-status');
-    el.append(this.props.user.name);
-    el.append($$('button').on('click', this._logout).append('Logout'));
+    var el = $$('div').addClass('sc-login-status se-dropdown');
+    el.append(
+      this.props.user.name,
+      $$('span').addClass('se-caret fa fa-caret-down')
+    );
+    el.append($$('ul').append(
+      $$('li').on('click', this._logout).append('Logout')
+    ));
     return el;
   };
 };

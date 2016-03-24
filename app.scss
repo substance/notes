@@ -7,6 +7,7 @@ $fa-font-path:  "./fonts" !default;
 @import './node_modules/substance/packages/_all';
 
 @import './styles/_notes'; // app styles
+@import './styles/_dashboard';
 @import './styles/_login-status';
 @import './styles/_welcome';
 @import './styles/_collaborators';
@@ -19,6 +20,6 @@ $fa-font-path:  "./fonts" !default;
 
 /* Shared demo styles */
 
-body {
+body.sm-fixed-layout {
   overflow: hidden;
 }

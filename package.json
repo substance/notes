@@ -7,11 +7,12 @@
     "express": "4.13.1",
     "body-parser": "1.15.0",
     "jquery": "*",
-    "knex": "0.9.0",
+    "knex": "0.10.0",
     "lodash": "4.2.1",
     "multer": "1.1.0",
+    "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#adc032c28b05a2c48b662af9648b3ac37ce39c4a",
+    "substance": "substance/substance#b62091ccf14b51d37da1466972c4ce85545e2eb0",
     "ws": "^1.0.1"
   },
   "devDependencies": {
@@ -27,14 +28,18 @@
     "mocha": "2.4.5",
     "through2": "^2.0.0",
     "gulp-jshint": "2.0.0",
-    "jshint": "2.8.0"
+    "jshint": "2.8.0",
+    "qunitjs": "1.20.0",
+    "sinon": "1.17.2",
+    "colors": "1.1.2",
+    "glob": "6.0.1"
   },
   "browserify": { "transform": [ "brfs" ] },
   "scripts": {
     "bundle": "gulp",
-    "postinstall": "rm -rf ./db/*.sqlite3 && knex migrate:latest && rm -rf ./uploads && mkdir uploads",
-    "seed": "npm run postinstall && node seed",
-    "test": "gulp test"
+    "postinstall": "mkdir -p uploads",
+    "seed": "node seed",
+    "test": "NODE_ENV=test gulp test"
   },
   "version": "1.0.0-beta"
 }

@@ -11,14 +11,24 @@ Welcome.Prototype = function() {
     Send Dashboard link including one-time loginKey
   */
   this._sendEmail = function() {
-    console.log('send email');
+    var email = this.refs.email.val();
+    var authenticationClient = this.context.authenticationClient;
+    authenticationClient.requestLoginLink(email, function(err, res) {
+      console.log('Email link requested', res);
+    });
   };
 
   this.render = function() {
     var el = $$('div').addClass('sc-welcome');
     
+    // Topbar with branding
+    el.append(
+      $$('div').addClass('se-topbar').html('')
+    );
+
     // Intro
     el.append(
+      $$('div').addClass('se-brand-wrapper').html(this.i18n.t('sc-welcome.brand')),
       $$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.intro'))
     );
 

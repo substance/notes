@@ -1,45 +1,31 @@
-var async = require('async');
-var knexConfig = require('./knexfile');
-var Backend = require('./hub/Backend');
-var exampleNoteChangeset = require('./note/exampleNoteChangeset')();
-var backend = new Backend({knexConfig: knexConfig});
-var change = exampleNoteChangeset[0].toJSON();
+var UserStore = require('./server/UserStore');
+var SessionStore = require('./server/SessionStore');
+var ChangeStore = require('./server/ChangeStore');
+var DocumentStore = require('./server/DocumentStore');
+var Database = require('./server/Database');
+var seed = require('./data/defaultSeed');
+var db = new Database();
 
-var user = {
-  loginKey: '1234',
-  name: 'Demo User'
-};
-
-function seedChanges(cb) {
-	backend.addChange('note-1', change, 1, function(err, version) {
-		if(err) return cb(err);
-		console.log('Changes successfully seeded. Version of example document: ', version);
-		cb(null);
-	});
+// If dev option provided will use another seed file
+if (process.argv[2] == 'dev') {
+  seed = require('./data/devSeed');
+  console.log('Development seeding...');
 }
 
-function seedUsersAndSessions(cb) {
-	backend.createUser(user, function(err, session) {
-		if(err) return cb(err);
-		console.log(session);
-		console.log(
-      'User and session successfully seeded. Use following login key to access notepad:',
-      session.loginKey ,
-      '. Session Id: ',
-      session.session.sessionToken
-    );
-		cb(null);
-	});
-}
-
-async.series([
-	seedUsersAndSessions,
-	seedChanges
-], function(err) {
-	if (err) {
-    console.log(err.message);
-    process.exit(1);
-  }
-  console.log('Seeding has been completed!');
-  process.exit(0);
-});
+db.reset() // Clear the database, set up the schema
+  .then(function() {
+    var userStore = new UserStore({ db: db });
+    return userStore.seed(seed.users);
+  }).then(function() {
+    var sessionStore = new SessionStore({ db: db });
+    return sessionStore.seed(seed.sessions);
+  }).then(function() {
+    var changeStore = new ChangeStore({db: db});
+    return changeStore.seed(seed.changes);
+  }).then(function() {
+    var documentStore = new DocumentStore({db: db});
+    return documentStore.seed(seed.documents);
+  }).then(function() {
+    console.log('Done seeding.');
+    db.shutdown();
+  });

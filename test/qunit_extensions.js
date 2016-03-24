@@ -1,0 +1,1 @@
+require('substance/test/unit/qunit_extensions');
