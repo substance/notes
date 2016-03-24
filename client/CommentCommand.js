@@ -49,7 +49,8 @@ CommentCommand.Prototype = function() {
     if (!sel.isPropertySelection()) return;
     var surface = this.getSurface();
     var targetType = this.getTargetType();
-    var user = this.context.hubClient.getUser();
+    var authenticationClient = this.context.authenticationClient;
+    var user = authenticationClient.getUser();
     if (targetType) {
       // A Surface transaction performs a sequence of document operations
       // and also considers the active selection.    

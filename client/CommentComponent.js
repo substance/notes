@@ -25,10 +25,7 @@ CommentProperty.Prototype = function() {
       .css({
         whiteSpace: "pre-wrap"
       });
-    // Should be on top
-    el.append($$('span').addClass('sc-comment-symbol').attr({contenteditable: false}).append(
-      $$(Icon, {icon: "fa-comment"})
-    ));
+
     // Should be non-editable, if we can't there is css-after way
     el.append($$('span')
       .addClass('sc-authored')
@@ -36,6 +33,18 @@ CommentProperty.Prototype = function() {
       .attr('contenteditable', false)
       .append(authored));
     el.append($$('br'));
+    return el;
+  };
+
+  // Dangerous way, but comment icon should be on top of other things
+  this._renderContent = function() {
+    var text = this.getText();
+    var annotations = this.getAnnotations();
+    var el = $$(this.props.tagName || 'span');
+    el.append($$('span').addClass('sc-comment-symbol').attr({contenteditable: false}).append(
+      $$(Icon, {icon: "fa-comment"})
+    ));
+    this.fragmenter.start(el, text, annotations);
     return el;
   };
 
