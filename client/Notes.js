@@ -209,7 +209,8 @@ Notes.Prototype = function() {
     // TODO: Create error component (popup)
     if (this._state.error) {
       el.append($$('div').addClass('se-error').append(
-        this._state.error.message
+        this._state.error.message,
+        $$('span').addClass('se-dismiss').append('Dismiss')
       ));
     }
 
