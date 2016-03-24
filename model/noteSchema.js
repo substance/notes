@@ -31,6 +31,22 @@ Todo.static.defineSchema({
 });
 
 /**
+  Comment item for inline commenting
+*/
+
+function Comment() {
+  Comment.super.apply(this, arguments);
+}
+
+TextBlock.extend(Comment);
+Comment.static.name = "comment";
+
+Comment.static.defineSchema({
+  "author": { type: "string", default: "" },
+  "date": { type: "string", default: new Date().toISOString() }
+});
+
+/**
   Metadata
 */
 
@@ -63,6 +79,7 @@ schema.addNodes([
   require('substance/packages/emphasis/Emphasis'),
   require('substance/packages/strong/Strong'),
   require('substance/packages/link/Link'),
+  Comment,
   Todo,
   Mark,
   Metadata

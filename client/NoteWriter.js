@@ -15,6 +15,7 @@ var LinkTool = require('substance/packages/link/LinkTool');
 var ImageTool = require('substance/packages/image/ImageTool');
 var MarkTool = require('./MarkTool');
 var TodoTool = require('./TodoTool');
+var CommentTool = require('./CommentTool');
 
 function NoteWriter() {
   Controller.apply(this, arguments);
@@ -37,6 +38,7 @@ NoteWriter.Prototype = function() {
             $$(MarkTool).append($$(Icon, {icon: 'fa-pencil'})),
             $$(LinkTool).append($$(Icon, {icon: 'fa-link'})),
             $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'})),
+            $$(CommentTool).append($$(Icon, {icon: 'fa-comment'})),
             $$(ImageTool).append($$(Icon, {icon: 'fa-image'}))
           )
         ),
@@ -64,6 +66,7 @@ NoteWriter.static.config = {
     components: {
       'paragraph': require('substance/packages/paragraph/ParagraphComponent'),
       'heading': require('substance/packages/heading/HeadingComponent'),
+      'comment': require('./CommentComponent'),
       'image': require('substance/packages/image/ImageComponent'),
       'link': require('substance/packages/link/LinkComponent'),
       'todo': require('./TodoComponent'),
@@ -87,6 +90,7 @@ NoteWriter.static.config = {
       require('substance/packages/image/ImageCommand'),
       require('./MarkCommand'),
       require('./TodoCommand'),
+      require('./CommentCommand')
     ],
     textTypes: [
       {name: 'paragraph', data: {type: 'paragraph'}},
