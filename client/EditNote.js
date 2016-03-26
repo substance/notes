@@ -153,7 +153,7 @@ EditNote.Prototype = function() {
   this._loadDocument = function() {
     var collabClient = this.collabClient;
     var documentClient = this.context.documentClient;
-
+     
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({

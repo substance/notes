@@ -202,8 +202,7 @@ Notes.Prototype = function() {
 
   this.render = function() {
     var el = $$('div').addClass('sc-app');
-    
-    // TODO: Create error component (popup)
+
     if (this._state.error) {
       el.append($$('div').addClass('se-error').append(
         this._state.error.message,
