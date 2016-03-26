@@ -21,3 +21,9 @@ Start the app
 ```bash
 npm start
 ```
+
+To login with the test user:
+
+```bash
+http://localhost:5000/#loginKey=1234
+```
