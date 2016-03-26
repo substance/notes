@@ -2,7 +2,7 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var server = require('substance/util/server');
-var exampleNote = require('./model/exampleNote');
+var newNote = require('./model/newNote');
 var CollabServer = require('substance/collab/CollabServer');
 var DocumentEngine = require('./server/NotesDocumentEngine');
 var DocumentStore = require('./server/DocumentStore');
@@ -44,7 +44,7 @@ var documentEngine = new DocumentEngine({
     'substance-note': {
       name: 'substance-note',
       version: '1.0.0',
-      documentFactory: exampleNote
+      documentFactory: newNote
     }
   }
 });
