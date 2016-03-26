@@ -4,6 +4,7 @@ var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
 var CollabClient = require('substance/collab/CollabClient');
 var LoginStatus = require('./LoginStatus');
+var StatusBar = require('./StatusBar');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
 var Component = require('substance/ui/Component');
@@ -30,7 +31,8 @@ EditNote.Prototype = function() {
   this.getInitialState = function() {
     return {
       session: null, // CollabSession will be stored here, if null indicates we are in loading state
-      error: null // used to display error messages e.g. loading of document failed
+      error: null, // used to display error messages e.g. loading of document failed
+      status: null //used to display status messages in topbar
     };
   };
 
@@ -64,30 +66,46 @@ EditNote.Prototype = function() {
   // ------------------------------------
 
   this.render = function() {
+    if(this.state.error) {
+      this.setStatus({
+        type: 'error',
+        message: this.state.error.message
+      });
+    }
+
+    var status = this.state.status;
     console.log('EditNote.render', this.state);
     var authenticationClient = this.context.authenticationClient;
 
     var el = $$('div').addClass('sc-notepad-wrapper');
 
-    if (this.state.error) {
-      // TODO: render this in a pop in addition to the regular content
-      el.append(
-        $$('div').addClass('se-error').append(this.state.error.message)
+    if (this.state.session) {
+      var header = $$('div').addClass('se-header');
+      header.append(
+        $$('div').addClass('se-actions').append(
+          $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
+          $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
+        ),
+        $$(LoginStatus, {
+          user: authenticationClient.getUser()
+        })
       );
-    } else if (this.state.session) {
-      el.append(
-        $$('div').addClass('se-header').append(
-          $$('div').addClass('se-actions').append(
-            $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
-            $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
-          ),
-          $$(LoginStatus, {
-            user: authenticationClient.getUser()
-          }),
+      if(status) {
+        header.append(
+          $$(StatusBar, {
+            status: status
+          })
+        );
+      } else {
+        header.append(
           $$(Collaborators, {
             session: this.state.session
           })
-        ),
+        );
+      }
+
+      el.append(
+        header,
         $$(NoteWriter, {
           documentSession: this.state.session,
           // onUploadFile: hubClient.uploadFile
@@ -96,11 +114,38 @@ EditNote.Prototype = function() {
     } else {
       el.append('Loading document...');
     }
+
     return el;
   };
 
   // Helpers
   // ------------------------------------
+
+  /*
+    Display a message in topbar
+    status consists of type (error/warning/success/info),
+    message and optional dissmiss param (number of seconds until dismiss)
+  */
+  this.setStatus = function(status) {
+    var self = this;
+    this.extendState({
+      status: status
+    });
+    if(status.dismiss > 0) {
+      setTimeout(function(){
+        self.dismissStatus();
+      }, 1000*status.dismiss);
+    }
+  };
+
+  /*
+    Removes status message
+  */
+  this.dismissStatus = function() {
+    this.extendState({
+      status: null
+    });
+  };
 
   /*
     Loads a document and initializes a CollabSession
