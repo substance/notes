@@ -23,7 +23,7 @@ Welcome.Prototype = function() {
       requested: true
     });
     this._sendEmail(email);
-  }
+  };
 
   this.render = function() {
     var el = $$('div').addClass('sc-welcome');
