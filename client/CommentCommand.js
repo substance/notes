@@ -57,7 +57,7 @@ CommentCommand.Prototype = function() {
       surface.transaction(function(tx, args) {
         args.data = {
           type: targetType,
-          date: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           author: user.name
         };
         return surface.switchType(tx, args);

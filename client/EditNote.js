@@ -51,8 +51,8 @@ EditNote.Prototype = function() {
   this.willReceiveProps = function() {
     console.log('willreceive props');
     this.dispose();
-    // TODO: This is a bit bad taste. but we need to reset to initial state if we are looking at a different
-    // document
+    // TODO: This is a bit bad taste. but we need to reset to initial
+    // state if we are looking at a different document.
     this.state = this.getInitialState();
     this._init();
   };

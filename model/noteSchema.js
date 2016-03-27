@@ -44,7 +44,7 @@ Comment.static.name = 'comment';
 Comment.static.defineSchema({
   content: 'text',
   author: { type: 'string', default: '' },
-  date: { type: 'string', default: new Date().toISOString() }
+  createdAt: { type: 'string', default: new Date().toISOString() }
 });
 
 /**

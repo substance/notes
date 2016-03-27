@@ -83,7 +83,6 @@ app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
 app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
-
 // Connect Substance
 // ----------------
 
@@ -120,19 +119,12 @@ var collabServer = new CollabServer({
   },
 
   /*
-    Add some user info to the collaborator object (e.g. user.name)
-  */
-  enhanceCollaborator: function(req, cb) {
-    cb(null, {name: req.session.user.name});
-  },
-
-  /*
     Will store the userId along with each change. We also want to build
     a documentInfo object to update the document record with some data
   */
   enhanceRequest: function(req, cb) {
     var message = req.message;
-    if (message.type === 'commit' || message.type === 'connect') {
+    if (message.type === 'sync') {
       // We fetch the document record to get the old title
       documentStore.getDocument(message.documentId, function(err, docRecord) {
         var updatedAt = new Date();
@@ -153,6 +145,11 @@ var collabServer = new CollabServer({
             updatedAt: updatedAt
           };
         }
+
+        message.collaboratorInfo = {
+          name: req.session.user.name
+        };
+
         // commit and connect method take optional documentInfo argument
         message.documentInfo = {
           updatedAt: updatedAt,
