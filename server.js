@@ -232,7 +232,7 @@ httpServer.on('request', app);
 // to the www directly.
 // E.g. on sandbox.substance.io we have established a reverse proxy
 // forwarding http+ws on notepad.substance.io to localhost:5001
-httpServer.listen(port, 'localhost', function() {
+httpServer.listen(port, host, function() {
   console.log('Listening on ' + httpServer.address().port); 
 });
 

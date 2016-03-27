@@ -27,3 +27,11 @@ To login with the test user:
 ```bash
 http://localhost:5000/#loginKey=1234
 ```
+
+List of optional environment variables
+- HOST
+- PORT
+- WS_URL (url of websocket server)
+- MAIL_SENDER (email notifications from field)
+- MAILGUN_USER
+- MAILGUN_PASS
