@@ -3,6 +3,7 @@ var JSONConverter = require('substance/model/JSONConverter');
 var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
 var CollabClient = require('substance/collab/CollabClient');
+var WebSocketConnection = require('substance/collab/WebSocketConnection');
 var LoginStatus = require('./LoginStatus');
 var StatusBar = require('./StatusBar');
 var converter = new JSONConverter();
@@ -17,8 +18,12 @@ function EditNote() {
   var config = this.context.config;
   var authenticationClient = this.context.authenticationClient;
 
+  this.conn = new WebSocketConnection({
+    wsUrl: config.wsUrl || 'ws://'+config.host+':'+config.port
+  });
+
   this.collabClient = new CollabClient({
-    wsUrl: config.wsUrl || 'ws://'+config.host+':'+config.port,
+    connection: this.conn,
     enhanceMessage: function(message) {
       message.sessionToken = authenticationClient.getSessionToken();
       return message;
@@ -169,8 +174,8 @@ EditNote.Prototype = function() {
       var doc = new Note();
       doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {
-        docId: this.props.docId,
-        docVersion: docRecord.version,
+        documentId: this.props.docId,
+        version: docRecord.version,
         collabClient: collabClient
       });
 
