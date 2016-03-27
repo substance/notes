@@ -202,7 +202,6 @@ Notes.Prototype = function() {
 
   this.render = function() {
     var el = $$('div').addClass('sc-app');
-
     if (this._state.error) {
       el.append($$('div').addClass('se-error').append(
         this._state.error.message,

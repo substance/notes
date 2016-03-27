@@ -45,19 +45,18 @@ EditNote.Prototype = function() {
   // ------------------------------------
 
   this.didMount = function() {
-    this._init();
+    this._loadDocument();
   };
 
-  this.willReceiveProps = function() {
+  this.willReceiveProps = function(props) {
     console.log('willreceive props');
     this.dispose();
     // TODO: This is a bit bad taste. but we need to reset to initial
     // state if we are looking at a different document.
     this.state = this.getInitialState();
-    this._init();
   };
 
-  this._init = function() {
+  this.didReceiveProps = function() {
     this._loadDocument();
   };
 
@@ -71,12 +70,12 @@ EditNote.Prototype = function() {
   // ------------------------------------
 
   this.render = function() {
-    if(this.state.error) {
-      this.setStatus({
-        type: 'error',
-        message: this.state.error.message
-      });
-    }
+    // if(this.state.error) {
+    //   this.setStatus({
+    //     type: 'error',
+    //     message: this.state.error.message
+    //   });
+    // }
 
     var status = this.state.status;
     console.log('EditNote.render', this.state);
@@ -119,7 +118,6 @@ EditNote.Prototype = function() {
     } else {
       el.append('Loading document...');
     }
-
     return el;
   };
 
@@ -131,17 +129,17 @@ EditNote.Prototype = function() {
     status consists of type (error/warning/success/info),
     message and optional dissmiss param (number of seconds until dismiss)
   */
-  this.setStatus = function(status) {
-    var self = this;
-    this.extendState({
-      status: status
-    });
-    if(status.dismiss > 0) {
-      setTimeout(function(){
-        self.dismissStatus();
-      }, 1000*status.dismiss);
-    }
-  };
+  // this.setStatus = function(status) {
+  //   var self = this;
+  //   this.extendState({
+  //     status: status
+  //   });
+  //   if(status.dismiss > 0) {
+  //     setTimeout(function(){
+  //       self.dismissStatus();
+  //     }, 1000*status.dismiss);
+  //   }
+  // };
 
   /*
     Removes status message
@@ -158,7 +156,7 @@ EditNote.Prototype = function() {
   this._loadDocument = function() {
     var collabClient = this.collabClient;
     var documentClient = this.context.documentClient;
-     
+    
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({
