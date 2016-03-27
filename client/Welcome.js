@@ -10,13 +10,20 @@ Welcome.Prototype = function() {
   /*
     Send Dashboard link including one-time loginKey
   */
-  this._sendEmail = function() {
-    var email = this.refs.email.val();
+  this._sendEmail = function(email) {
     var authenticationClient = this.context.authenticationClient;
     authenticationClient.requestLoginLink(email, function(err, res) {
       console.log('Email link requested', res);
     });
   };
+
+  this._requestLoginLink = function() {
+    var email = this.refs.email.val();
+    this.setState({
+      requested: true
+    });
+    this._sendEmail(email);
+  }
 
   this.render = function() {
     var el = $$('div').addClass('sc-welcome');
@@ -33,16 +40,22 @@ Welcome.Prototype = function() {
     );
 
     // Enter email
-    el.append(
-      $$('div').addClass('se-enter-email').append(
-        $$('input')
+    var requestForm = $$('div').addClass('se-enter-email');
+    requestForm.append(
+      $$('input')
           .attr({type: 'email', placeholder: 'Enter your email here'})
-          .ref('email'),
-        $$('button').addClass('se-send-email')
-          .append('Start writing!')
-          .on('click', this._sendEmail)
-      )
+          .ref('email')
     );
+    var requestButton = $$('button').addClass('se-send-email');
+    if(this.state.requested) {
+      requestButton.append('Checkout email, we just sent a link to you!');
+    } else {
+      requestButton
+        .append('Start writing!')
+        .on('click', this._requestLoginLink);
+    }
+    requestForm.append(requestButton);
+    el.append(requestForm);
     return el;
   };
 };
