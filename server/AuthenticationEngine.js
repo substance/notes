@@ -24,7 +24,7 @@ AuthenticationEngine.Prototype = function() {
     return userStore.getUserByEmail(args.email)
       .catch(function() {
         // User does not exist, we create a new one
-        return userStore.createUser({email: args.email});
+        return userStore.createUser({email: args.email, name: 'Anonymous User'});
       })
       .then(this._updateLoginKey.bind(this))
       .then(this._sendLoginLink.bind(this));
@@ -60,8 +60,9 @@ AuthenticationEngine.Prototype = function() {
     Send a login link via email
   */
   this._sendLoginLink = function(user) {
+    var url = process.env.APP_URL || "http://notes.substance.io";
     var subject = "Welcome to the Substance Notes!";
-    var msg = "Click the following link to login: http://notes.substance.io/#loginKey=" + user.loginKey;
+    var msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
     console.log('Message', msg);
 
     return Mail.sendPlain(user.email, subject, msg)

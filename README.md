@@ -32,6 +32,7 @@ List of optional environment variables
 - HOST
 - PORT
 - WS_URL (url of websocket server)
+- APP_URL (for emails)
 - MAIL_SENDER (email notifications from field)
 - MAILGUN_USER
 - MAILGUN_PASS
