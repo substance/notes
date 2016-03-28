@@ -4,8 +4,10 @@ var $$ = Component.$$;
 var Controller = require('substance/ui/Controller');
 var ContainerEditor = require('substance/ui/ContainerEditor');
 var SplitPane = require('substance/ui/SplitPane');
+var ScrollPane = require('substance/ui/ScrollPane');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var Toolbar = require('substance/ui/Toolbar');
+var Cover = require('./Cover');
 var UndoTool = require('substance/ui/UndoTool');
 var RedoTool = require('substance/ui/RedoTool');
 var SwitchTextTypeTool = require('substance/packages/text/SwitchTextTypeTool');
@@ -42,13 +44,21 @@ NoteWriter.Prototype = function() {
             $$(ImageTool).append($$(Icon, {icon: 'fa-image'}))
           )
         ),
-        $$(ContainerEditor, {
-          doc: this.props.documentSession.doc,
-          containerId: 'body',
-          name: 'bodyEditor',
-          commands: config.bodyEditor.commands,
-          textTypes: config.bodyEditor.textTypes
-        }).ref('bodyEditor')
+        $$(ScrollPane, {
+          scrollbarType: 'native',
+          scrollbarPosition: 'right'
+        }).append(
+          $$('div').addClass('se-note-content').append(
+            $$(Cover).ref('cover'),
+            $$(ContainerEditor, {
+              doc: this.props.documentSession.doc,
+              containerId: 'body',
+              name: 'bodyEditor',
+              commands: config.bodyEditor.commands,
+              textTypes: config.bodyEditor.textTypes
+            }).ref('bodyEditor')
+          )
+        ).ref('scrollableContent')
       )
     );
   };
@@ -78,6 +88,14 @@ NoteWriter.static.config = {
       require('substance/ui/UndoCommand'),
       require('substance/ui/RedoCommand'),
       require('substance/ui/SaveCommand')
+    ]
+  },
+  titleEditor: {
+    commands: [
+      require('substance/packages/emphasis/EmphasisCommand'),
+      require('substance/packages/text/SwitchTextTypeCommand'),
+      require('substance/packages/subscript/SubscriptCommand'),
+      require('substance/packages/superscript/SuperscriptCommand')
     ]
   },
   // Custom configuration (required!)

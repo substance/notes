@@ -7,9 +7,9 @@ module.exports = createDocumentFactory(Note, function(tx) {
   var body = tx.get('body');
 
   tx.create({
-    id: 'metadata',
-    type: 'metadata',
-    title: 'New Untitled Note'
+    id: 'meta',
+    type: 'meta',
+    title: 'Welcome to Substance Notes'
   });
 
   tx.create({

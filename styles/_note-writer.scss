@@ -6,24 +6,28 @@
   right: 0px;
   background: white;
   color: #222;
-}
 
-.sc-container-editor {
-  padding: 20px;
-  overflow: auto;
-  max-width: 920px;
-  width: 100%;
-  margin: 0px auto;
-
-  .sc-paragraph {
-    padding: 0px 20px 20px;
-  }
-}
-
-.sc-toolbar {
-  .se-toolbar-group {
-    max-width: 900px;
+  .se-note-content {
+    padding: 20px;
+    overflow: auto;
+    max-width: 920px;
+    width: 100%;
     margin: 0px auto;
-    float: none;
+
+    .sc-paragraph {
+      padding-bottom: 20px;
+    }
   }
+
+  .sc-toolbar {
+    .se-toolbar-group {
+      max-width: 900px;
+      margin: 0px auto;
+      float: none;
+    }
+  }
+
 }
+
+
+

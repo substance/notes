@@ -48,19 +48,19 @@ Comment.static.defineSchema({
 });
 
 /**
-  Metadata
+  Meta
 */
 
-function Metadata() {
-  Metadata.super.apply(this, arguments);
+function Meta() {
+  Meta.super.apply(this, arguments);
 }
 
-DocumentNode.extend(Metadata);
+DocumentNode.extend(Meta);
 
-Metadata.static.name = "metadata";
+Meta.static.name = 'meta';
 
-Metadata.static.defineSchema({
-  title: { type: "string", default: "Untitled Note"}
+Meta.static.defineSchema({
+  title: { type: 'string', default: 'Untitled'}
 });
 
 /**
@@ -83,7 +83,7 @@ schema.addNodes([
   Comment,
   Todo,
   Mark,
-  Metadata
+  Meta
 ]);
 
 module.exports = schema;
