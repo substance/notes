@@ -13,6 +13,10 @@ Cover.Prototype = function() {
   this.render = function() {
     var doc = this.context.controller.getDocument();
     var config = this.context.config;
+    var noteInfo = this.props.noteInfo.props;
+
+    var authors = [noteInfo.creator || noteInfo.userId];
+    authors = authors.concat(noteInfo.collaborators);
 
     var metaNode = doc.getDocumentMeta();
     return $$("div").addClass("sc-cover")
@@ -26,7 +30,7 @@ Cover.Prototype = function() {
           editing: 'full'
         }).addClass('se-title'),
         $$('div').addClass('se-separator'),
-        $$('div').addClass('se-authors').append('Michael Aufreiter, Daniel Beilinson and 3 others')
+        $$('div').addClass('se-authors').append(authors.join(', '))
       );
   };
 };

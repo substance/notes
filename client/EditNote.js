@@ -8,6 +8,7 @@ var Notification = require('./Notification');
 var Header = require('./Header');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
+var NoteInfo = require('./NoteInfo');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 
@@ -131,6 +132,7 @@ EditNote.Prototype = function() {
     } else if (this.state.session) {
       el.append(
         $$(NoteWriter, {
+          noteInfo: new NoteInfo(this.state.noteInfo),
           documentSession: this.state.session,
           // onUploadFile: hubClient.uploadFile
         }).ref('notepad')
@@ -206,6 +208,7 @@ EditNote.Prototype = function() {
 
       setTimeout(function() {
         this.extendState({
+          noteInfo: docRecord,
           session: session
         });
       }.bind(this), 1000);

@@ -49,7 +49,9 @@ NoteWriter.Prototype = function() {
           scrollbarPosition: 'right'
         }).append(
           $$('div').addClass('se-note-content').append(
-            $$(Cover).ref('cover'),
+            $$(Cover, {
+              noteInfo: this.props.noteInfo
+            }).ref('cover'),
             $$(ContainerEditor, {
               doc: this.props.documentSession.doc,
               containerId: 'body',
