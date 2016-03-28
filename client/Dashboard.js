@@ -1,7 +1,7 @@
 var DocumentClient = require('./NotesDocumentClient');
-var LoginStatus = require('./LoginStatus');
 var _ = require('substance/util/helpers');
 var Err = require('substance/util/Error');
+var Header = require('./Header');
 var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 
@@ -29,21 +29,15 @@ Dashboard.Prototype = function() {
   };
 
   this.render = function() {
-  	var authenticationClient = this.context.authenticationClient;
-    var user = authenticationClient.getUser();
     var notes = this.state.notes;
     var myNotes = notes ? notes.myDocs : [];
     var sharedNotes = notes ? notes.collaboratedDocs : [];
 
     var el = $$('div').addClass('sc-dashboard');
+    var header = $$(Header);
 
-    var topbar = $$('div').addClass('se-header').append(
-    	$$('div').addClass('se-actions').append(
-	      $$('button').addClass('se-action se-new-note').on('click', this.send.bind(this, 'newNote')).append('New Note')
-	    ),
-	    $$(LoginStatus, {
-        user: user
-      })
+    header.outlet('actions').append(
+      $$('button').addClass('se-action se-new-note').on('click', this.send.bind(this, 'newNote')).append('New Note')
     );
 
     var myNotesList = $$('div').addClass('se-my-notes se-notes-list');
@@ -54,10 +48,11 @@ Dashboard.Prototype = function() {
     sharedNotesList.append($$('div').addClass('se-section-title').append('Collaborated notes'));
     sharedNotesList.append(this._renderNotesList(sharedNotes, true));
 
-    
-    el.append(topbar);
-    el.append(myNotesList);
-    el.append(sharedNotesList);
+    el.append(
+      header,
+      myNotesList,
+      sharedNotesList
+    );
     
     return el;
   };
