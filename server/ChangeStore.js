@@ -216,24 +216,6 @@ ChangeStore.Prototype = function() {
   };
 
   /*
-    Get collaborators for a document (author not a collaborator)
-  */
-  this.getCollaborators = function(id, author, cb) {
-    var query = "SELECT distinct u.name FROM changes c INNER JOIN users u ON(u.userId=c.userId) WHERE c.documentId = ? AND c.userId != ?";
-
-    this.db.raw(query, [id, author]).asCallback(function(err, result) {
-      if (err) {
-        return cb(new Err('ChangeStore.ReadCollaboratorsError', {
-          cause: err
-        }));
-      }
-      var collaborators = _.map(result, function(col) {return col.name; });
-      cb(null, collaborators);
-    });
-  };
-
-
-  /*
     Resets the database and loads a given seed object
 
     Be careful with running this in production

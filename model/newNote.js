@@ -7,8 +7,8 @@ module.exports = createDocumentFactory(Note, function(tx) {
   var body = tx.get('body');
 
   tx.create({
-    id: 'metadata',
-    type: 'metadata',
+    id: 'meta',
+    type: 'meta',
     title: 'Untitled Note'
   });
 

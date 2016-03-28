@@ -60,7 +60,10 @@ DocumentStore.Prototype = function() {
     var self = this;
     if(props.info) {
       if(props.info.title) props.title = props.info.title;
-      if(props.info.userId) props.userId = props.info.userId;
+      if(props.info.userId) {
+        props.userId = props.info.userId;
+        props.updatedBy = props.info.userId;
+      }
       if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
       props.info = JSON.stringify(props.info);
     }
@@ -84,7 +87,11 @@ DocumentStore.Prototype = function() {
       if(props.info.userId) props.userId = props.info.userId;
       if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
       // Let's keep updatedBy here for seeding
-      if(props.info.updatedAt) props.updatedBy = props.info.updatedBy;
+      if(props.info.updatedBy) {
+        props.updatedBy = props.info.updatedBy;
+      } else if (props.info.userId){
+        props.updatedBy = props.info.userId;
+      }
       props.info = JSON.stringify(props.info);
     }
     return this.db.table('documents').insert(props);
