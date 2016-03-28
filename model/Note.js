@@ -21,7 +21,7 @@ Note.Prototype = function() {
   this.getDocumentMeta = function() {
     return this.get('meta');
   };
-}
+};
 
 Document.extend(Note);
 Note.schema = noteSchema;

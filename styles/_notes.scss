@@ -23,25 +23,4 @@
       cursor: pointer;
     }
   }
-
-  .se-header {
-    height: 40px;
-    background: #3B4749;
-    overflow: hidden;
-
-    .se-actions {
-      float: left;
-      .se-action {
-        line-height: 40px;
-        display: inline-block;
-        padding: 0px 10px;
-        color: rgba(255,255,255, 0.7);
-        border-right: 1px solid #2E393A;
-      }
-
-      .se-action:hover {
-        color: rgba(255,255,255, 1);
-      }
-    }
-  }
 }

@@ -4,12 +4,11 @@ var Note = require('../model/Note');
 var Collaborators = require('./Collaborators');
 var CollabClient = require('substance/collab/CollabClient');
 var WebSocketConnection = require('substance/collab/WebSocketConnection');
-var LoginStatus = require('./LoginStatus');
-var StatusBar = require('./StatusBar');
+var Notification = require('./Notification');
+var Header = require('./Header');
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
 var Component = require('substance/ui/Component');
-var Err = require('substance/util/Error');
 var $$ = Component.$$;
 
 function EditNote() {
@@ -29,6 +28,9 @@ function EditNote() {
       return message;
     }.bind(this)
   });
+
+  this.collabClient.on('disconnected', this._onCollabClientDisconnected, this);
+  this.collabClient.on('connected', this._onCollabClientConnected, this);
 }
 
 EditNote.Prototype = function() {
@@ -37,7 +39,7 @@ EditNote.Prototype = function() {
     return {
       session: null, // CollabSession will be stored here, if null indicates we are in loading state
       error: null, // used to display error messages e.g. loading of document failed
-      status: null //used to display status messages in topbar
+      notification: null //used to display status messages in topbar
     };
   };
 
@@ -48,8 +50,7 @@ EditNote.Prototype = function() {
     this._loadDocument();
   };
 
-  this.willReceiveProps = function(props) {
-    console.log('willreceive props');
+  this.willReceiveProps = function() {
     this.dispose();
     // TODO: This is a bit bad taste. but we need to reset to initial
     // state if we are looking at a different document.
@@ -64,59 +65,81 @@ EditNote.Prototype = function() {
     if (this.state.session) {
       this.state.session.dispose();
     }
+    this.collabClient.off(this);
+  };
+
+  this._onCollabClientDisconnected = function() {
+    console.log('disconnected');
+    this.extendState({
+      notification: {
+        type: 'error',
+        message: 'Connection lost! After reconnecting, your changes will be saved.'
+      }
+    });
+  };
+
+  this._onCollabClientConnected = function() {
+    console.log('connected');
+    this.extendState({
+      notification: null
+    });
   };
 
   // Life cycle
   // ------------------------------------
 
   this.render = function() {
-    // if(this.state.error) {
-    //   this.setStatus({
-    //     type: 'error',
-    //     message: this.state.error.message
-    //   });
-    // }
-
-    var status = this.state.status;
-    console.log('EditNote.render', this.state);
-    var authenticationClient = this.context.authenticationClient;
-
+    var notification = this.state.notification;
     var el = $$('div').addClass('sc-notepad-wrapper');
 
-    if (this.state.session) {
-      var header = $$('div').addClass('se-header');
-      header.append(
-        $$('div').addClass('se-actions').append(
-          $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
-          $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
-        ),
-        $$(LoginStatus, {
-          user: authenticationClient.getUser()
+
+    // Configure header
+    // --------------
+
+    var header = $$(Header);
+
+    header.outlet('actions').append(
+      $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
+      $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
+    );
+
+    // Notification overrules collaborators
+    if (notification) {
+      header.outlet('content').append(
+        $$(Notification, notification)
+      );
+    } else if (this.state.session) {
+      header.outlet('content').append(
+        $$(Collaborators, {
+          session: this.state.session
         })
       );
-      if(status) {
-        header.append(
-          $$(StatusBar, {
-            status: status
-          })
-        );
-      } else {
-        header.append(
-          $$(Collaborators, {
-            session: this.state.session
-          })
-        );
-      }
+    }
+    el.append(header);
 
+
+    // Main content
+    // --------------
+
+    // Display top-level errors. E.g. when a doc could not be loaded
+    // we will display the notification on top level
+    if (this.state.error) {
+      el.append($$(Notification, {
+        type: 'error',
+        message: this.state.error.message
+      }));
+    } else if (this.state.session) {
       el.append(
-        header,
         $$(NoteWriter, {
           documentSession: this.state.session,
           // onUploadFile: hubClient.uploadFile
         }).ref('notepad')
       );
     } else {
-      el.append('Loading document...');
+      el.append($$(Notification, {
+        type: 'info',
+        message: 'Loading document...'
+      }));
     }
     return el;
   };
@@ -160,10 +183,10 @@ EditNote.Prototype = function() {
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({
-          error: new Err('EditNote.LoadingError', {
-            message: 'Document could not be loaded.',
-            cause: err
-          })
+          notification: {
+            type: 'error',
+            message: 'Document could not be loaded.'
+          }
         });
         console.error('ERROR', err);
         return;
@@ -181,12 +204,13 @@ EditNote.Prototype = function() {
       window.doc = doc;
       window.session = session;
 
-      this.extendState({
-        session: session
-      });
+      setTimeout(function() {
+        this.extendState({
+          session: session
+        });
+      }.bind(this), 1000);
     }.bind(this));
   };
-
 };
 
 Component.extend(EditNote);

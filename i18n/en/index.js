@@ -17,5 +17,6 @@ module.exports = {
   'sc-welcome.brand': '<div class="se-brand">Substance <span class="sc-brand-strong">Notes</span></div>',
   'todo': 'Todo',
   'comment': 'Comment',
-  'comment.content': 'Comment'
+  'comment.content': 'Comment',
+  'meta.title': 'Title'
 };
