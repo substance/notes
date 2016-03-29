@@ -11,6 +11,10 @@ LoginStatus.Prototype = function() {
     this.send('logout');
   };
 
+  this._openUserSettings = function() {
+    this.send('openUserSettings');
+  };
+
   this.render = function() {
     var user = this.props.user;
     var name = user.name || 'Anonymous';
@@ -20,7 +24,8 @@ LoginStatus.Prototype = function() {
       $$('span').addClass('se-caret fa fa-caret-down')
     );
     el.append($$('ul').append(
-      $$('li').on('click', this._logout).append('Logout')
+      $$('li').on('click', this._logout).append('Logout'),
+      $$('li').on('click', this._openUserSettings).append('Settings')
     ));
     return el;
   };

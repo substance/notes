@@ -138,10 +138,10 @@ EditNote.Prototype = function() {
         }).ref('notepad')
       );
     } else {
-      el.append($$(Notification, {
-        type: 'info',
-        message: 'Loading document...'
-      }));
+      // el.append($$(Notification, {
+      //   type: 'info',
+      //   message: 'Loading document...'
+      // }));
     }
     return el;
   };
@@ -206,12 +206,11 @@ EditNote.Prototype = function() {
       window.doc = doc;
       window.session = session;
 
-      setTimeout(function() {
-        this.extendState({
-          noteInfo: docRecord,
-          session: session
-        });
-      }.bind(this), 1000);
+      this.extendState({
+        noteInfo: docRecord,
+        session: session
+      });
+      
     }.bind(this));
   };
 };

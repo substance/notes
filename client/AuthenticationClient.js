@@ -55,6 +55,8 @@ AuthenticationClient.Prototype = function() {
   this.changeName = function(userId, name, cb) {
     this._request('POST', this.config.httpUrl + 'changename', {userId: userId, name: name}, function(err, res) {
       if (err) return cb(err);
+      // We need to update user.name locally too
+      this._session.user.name = name;
       cb(null, res);
     }.bind(this));
   };

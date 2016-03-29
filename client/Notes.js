@@ -57,6 +57,7 @@ function Notes() {
     'openNote': this._openNote,
     'newNote': this._newNote,
     'openDashboard': this._openDashboard,
+    'openUserSettings': this._openUserSettings,
     'logout': this._logout
   });
 }
@@ -156,10 +157,18 @@ Notes.Prototype = function() {
   };
 
   /*
+    Open an existing note
+  */
+  this._openUserSettings = function(docId) {
+    this.extendState({
+      mode: 'user-settings'
+    });
+  };
+
+  /*
     Create a new note
   */
   this._newNote = function() {
-    // console.log('NEW NOTE', docId);
     var userId = this._getUserId();
     this.documentClient.createDocument({
       schemaName: 'substance-note',
@@ -229,6 +238,9 @@ Notes.Prototype = function() {
         }).ref('editNote'));
         // HACK: add the sm-fixed layout class, so the body does not scroll
         document.body.classList.add('sm-fixed-layout');
+        break;
+      case 'user-settings':
+        el.append($$(Profile).ref('profile'));
         break;
       default: // mode=index or default
         // HACK: removes the sm-fixed layout class so the body element gets scrollable

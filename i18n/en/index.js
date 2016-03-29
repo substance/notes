@@ -15,7 +15,6 @@ module.exports = {
   // 'sc-notes-welcome.intro': getFile('sc-welcome.intro.html'),
   'sc-welcome.intro': fs.readFileSync(__dirname + '/sc-welcome.intro.html', 'utf8'),
   'sc-welcome.brand': '<div class="se-brand">Substance <span class="sc-brand-strong">Notes</span></div>',
-  'sc-profile.intro': fs.readFileSync(__dirname + '/sc-profile.intro.html', 'utf8'),
   'todo': 'Todo',
   'comment': 'Comment',
   'comment.content': 'Comment',
