@@ -24,8 +24,8 @@ LoginStatus.Prototype = function() {
       $$('span').addClass('se-caret fa fa-caret-down')
     );
     el.append($$('ul').append(
-      $$('li').on('click', this._logout).append('Logout'),
-      $$('li').on('click', this._openUserSettings).append('Settings')
+      $$('li').on('click', this._openUserSettings).append('Settings'),
+      $$('li').on('click', this._logout).append('Logout')
     ));
     return el;
   };
