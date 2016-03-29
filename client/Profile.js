@@ -11,7 +11,6 @@ function Profile() {
 Profile.Prototype = function() {
 
   this._updateUserName = function() {
-    var self = this;
     var name = this.refs.name.val();
     var authenticationClient = this.context.authenticationClient;
     var user = authenticationClient.getUser();
@@ -49,6 +48,11 @@ Profile.Prototype = function() {
     var el = $$('div').addClass('sc-profile');
     var userName = this.getUserName();
     var header = $$(Header);
+
+    header.outlet('actions').append(
+      $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
+      $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
+    );
 
     var profile = $$('div').addClass('se-profile-contents').append(
       $$('div').addClass('se-intro')
