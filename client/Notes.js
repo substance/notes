@@ -165,7 +165,7 @@ Notes.Prototype = function() {
   /*
     Open an existing note
   */
-  this._openUserSettings = function(docId) {
+  this._openUserSettings = function() {
     this.extendState({
       mode: 'user-settings'
     });
