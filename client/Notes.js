@@ -100,14 +100,12 @@ Notes.Prototype = function() {
   */
   this._authenticateDone = function(err, userSession) {
     if (err) {
-      window.localStorage.removeItem('sessionToken');
-    } else {
-      this._setSessionToken(userSession.sessionToken);
+      return this._logout();
     }
 
+    this._setSessionToken(userSession.sessionToken);
     this.extendInternalState({
       initialized: true,
-      error: err,
       authenticated: !err
     });
   };
@@ -192,8 +190,10 @@ Notes.Prototype = function() {
   */
   this._logout = function() {
     this.authenticationClient.logout();
+    window.localStorage.removeItem('sessionToken');
     this.extendInternalState({
-      authenticated: false
+      authenticated: false,
+      initialized: true
     });
   };
 
