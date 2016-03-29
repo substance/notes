@@ -13,9 +13,10 @@ LoginStatus.Prototype = function() {
 
   this.render = function() {
     var user = this.props.user;
+    var name = user.name || 'Anonymous';
     var el = $$('div').addClass('sc-login-status se-dropdown');
     el.append(
-      user.name,
+      name,
       $$('span').addClass('se-caret fa fa-caret-down')
     );
     el.append($$('ul').append(

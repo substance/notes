@@ -21,6 +21,7 @@ AuthenticationServer.Prototype = function() {
   this.bind = function(app) {
     app.post(this.path + 'loginlink', this._requestLoginLink.bind(this));
     app.post(this.path + 'authenticate', this._authenticate.bind(this));
+    app.post(this.path + 'changename', this._changename.bind(this));
   };
 
   /*
@@ -45,6 +46,20 @@ AuthenticationServer.Prototype = function() {
 
     this.engine.authenticate(loginData).then(function(session) {
       res.json(session);
+    }).catch(function(err) {
+      return next(err);
+    });
+  };
+
+
+  /*
+    Change user name
+  */
+  this._changename = function(req, res, next) {
+    var args = req.body;
+
+    this.engine.updateUserName(args).then(function() {
+      res.json({status: 'ok'});
     }).catch(function(err) {
       return next(err);
     });

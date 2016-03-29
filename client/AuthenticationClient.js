@@ -52,6 +52,13 @@ AuthenticationClient.Prototype = function() {
     } else return null;
   };
 
+  this.changeName = function(userId, name, cb) {
+    this._request('POST', this.config.httpUrl + 'changename', {userId: userId, name: name}, function(err, res) {
+      if (err) return cb(err);
+      cb(null, res);
+    }.bind(this));
+  };
+
   /*
     Returns true if client is authenticated
   */

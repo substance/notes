@@ -8,6 +8,7 @@ var DocumentClient = require('substance/collab/DocumentClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
+var Profile = require('./Profile');
 var Welcome = require('./Welcome');
 
 var I18n = require('substance/ui/i18n');
@@ -233,7 +234,12 @@ Notes.Prototype = function() {
         // HACK: removes the sm-fixed layout class so the body element gets scrollable
         document.body.classList.remove('sm-fixed-layout');
         if (this._state.authenticated) {
-          el.append($$(Dashboard).ref('dashboard'));
+          var userName = this._getUserName();
+          if(userName) {
+            el.append($$(Dashboard).ref('dashboard'));
+          } else {
+            el.append($$(Profile).ref('profile'));
+          }
         } else {
           el.append($$(Welcome).ref('welcome'));
         }
@@ -264,6 +270,12 @@ Notes.Prototype = function() {
     var authenticationClient = this.authenticationClient;
     var user = authenticationClient.getUser();
     return user.userId;
+  };
+
+  this._getUserName = function() {
+    var authenticationClient = this.authenticationClient;
+    var user = authenticationClient.getUser();
+    return user.name;
   };
 
   /*

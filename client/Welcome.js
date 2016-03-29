@@ -63,5 +63,3 @@ Welcome.Prototype = function() {
 Component.extend(Welcome);
 
 module.exports = Welcome;
-
-

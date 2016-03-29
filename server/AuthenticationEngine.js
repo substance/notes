@@ -24,7 +24,7 @@ AuthenticationEngine.Prototype = function() {
     return userStore.getUserByEmail(args.email)
       .catch(function() {
         // User does not exist, we create a new one
-        return userStore.createUser({email: args.email, name: 'Anonymous User'});
+        return userStore.createUser({email: args.email});
       })
       .then(this._updateLoginKey.bind(this))
       .then(this._sendLoginLink.bind(this));
@@ -45,6 +45,11 @@ AuthenticationEngine.Prototype = function() {
     return this.sessionStore.getSession(sessionToken).then(
       this._enrichSession.bind(this)
     );
+  };
+
+  this.updateUserName = function(args) {
+    var userStore = this.userStore;
+    return userStore.updateUser(args.userId, {name: args.name});
   };
 
   /*
