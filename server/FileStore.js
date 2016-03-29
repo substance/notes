@@ -1,36 +1,25 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-
-// Please integrate here directly
-// ------------------
-
-// var multer = require('multer');
-// var uuid = require('substance/util/uuid');
-// var LocalFiles = {};
-
-// LocalFiles.storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, './uploads');
-//   },
-//   filename: function (req, file, cb) {
-//     var extension = file.originalname.split('.').pop();
-//     cb(null, uuid() + '.' + extension);
-//   }
-// });
-// LocalFiles.uploader = multer({
-//   storage: LocalFiles.storage
-// });
-// module.exports = LocalFiles;
+var uuid = require('substance/util/uuid');
+var multer = require('multer');
 
 /*
-  Implements Substance Store API. This is just a stub and is used for
-  testing.
+  Implements Substance Store API.
 */
 function FileStore(config) {
-  FileStore.super.apply(this, arguments);
-  this.config = config;
-  // this.storage = localFiles;
+  this.storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, config.destination);
+    },
+    filename: function (req, file, cb) {
+      var extension = file.originalname.split('.').pop();
+      cb(null, uuid() + '.' + extension);
+    }
+  });
+  this.uploader = multer({
+    storage: this.storage
+  });
 }
 
 FileStore.Prototype = function() {
@@ -39,7 +28,7 @@ FileStore.Prototype = function() {
     Returns middleware for file uploading
   */
   this.getFileUploader = function(fieldname) {
-    return this.storage.uploader.single(fieldname);
+    return this.uploader.single(fieldname);
   };
 
   /*

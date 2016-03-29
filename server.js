@@ -12,6 +12,8 @@ var SessionStore = require('./server/SessionStore');
 var AuthenticationServer = require('./server/AuthenticationServer');
 var DocumentServer = require('./server/NotesDocumentServer');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
+var FileStore = require('./server/FileStore');
+var FileServer = require('./server/FileServer');
 var NotesServer = require('./server/NotesServer');
 var NotesEngine = require('./server/NotesEngine');
 var Database = require('./server/Database');
@@ -35,6 +37,8 @@ var sessionStore = new SessionStore({ db: db });
 // each time.
 var changeStore = new ChangeStore({db: db});
 var documentStore = new DocumentStore({db: db});
+
+var fileStore = new FileStore({destination: './uploads'});
 
 var documentEngine = new DocumentEngine({
   db: db,
@@ -191,12 +195,11 @@ notesServer.bind(app);
 // 
 // We just moved that out of the Collab hub as it's app specific code
 
-// Should go into FileServer module
-// ----------------
-
-// app.post('/hub/api/upload', backend.getFileUploader('files'), function(req, res) {
-//   res.json({name: backend.getFileName(req)});
-// });
+var fileServer = new FileServer({
+  store: fileStore,
+  path: '/api/files'
+});
+fileServer.bind(app);
 
 
 // Error handling

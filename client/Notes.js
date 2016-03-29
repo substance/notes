@@ -5,6 +5,7 @@ var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var AuthenticationClient = require('./AuthenticationClient');
 var DocumentClient = require('substance/collab/DocumentClient');
+var FileClient = require('./FileClient');
 var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
@@ -52,6 +53,10 @@ function Notes() {
   this.documentClient = new DocumentClient({
     httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
   });
+
+  this.fileClient = new FileClient({
+    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/files/'
+  });
   
   this.handleActions({
     'openNote': this._openNote,
@@ -83,6 +88,7 @@ Notes.Prototype = function() {
     return {
       authenticationClient: this.authenticationClient,
       documentClient: this.documentClient,
+      fileClient: this.fileClient,
       config: this.config
     };
   };
