@@ -1,0 +1,31 @@
+/* Used in Dashboard */
+
+.sc-note-item {
+  padding-bottom: 30px;
+
+  .se-title {
+    color: #4A90E2;
+    font-size: 20px;
+    padding-bottom: 10px;
+  }
+
+  .se-preview {
+    font-size: 13px;
+    padding-bottom: 10px;
+  }
+
+  .se-meta {
+    padding-bottom: 10px;
+
+    .se-authors {
+      float: left;
+    }
+
+    .se-updated-at {
+      float: right;
+      font-size: 13px;
+      font-style: italic;
+      color: rgba(0,0,0,0.3);
+    }
+  }
+}
