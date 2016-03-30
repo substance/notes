@@ -130,11 +130,12 @@ EditNote.Prototype = function() {
         message: this.state.error.message
       }));
     } else if (this.state.session) {
+      var fileClient = this.context.fileClient;
       el.append(
         $$(NoteWriter, {
           noteInfo: new NoteInfo(this.state.noteInfo),
           documentSession: this.state.session,
-          // onUploadFile: hubClient.uploadFile
+          onUploadFile: fileClient.uploadFile
         }).ref('notepad')
       );
     } else {

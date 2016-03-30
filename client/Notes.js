@@ -55,7 +55,7 @@ function Notes() {
   });
 
   this.fileClient = new FileClient({
-    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/files/'
+    httpUrl: config.fileServerUrl || 'http://'+config.host+':'+config.port+'/api/files/'
   });
   
   this.handleActions({

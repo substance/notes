@@ -64,11 +64,6 @@ NoteWriter.Prototype = function() {
       )
     );
   };
-
-  this.uploadFile = function(file, cb) {
-    /* Call FileClient here */
-    return this.context.fileClient.uploadFile(file, cb);
-  };
 };
 
 Controller.extend(NoteWriter);
