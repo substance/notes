@@ -1,5 +1,6 @@
 var oo = require('substance/util/oo');
 var Err = require('substance/util/Error');
+var _ = require('substance/util/helpers');
 
 /*
   Implements the NotesEngine API.
@@ -13,7 +14,6 @@ NotesEngine.Prototype = function() {
 
   this.getDashboardDocs = function(userId, cb) {
     var self = this;
-    var result = {};
 
     this.getMyDocs(userId, function(err, myDocs) {
       if (err) {
@@ -21,7 +21,6 @@ NotesEngine.Prototype = function() {
           cause: err
         }));
       }
-      result.myDocs = myDocs;
 
       self.getCollaboratedDocs(userId, function(err, collaboratedDocs) {
         if (err) {
@@ -29,7 +28,7 @@ NotesEngine.Prototype = function() {
             cause: err
           }));
         }
-        result.collaboratedDocs = collaboratedDocs;
+        var result = _.union(myDocs, collaboratedDocs);
 
         cb(null, result);
       });

@@ -20,7 +20,7 @@ NotesServer.Prototype = function() {
   };
 
   /*
-    Generate new loginKey for user and send email with a link
+    Get a dashboard documents
   */
   this._getDasboardData = function(req, res, next) {
     var userId = req.params.id;

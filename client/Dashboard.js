@@ -92,7 +92,7 @@ Dashboard.Prototype = function() {
       window.notes = notes;
 
       self.extendState({
-        noteItems: notes.myDocs
+        noteItems: notes
       });
     }.bind(this));
   };
