@@ -1,6 +1,6 @@
 var oo = require('substance/util/oo');
 var Err = require('substance/util/Error');
-var _ = require('substance/util/helpers');
+var union = require('lodash/union');
 
 /*
   Implements the NotesEngine API.
@@ -28,7 +28,7 @@ NotesEngine.Prototype = function() {
             cause: err
           }));
         }
-        var result = _.union(myDocs, collaboratedDocs);
+        var result = union(myDocs, collaboratedDocs);
 
         cb(null, result);
       });
