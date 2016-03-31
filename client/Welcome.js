@@ -35,27 +35,29 @@ Welcome.Prototype = function() {
 
     // Intro
     el.append(
-      $$('div').addClass('se-brand-wrapper').html(this.i18n.t('sc-welcome.brand')),
-      $$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.intro'))
+      $$('div').addClass('se-brand-wrapper').html(this.i18n.t('sc-welcome.brand'))
     );
 
-    // Enter email
-    var requestForm = $$('div').addClass('se-enter-email');
-    requestForm.append(
-      $$('input')
-          .attr({type: 'email', placeholder: 'Enter your email here'})
-          .ref('email')
-    );
-    var requestButton = $$('button').addClass('se-send-email');
     if(this.state.requested) {
-      requestButton.append('Checkout email, we just sent a link to you!');
+      el.append($$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.email-sent')));
     } else {
-      requestButton
+      el.append($$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.intro')));
+
+      // Enter email
+      var requestButton = $$('button').addClass('se-send-email')
         .append('Start writing!')
         .on('click', this._requestLoginLink);
+
+      var requestForm = $$('div').addClass('se-enter-email');
+      requestForm.append(
+        $$('input')
+            .attr({type: 'email', placeholder: 'Enter your email here'})
+            .ref('email'),
+        requestButton
+      );
+      el.append(requestForm);
     }
-    requestForm.append(requestButton);
-    el.append(requestForm);
+    
     return el;
   };
 };
