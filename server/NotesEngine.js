@@ -29,14 +29,13 @@ NotesEngine.Prototype = function() {
           }));
         }
         var result = union(myDocs, collaboratedDocs);
-
         cb(null, result);
       });
     });
   };
 
   this.getMyDocs = function(userId, cb) {
-    var query = "SELECT d.title, d.documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.userId = ? ORDER BY d.updatedAt DESC";
+    var query = "SELECT d.title, d.documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.userId = ? ORDER BY d.updatedAt DESC";
 
     this.db.raw(query, userId).asCallback(function(err, docs) {
       if (err) {
@@ -49,7 +48,7 @@ NotesEngine.Prototype = function() {
   };
 
   this.getCollaboratedDocs = function(userId, cb) {
-    var query = "SELECT d.title, d.documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.documentId IN (SELECT documentId FROM changes WHERE userId = ?) AND d.userId != ? ORDER BY d.updatedAt DESC";
+    var query = "SELECT d.title, d.documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.documentId IN (SELECT documentId FROM changes WHERE userId = ?) AND d.userId != ? ORDER BY d.updatedAt DESC";
 
     this.db.raw(query, [userId, userId]).asCallback(function(err, docs) {
       if (err) {
