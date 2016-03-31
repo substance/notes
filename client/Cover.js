@@ -1,4 +1,4 @@
-"use strict";
+  "use strict";
 
 var Component = require('substance/ui/Component');
 var $$ = require('substance/ui/Component').$$;
@@ -16,8 +16,8 @@ Cover.Prototype = function() {
     var noteInfo = this.props.noteInfo.props;
     var updatedAt = new Date(noteInfo.updatedAt).toDateString();
 
-    var authors = [noteInfo.creator || noteInfo.userId];
-    authors = authors.concat(noteInfo.collaborators);
+    var authors = [noteInfo.author || noteInfo.userId];
+    authors = authors.concat(noteInfo.collaborators.split(','));
     console.log('noteInfo', noteInfo);
     var metaNode = doc.getDocumentMeta();
     return $$("div").addClass("sc-cover")
