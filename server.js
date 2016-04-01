@@ -59,26 +59,33 @@ var authenticationEngine = new AuthenticationEngine({
 var notesEngine = new NotesEngine({db: db});
 
 /*
-  Serve app in development mode
+  Express body-parser configureation 
 */
 app.use(bodyParser.json({limit: '3mb'}));
 app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 3000 }));
 
 /*
-  Serve HTML, bundled JS and CSS
+  Serve app
 */
 var config = config.get('server');
+var env = config.util.getEnv('NODE_ENV');
 
-server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
-server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
-server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
+if(env !== 'production') {
+  // Serve HTML, bundled JS and CSS in non-production mode
+  server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
+  server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
+  server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
+  // Serve static files in non-production mode
+  app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));
+  app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
+} else {
+  app.use('/', express.static(path.join(__dirname, '/dist')));
+}
 
 /*
-  Serve static files
+  Serve uploads directory
 */
-app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
-app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
 
 // Connect Substance
 // ----------------

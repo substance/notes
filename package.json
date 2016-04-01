@@ -42,7 +42,7 @@
     ]
   },
   "scripts": {
-    "bundle": "gulp",
+    "bundle": "gulp bundle",
     "postinstall": "mkdir -p uploads",
     "seed": "node seed",
     "test": "NODE_ENV=test gulp test"

@@ -38,3 +38,12 @@ export NODE_ENV=myEnv
 ```
 
 For example you can create config/production.json and then run ```export NODE_ENV=production```.
+You should run seed after executing this command
+
+# Bundling
+
+Server will serve bundled version of app in production mode. So you should execute this command before:
+
+```bash
+npm run bundle
+```
