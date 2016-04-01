@@ -1,31 +1,20 @@
 /* Used in Dashboard */
 
 .sc-note-item {
-  padding-bottom: 30px;
+  padding-bottom: $default-padding;
 
   .se-title {
     color: #4A90E2;
-    font-size: 20px;
-    padding-bottom: 10px;
+    font-size: $large-font-size;
+    padding-bottom: $default-padding / 2;
   }
 
   .se-preview {
-    font-size: 13px;
-    padding-bottom: 10px;
+    font-size: $small-font-size;
+    padding-bottom: $default-padding / 2;
   }
 
-  .se-meta {
-    padding-bottom: 10px;
-
-    .se-authors {
-      float: left;
-    }
-
-    .se-updated-at {
-      float: right;
-      font-size: 13px;
-      font-style: italic;
-      color: rgba(0,0,0,0.3);
-    }
+  .se-updated-at {
+    font-style: italic;
   }
 }

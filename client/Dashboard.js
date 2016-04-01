@@ -1,6 +1,8 @@
 var DocumentClient = require('./NotesDocumentClient');
 var Err = require('substance/util/Error');
 var Header = require('./Header');
+var Button = require('substance/ui/Button');
+var Grid = require('substance/ui/Grid');
 var Component = require('substance/ui/Component');
 var NoteItem = require('./NoteItem');
 
@@ -32,27 +34,50 @@ Dashboard.Prototype = function() {
     var noteItems = this.state.noteItems;
 
     var el = $$('div').addClass('sc-dashboard');
-    var header = $$(Header);
 
+    var header = $$(Header);
     header.outlet('actions').append(
       $$('button').addClass('se-action se-new-note').on('click', this.send.bind(this, 'newNote')).append('New Note')
     );
 
-    var results = $$('div').addClass('se-results');
+    // TODO: Use more idiomatic version!
+    // var header = $$(Header, {
+    //   actions: {
+    //     'newNote': 'New Note'
+    //   }
+    // });
+
+    var grid = $$(Grid).addClass('sh-limiter se-dashboard-grid');
+
+    // Summary + new note button
+    grid.append(
+      $$(Grid.Row).addClass('se-intro').append(
+        $$(Grid.Cell, {columns: 8}).addClass('sh-quiet').append('Showing 20 notes by 10 collaborators'),
+        $$(Grid.Cell, {columns: 4}).addClass('sh-right-align').append(
+          $$(Button).append('New Note')
+            .on('click', this.send.bind(this, 'newNote'))
+        )
+      )
+    );
+
     if (noteItems) {
       noteItems.forEach(function(noteItem) {
         // HACK: server should serve collaborators as an array
         noteItem.collaborators =  noteItem.collaborators ? noteItem.collaborators.split(',') : [];
 
-        results.append($$(NoteItem, noteItem));
+        grid.append(
+          $$(Grid.Row).append(
+            $$(Grid.Cell, {columns: 12}).append(
+              $$(NoteItem, noteItem)
+            )
+          )
+        );
       });
     }
 
     el.append(
       header,
-      $$('div').addClass('se-dashboard-content').append(
-        results
-      )
+      grid
     );
     return el;
   };

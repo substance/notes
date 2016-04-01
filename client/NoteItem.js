@@ -41,9 +41,9 @@ NoteItem.Prototype = function() {
     ];
 
     el.append(
-      $$('div').addClass('se-meta').append(
-        $$('div').addClass('se-authors').append(authors),
-        $$('div').addClass('se-updated-at').append(updatedAt.join(' '))
+      $$('div').addClass('se-meta sh-clearfix').append(
+        $$('div').addClass('se-authors sh-float-left').append(authors),
+        $$('div').addClass('se-updated-at sh-float-right sh-quiet sh-small').append(updatedAt.join(' '))
       )
     );
     return el;
