@@ -28,11 +28,13 @@ To login with the test user:
 http://localhost:5000/#loginKey=1234
 ```
 
-List of optional environment variables
-- HOST
-- PORT
-- WS_URL (url of websocket server)
-- APP_URL (for emails)
-- MAIL_SENDER (email notifications from field)
-- MAILGUN_USER
-- MAILGUN_PASS
+# Configuration
+
+You can configure app for different environments.
+To do that just make a new copy of ```default.json``` from ```config``` folder with name of your environment and run:
+
+```bash
+export NODE_ENV=myEnv
+```
+
+For example you can create config/production.json and then run ```export NODE_ENV=production```.

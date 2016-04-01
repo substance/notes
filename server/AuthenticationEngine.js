@@ -1,5 +1,6 @@
 'use strict';
 
+var appConfig = require('config');
 var uuid = require('substance/util/uuid');
 var oo = require('substance/util/oo');
 var Err = require('substance/util/Error');
@@ -65,7 +66,7 @@ AuthenticationEngine.Prototype = function() {
     Send a login link via email
   */
   this._sendLoginLink = function(user) {
-    var url = process.env.APP_URL || "http://notes.substance.io";
+    var url = appConfig.get('server.appUrl');
     var subject = "Welcome to the Substance Notes!";
     var msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
     console.log('Message', msg);

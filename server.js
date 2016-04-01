@@ -1,3 +1,4 @@
+var config = require('config');
 var express = require('express');
 var path = require('path');
 var app = express();
@@ -20,10 +21,6 @@ var Database = require('./server/Database');
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
-
-var port = process.env.PORT || 5000;
-var host = process.env.HOST || 'localhost';
-var wsUrl = process.env.WS_URL || 'ws://'+host+':'+port;
 
 var db = new Database();
 
@@ -70,11 +67,7 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 30
 /*
   Serve HTML, bundled JS and CSS
 */
-var config = {
-  host: host,
-  port: port,
-  wsUrl: wsUrl
-};
+var config = config.get('server');
 
 server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
 server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
@@ -232,7 +225,7 @@ httpServer.on('request', app);
 // to the www directly.
 // E.g. on sandbox.substance.io we have established a reverse proxy
 // forwarding http+ws on notepad.substance.io to localhost:5001
-httpServer.listen(port, host, function() {
+httpServer.listen(config.port, config.host, function() {
   console.log('Listening on ' + httpServer.address().port); 
 });
 

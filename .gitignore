@@ -30,8 +30,8 @@ node_modules
 # DB files
 *.sqlite3
 
-# Environmental variables config
-.env
+# Production config
+config/production.json
 
 dist
 dist/doc

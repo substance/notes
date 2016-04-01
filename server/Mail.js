@@ -1,11 +1,12 @@
+var config = require('config');
 var nodemailer = require('nodemailer');
 
 var Mail = {};
 
-var sender = process.env.MAIL_SENDER || 'Substance Notes ✍ <notes@substance.io>';
+var sender = config.get('mail.sender');
 var mailgunCredentials = {
-  user: process.env.MAILGUN_USER || "postmaster@sandbox84c5489455f344aab63a03a1816820de.mailgun.org",
-  pass: process.env.MAILGUN_PASS || "40e89d2acafe9ae3f56e0a6bd97bf731"
+  user: config.get('mail.mailgun.user'),
+  pass: config.get('mail.mailgun.pass')
 };
 
 Mail.sendPlain = function(to, subject, content) {

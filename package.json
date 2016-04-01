@@ -4,12 +4,13 @@
   "description": "Real-time notes editing",
   "license": "MIT",
   "dependencies": {
-    "express": "4.13.1",
     "body-parser": "1.15.0",
+    "config": "^1.19.0",
+    "express": "4.13.1",
     "jquery": "*",
-    "moment": "2.12.0",
     "knex": "0.10.0",
     "lodash": "4.2.1",
+    "moment": "2.12.0",
     "multer": "1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
@@ -35,7 +36,11 @@
     "colors": "1.1.2",
     "glob": "6.0.1"
   },
-  "browserify": { "transform": [ "brfs" ] },
+  "browserify": {
+    "transform": [
+      "brfs"
+    ]
+  },
   "scripts": {
     "bundle": "gulp",
     "postinstall": "mkdir -p uploads",
