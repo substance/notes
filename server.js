@@ -5,6 +5,7 @@ var app = express();
 var server = require('substance/util/server');
 var newNote = require('./model/newNote');
 var CollabServer = require('substance/collab/CollabServer');
+var DocumentChange = require('substance/model/DocumentChange');
 var DocumentEngine = require('./server/NotesDocumentEngine');
 var DocumentStore = require('./server/DocumentStore');
 var ChangeStore = require('./server/ChangeStore');
@@ -136,14 +137,13 @@ var collabServer = new CollabServer({
 
         if (message.change) {
           // Update the title if necessary
-          // var change = DocumentChange.fromJSON(message.change);
-          // if (change.isUpdated['meta', 'title']) {
-          //   // get all ops that changed the title
-          //   var titleUpdateOps = change.updated['meta', 'title']; // ??
-          //   titleUpdateOps.forEach(function(op) {
-          //     title = op.apply(title);
-          //   });
-          // }
+          var change = DocumentChange.fromJSON(message.change);
+          change.ops.forEach(function(op) {
+            if(op.path[0] == 'meta' && op.path[1] == 'title') {
+              title = op.diff.apply(title);
+            }
+          });
+
           message.change.info = {
             userId: req.session.userId,
             updatedAt: updatedAt

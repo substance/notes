@@ -145,6 +145,7 @@ DocumentStore.Prototype = function() {
   this.updateDocument = function(documentId, props, cb) {
     var self = this;
     if(props.info) {
+      if(props.info.title) props.title = props.info.title;
       if(props.info.userId) props.userId = props.info.userId;
       if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
       if(props.info.updatedBy) props.updatedBy = props.info.updatedBy;
