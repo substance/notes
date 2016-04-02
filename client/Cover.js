@@ -20,7 +20,7 @@ Cover.Prototype = function() {
     var updatedAt = new Date(noteInfo.updatedAt).toDateString();
 
     var authors = [noteInfo.author || noteInfo.userId];
-    authors = authors.concat(noteInfo.collaborators.split(','));
+    authors = authors.concat(noteInfo.collaborators);
     
     console.log('noteInfo', noteInfo);
 

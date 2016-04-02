@@ -43,6 +43,11 @@ NotesEngine.Prototype = function() {
           cause: err
         }));
       }
+      if(!docs.collaborators) {
+        docs.collaborators = [];
+      } else {
+        docs.collaborators = docs.collaborators.split(',');
+      }
       cb(null, docs);
     });
   };
@@ -55,6 +60,11 @@ NotesEngine.Prototype = function() {
         return cb(new Err('NotesEngine.ReadCollaboratedDocumentsError', {
           cause: err
         }));
+      }
+      if(!docs.collaborators) {
+        docs.collaborators = [];
+      } else {
+        docs.collaborators = docs.collaborators.split(',');
       }
       cb(null, docs);
     });

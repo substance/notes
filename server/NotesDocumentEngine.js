@@ -63,6 +63,11 @@ NotesDocumentEngine.Prototype = function() {
           message: 'No document found for documentId ' + documentId,
         }));
       }
+      if(!doc.collaborators) {
+        doc.collaborators = [];
+      } else {
+        doc.collaborators = doc.collaborators.split(',');
+      }
       cb(null, doc);
     });
   };
