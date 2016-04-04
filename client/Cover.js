@@ -15,7 +15,15 @@ Cover.Prototype = function() {
 
   this.initialize = function() {
     var doc = this.context.controller.getDocument();
-    doc.on('document:changed', this.rerender, this);
+    doc.on('document:changed', this._onDocumentChanged, this);
+  };
+
+  this._onDocumentChanged = function(change) {
+    // Only rerender if changed happened outside of the title surface.
+    // Otherwise we would destroy the current selection
+    if (change.after && change.after.surfaceId !== 'title') {
+      this.rerender();
+    }
   };
 
   this.dispose = function() {
