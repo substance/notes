@@ -13,6 +13,16 @@ var Cover = function() {
 
 Cover.Prototype = function() {
 
+  this.initialize = function() {
+    var doc = this.context.controller.getDocument();
+    doc.on('document:changed', this.rerender, this);
+  };
+
+  this.dispose = function() {
+    var doc = this.context.controller.getDocument();
+    doc.off(this);
+  };
+
   this.render = function() {
     var doc = this.context.controller.getDocument();
     var config = this.context.config;
@@ -54,6 +64,7 @@ Cover.Prototype = function() {
         $$('div').addClass('se-authors').append('Updated on ', updatedAt, ' by ', noteInfo.updatedBy)
       );
   };
+  
 };
 
 Component.extend(Cover);
