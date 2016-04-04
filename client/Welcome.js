@@ -1,4 +1,9 @@
 var Component = require('substance/ui/Component');
+var Button = require('substance/ui/Button');
+var Input = require('substance/ui/Input');
+var Layout = require('substance/ui/Layout');
+var Notification = require('./Notification');
+
 var $$ = Component.$$;
 
 function Welcome() {
@@ -7,23 +12,34 @@ function Welcome() {
 
 Welcome.Prototype = function() {
 
-  /*
-    Send Dashboard link including one-time loginKey
-  */
-  this._sendEmail = function(email) {
-    var authenticationClient = this.context.authenticationClient;
-    authenticationClient.requestLoginLink(email, function(err, res) {
-      console.log('Email link requested', res);
-    });
-  };
-
   this._requestLoginLink = function() {
     var email = this.refs.email.val();
+    var authenticationClient = this.context.authenticationClient;
+
+    // Set loading state
     this.setState({
-      requested: true
+      email: email,
+      loading: true
     });
-    this._sendEmail(email);
+
+    authenticationClient.requestLoginLink(email, function(err) {
+      if (err) {
+        this.setState({
+          loading: false,
+          notification: {
+            type: 'error',
+            message: 'Your request could not be processed. Make sure you provided a valid email.'
+          }
+        });
+      } else {
+        this.setState({
+          loading: false,
+          requested: true
+        });
+      }
+    }.bind(this));
   };
+
 
   this.render = function() {
     var el = $$('div').addClass('sc-welcome');
@@ -33,31 +49,52 @@ Welcome.Prototype = function() {
       $$('div').addClass('se-topbar').html('')
     );
 
-    // Intro
-    el.append(
-      $$('div').addClass('se-brand-wrapper').html(this.i18n.t('sc-welcome.brand'))
-    );
+    var layout = $$(Layout, {
+      width: 'medium',
+      type: 'centered'
+    });
 
-    if(this.state.requested) {
-      el.append($$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.email-sent')));
-    } else {
-      el.append($$('div').addClass('se-intro').html(this.i18n.t('sc-welcome.intro')));
-
-      // Enter email
-      var requestButton = $$('button').addClass('se-send-email')
-        .append('Start writing!')
-        .on('click', this._requestLoginLink);
-
-      var requestForm = $$('div').addClass('se-enter-email');
-      requestForm.append(
-        $$('input')
-            .attr({type: 'email', placeholder: 'Enter your email here'})
-            .ref('email'),
-        requestButton
+    if (this.state.requested) {
+      layout.append(
+        $$('h1').append(this.i18n.t('sc-welcome.submitted-title')),
+        $$('p').append(this.i18n.t('sc-welcome.submitted-instructions'))
       );
-      el.append(requestForm);
+    } else {
+      layout.append(
+        $$('h1').append(
+          this.i18n.t('sc-welcome.title'),
+          $$('span').addClass('se-cursor')
+        ),
+        $$('p').append(this.i18n.t('sc-welcome.about')),
+        $$('h2').append(this.i18n.t('sc-welcome.no-passwords')),
+        $$('p').append(this.i18n.t('sc-welcome.howto-login')),
+        $$('p').append(this.i18n.t('sc-welcome.enter-email'))
+      );
+
+      layout.append(
+        $$('div').addClass('se-email').append(
+          $$(Input, {
+            type: 'text',
+            value: this.state.email,
+            placeholder: 'Enter your email here',
+            centered: true
+          }).ref('email')
+        )
+      );
+
+      layout.append(
+        $$(Button, {
+          disabled: !!this.state.loading // disable button when in loading state
+        }).append(this.i18n.t('sc-welcome.submit'))
+          .on('click', this._requestLoginLink)
+      );
+
+      if (this.state.notification) {
+        layout.append($$(Notification, this.state.notification));
+      }
     }
     
+    el.append(layout);
     return el;
   };
 };

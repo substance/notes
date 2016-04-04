@@ -4,9 +4,8 @@
   color: #777C82;
   border: 1px solid #777C82;
   margin: 50px;
-  padding: 20px;
+  padding: $default-padding;
   text-align: center;
-  border-radius: 3px;
 
   &.se-type-error {
     border: 1px solid #FF7B7A;

@@ -1,107 +1,23 @@
 .sc-welcome {
-
-  max-width: 960px;
-  margin: 0px auto 50px;
-  padding: 20px;
-  font-size: 20px;
-
-  h1 {
-    font-size: 45px;
-    line-height: 40px;
-    font-weight: 400;
-    text-align: center;
-    padding: 70px 0px 50px;
-  }
-
-  h2 {
-    font-size: 30px;
-    line-height: 30px;
-    padding: 30px 0 20px;
-    font-weight: 400;
-    text-align: center;
-  }
-
-  p {
-    padding-bottom: 20px;
-  }
-
-  input {
-    background: #F7F9F9;
-    border: none;
-    color: #B3B3B3;
-    width: 500px;
-    height: 60px;
-    font-size: 26px;
-    padding: 10px 50px;
-    border-radius: 5px;
-    margin-bottom: 40px;
-  }
-
-  ::-webkit-input-placeholder {
-   text-align: center;
-  }
-
-  :-moz-placeholder { /* Firefox 18- */
-     text-align: center;  
-  }
-
-  ::-moz-placeholder {  /* Firefox 19+ */
-     text-align: center;  
-  }
-
-  :-ms-input-placeholder {  
-     text-align: center; 
-  }
-
-  button {
-    background: #7BB5B3;
-    color: #fff;
-    padding: 2px 5px;
-    margin: 0 auto;
-    border-radius: 5px;
-    width: 500px;
-    height: 60px;
-    text-align: center;
-    font-size: 26px;
+  
+  .sc-layout {
+    padding-top: $default-padding*2;
   }
 
   .se-cursor {
+    display: inline-block;
     background: #7BB5B3;
     width: 4px;
-    height: 50px;
-    position: absolute;
-    margin-left: 7px;
-    margin-top: -7px;
-  } 
+  }
+  // cursor must have some content, otherwise it won't be displayed inline
+  .se-cursor::after  { content: "."; opacity: 0; }
 
   .se-topbar {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    left: 0px;
     height: 15px;
     background-image: url(/assets/img/welcome_header.png);
   }
 
-  .se-brand {
-    text-align: right;
-    font-size: 27px;
-    .sc-brand-strong {
-      font-weight: 500;
-    }
+  .se-email {
+    padding-bottom: $default-padding;
   }
-
-  .se-intro {
-    margin-bottom: 40px;
-    margin-top: 100px;
-  }
-
-  .se-enter-email {
-    text-align: center;
-  }
-
-  .text-centered {
-    text-align: center;
-  }
-
 }
