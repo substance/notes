@@ -53,18 +53,25 @@ Cover.Prototype = function() {
         }).addClass('se-title'),
         $$('div').addClass('se-separator'),
         $$('div').addClass('se-authors').append(authors.join(', ')),
-        $$('div').addClass('se-comments').append(
-          $$(Icon, {icon: "fa-comment-o"}),
-          commentsQt + ' ' + commentsLabel
-        ),
-        $$('div').addClass('se-issues').append(
-          $$(Icon, {icon: "fa-check-square-o"}),
-          resolvedQt + ' of ' + issuesQt
-        ),
-        $$('div').addClass('se-authors').append('Updated on ', updatedAt, ' by ', noteInfo.updatedBy)
+        $$('div').addClass('se-info-panel').append(
+          $$('div').addClass('se-comments').append(
+            $$(Icon, {icon: "fa-comment-o"}),
+            commentsQt + ' ' + commentsLabel
+          ),
+          $$('div').addClass('se-separator'),
+          $$('div').addClass('se-issues').append(
+            $$(Icon, {icon: "fa-check-square-o"}),
+            $$('div').addClass('issues-bar').append(
+              $$('span').addClass('completed').setAttribute('style', 'width: ' + resolvedQt/issuesQt*100 + '%')
+            ),
+            resolvedQt + ' of ' + issuesQt
+          ),
+          $$('div').addClass('se-separator'),
+          $$('div').addClass('se-changed').append('Updated on ', updatedAt, ' by ', noteInfo.updatedBy)
+        )
       );
   };
-  
+
 };
 
 Component.extend(Cover);
