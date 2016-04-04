@@ -2,6 +2,10 @@ var Header = require('./Header');
 var Component = require('substance/ui/Component');
 var Notification = require('./Notification');
 var Icon = require('substance/ui/FontAwesomeIcon');
+var Input = require('substance/ui/Input');
+var Button = require('substance/ui/Button');
+var Layout = require('substance/ui/Layout');
+
 var $$ = Component.$$;
 
 function Profile() {
@@ -54,33 +58,48 @@ Profile.Prototype = function() {
       $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
     );
 
-    var profile = $$('div').addClass('se-profile-contents').append(
-      $$('div').addClass('se-intro')
-        .html('<h1>Welcome to Substance Notes<span class="se-cursor"></span></h1>')
+    var form = $$(Layout, {
+      width: 'medium',
+      type: 'centered'
+    });
+
+    form.append(
+      $$('h1').html(
+        'Welcome to Substance Notes<span class="se-cursor"></span>'
+      )
     );
 
     if (this.state.notification) {
-      profile.append($$(Notification, this.state.notification));
+      form.append($$(Notification, this.state.notification));
     }
 
-    var requestForm = $$('div').addClass('se-enter-name');
-    requestForm.append(
-      $$('input')
-          .attr({type: 'text', placeholder: 'Please enter your name here', value: userName})
-          .ref('name'),
-      $$('p').addClass('help').append('Your name will show up along with notes you worked on. You can change it later via the user menu.'),
-
-      $$('button').addClass('sg-confirm-button se-action se-new-note').append(
-        $$(Icon, {icon: 'fa-long-arrow-right'}),
-        ' Continue'
+    form.append(
+      $$('div').addClass('se-enter-name').append(
+        $$(Input, {
+          type: 'text',
+          value: userName,
+          placeholder: 'Please enter your name here',
+          centered: true
+        }).ref('name')
+      ),
+      $$('p').addClass('se-help').append(
+        'Your name will show up along with notes you worked on. You can change it later via the user menu.'
       )
-        .on('click', this._updateUserName)
     );
-    profile.append(requestForm);
+
+    form.append(
+      $$(Button, {
+        disabled: !!this.state.loading // disable button when in loading state
+      }).append(
+         $$(Icon, {icon: 'fa-long-arrow-right'}),
+         ' Continue'
+      )
+      .on('click', this._updateUserName)
+    );
 
     el.append(
       header,
-      profile
+      form
     );
     return el;
   };
