@@ -24,7 +24,8 @@ var defaultSeed = {
       schemaVersion: '1.0.0',
       version: 1,
       info: {
-        userId: 'testuser'
+        userId: 'testuser',
+        title: exampleNote.createArticle().get(['meta', 'title'])
       }
     }
   },

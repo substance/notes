@@ -51,7 +51,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: 'Über Integralinvarianten und Differentialgleichungen',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458663125909
       }
     },
@@ -62,7 +62,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: 'Memoirs of Journeys to Venice and the Low Countries',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458663225909,
         updatedBy: 'testuser2'
       }
@@ -74,7 +74,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: 'Ten Years Later',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458663325909
       }
     },
@@ -85,7 +85,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser2',
-        title: 'Die Potentialfunction und das Potential',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458662325909,
         updatedBy: 'testuser2'
       }
@@ -97,7 +97,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser2',
-        title: 'The Life of Michelangelo Buonarroti',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458662125909
       }
     },
@@ -108,7 +108,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser2',
-        title: 'The Battle of Life',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458662725909
       }
     },
@@ -119,7 +119,7 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: 'A doc with two changes',
+        title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458662725909
       }
     }
