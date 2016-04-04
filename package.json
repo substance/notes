@@ -14,7 +14,7 @@
     "multer": "1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#7557e79916e10e3fac0e8c6b591e760fb8a86b89",
+    "substance": "substance/substance#d4d27cfa549a8f049e4017e7ac83997938ade9f6",
     "ws": "^1.0.1"
   },
   "devDependencies": {
@@ -22,7 +22,6 @@
     "font-awesome": "4.5.0",
     "browserify": "^10.2.4",
     "node-sass": "3.x",
-    "brfs": "1.4.3",
     "gulp": "^3.8.11",
     "gulp-sass": "^2.0.3",
     "gulp-rename": "^1.2.2",
@@ -37,9 +36,6 @@
     "glob": "6.0.1"
   },
   "browserify": {
-    "transform": [
-      "brfs"
-    ]
   },
   "scripts": {
     "bundle": "gulp bundle",

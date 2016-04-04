@@ -1,12 +1,3 @@
-// It is not possible to do require('fs').readFileSync from within a function
-// it all needs to be done statically.
-// 
-// function getFile(name) {
-//   var str = require('fs').readFileSync(__dirname + '/' + name, 'utf8');
-//   return str;
-// }
-// var fs = require('fs');
-
 module.exports = {
   /*
     Welcome page
