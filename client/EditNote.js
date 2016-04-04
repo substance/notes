@@ -64,7 +64,6 @@ EditNote.Prototype = function() {
 
   this.dispose = function() {
     if (this.state.session) {
-      this.state.session.disconnect();
       this.state.session.dispose();
     }
     this.collabClient.off(this);
