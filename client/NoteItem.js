@@ -7,6 +7,7 @@ function NoteItem() {
 }
 
 NoteItem.Prototype = function() {
+
   this.render = function() {
     var el = $$('div').addClass('sc-note-item');
 
@@ -14,7 +15,7 @@ NoteItem.Prototype = function() {
     el.append(
       $$('div').addClass('se-title')
         .append(
-          $$('a').attr({href: '#'})
+          $$('button')
             .append(this.props.title)
             .on('click', this.send.bind(this, 'openNote', this.props.documentId))
         )
