@@ -64,6 +64,7 @@ EditNote.Prototype = function() {
 
   this.dispose = function() {
     if (this.state.session) {
+      this.state.session.disconnect();
       this.state.session.dispose();
     }
     this.collabClient.off(this);
@@ -93,7 +94,6 @@ EditNote.Prototype = function() {
     var notification = this.state.notification;
     var el = $$('div').addClass('sc-notepad-wrapper');
 
-
     // Configure header
     // --------------
 
@@ -118,7 +118,6 @@ EditNote.Prototype = function() {
     }
     el.append(header);
 
-
     // Main content
     // --------------
 
@@ -139,6 +138,7 @@ EditNote.Prototype = function() {
         }).ref('notepad')
       );
     } else {
+      // We don't display the loading message as it just looks ugly
       // el.append($$(Notification, {
       //   type: 'info',
       //   message: 'Loading document...'
@@ -149,32 +149,6 @@ EditNote.Prototype = function() {
 
   // Helpers
   // ------------------------------------
-
-  /*
-    Display a message in topbar
-    status consists of type (error/warning/success/info),
-    message and optional dissmiss param (number of seconds until dismiss)
-  */
-  // this.setStatus = function(status) {
-  //   var self = this;
-  //   this.extendState({
-  //     status: status
-  //   });
-  //   if(status.dismiss > 0) {
-  //     setTimeout(function(){
-  //       self.dismissStatus();
-  //     }, 1000*status.dismiss);
-  //   }
-  // };
-
-  /*
-    Removes status message
-  */
-  this.dismissStatus = function() {
-    this.extendState({
-      status: null
-    });
-  };
 
   /*
     Loads a document and initializes a CollabSession

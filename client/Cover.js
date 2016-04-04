@@ -39,8 +39,6 @@ Cover.Prototype = function() {
 
     var authors = [noteInfo.author || noteInfo.userId];
     authors = authors.concat(noteInfo.collaborators);
-    
-    console.log('noteInfo', noteInfo);
 
     var commentsQt = size(doc.getIndex('type').get('comment'));
     var commentsLabel = commentsQt == 1 ? 'comment' : 'comments';
