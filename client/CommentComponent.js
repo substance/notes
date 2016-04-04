@@ -4,6 +4,7 @@ var Component = require('substance/ui/Component');
 var $$ = Component.$$;
 var TextProperty = require('substance/ui/TextPropertyComponent');
 var Icon = require('substance/ui/FontAwesomeIcon');
+var moment = require('moment');
 
 function CommentComponent() {
   Component.apply(this, arguments);
@@ -23,7 +24,7 @@ CommentComponent.Prototype = function() {
 
   this.render = function() {
     var author = this.props.node.author;
-    var date = new Date(this.props.node.createdAt).toDateString();
+    var date = moment(this.props.createdAt).fromNow();
     var authored = '<strong>'+author+'</strong>' + ' ' + date;
 
     return $$('div')

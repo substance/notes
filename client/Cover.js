@@ -6,6 +6,7 @@ var TextPropertyEditor = require('substance/ui/TextPropertyEditor');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var filter = require('lodash/filter');
 var size = require('lodash/size');
+var moment = require('moment');
 
 var Cover = function() {
   Cover.super.apply(this, arguments);
@@ -35,7 +36,7 @@ Cover.Prototype = function() {
     var doc = this.context.controller.getDocument();
     var config = this.context.config;
     var noteInfo = this.props.noteInfo.props;
-    var updatedAt = new Date(noteInfo.updatedAt).toDateString();
+    var updatedAt = moment(noteInfo.updatedAt).fromNow();
 
     var authors = [noteInfo.author || noteInfo.userId];
     authors = authors.concat(noteInfo.collaborators);
