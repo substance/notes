@@ -16,7 +16,7 @@ var config = require('config');
 gulp.task('assets', function () {
   // Index HTML
   var metaTags = [];
-  each(config.server, function(val, key) {
+  each(config.app, function(val, key) {
     metaTags.push('<meta name="'+key+'" content="'+val+'">');
   });
   gulp.src('./index.html')

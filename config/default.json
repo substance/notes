@@ -5,6 +5,10 @@
     "wsUrl": "ws://localhost:5000",
     "appUrl": "http://localhost:5000"
   },
+  "app": {
+    "port": 5000,
+    "host": "localhost"
+  },
   "mail": {
     "sender": "Substance Notes ✍ <notes@substance.io>",
     "mailgun": {
