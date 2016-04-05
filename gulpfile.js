@@ -1,11 +1,13 @@
 var gulp = require('gulp');
 var jshint = require('gulp-jshint');
-
+var replace = require('gulp-replace');
+var each = require('lodash/each');
 var sass = require('gulp-sass');
 var browserify = require('browserify');
 var uglify = require('gulp-uglify');
 var through2 = require('through2');
 var rename = require('gulp-rename');
+var config = require('config');
 
 /**
  *  Bundle
@@ -13,7 +15,12 @@ var rename = require('gulp-rename');
 
 gulp.task('assets', function () {
   // Index HTML
+  var metaTags = [];
+  each(config.server, function(val, key) {
+    metaTags.push('<meta name="'+key+'" content="'+val+'">');
+  });
   gulp.src('./index.html')
+    .pipe(replace('<!--CONFIG-->', metaTags.join('')))
     .pipe(gulp.dest('./dist'));
 
   // Assets
