@@ -74,7 +74,12 @@ Cover.Prototype = function() {
             resolvedQt + ' of ' + issuesQt
           ),
           $$('div').addClass('se-separator'),
-          $$('div').addClass('se-changed').append('Updated on ', updatedAt, ' by ', noteInfo.updatedBy)
+          $$('div').addClass('se-changed').append(
+            'Updated ',
+            updatedAt,
+            ' by ',
+            noteInfo.updatedBy
+          )
         )
       );
   };

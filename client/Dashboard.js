@@ -35,6 +35,10 @@ Dashboard.Prototype = function() {
 
     var el = $$('div').addClass('sc-dashboard');
 
+    if (!noteItems) {
+      return el;
+    }
+
     var header = $$(Header);
     header.outlet('actions').append(
       $$('button').addClass('se-action se-new-note').on('click', this.send.bind(this, 'newNote')).append('New Note')
@@ -52,7 +56,11 @@ Dashboard.Prototype = function() {
     // Summary + new note button
     grid.append(
       $$(Grid.Row).addClass('se-intro').append(
-        $$(Grid.Cell, {columns: 8}).addClass('sh-quiet').append('Showing 20 notes by 10 collaborators'),
+        $$(Grid.Cell, {columns: 8}).addClass('sh-quiet').append(
+          'Showing ',
+          noteItems.length.toString(),
+          ' notes'
+        ),
         $$(Grid.Cell, {columns: 4}).addClass('sh-right-align').append(
           $$(Button).append('New Note')
             .on('click', this.send.bind(this, 'newNote'))
@@ -63,8 +71,7 @@ Dashboard.Prototype = function() {
     if (noteItems) {
       noteItems.forEach(function(noteItem) {
         // HACK: server should serve collaborators as an array
-        noteItem.collaborators =  noteItem.collaborators ? noteItem.collaborators.split(',') : [];
-
+        // noteItem.collaborators =  noteItem.collaborators ? noteItem.collaborators.split(',') : [];
         grid.append(
           $$(Grid.Row).append(
             $$(Grid.Cell, {columns: 12}).append(

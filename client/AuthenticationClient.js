@@ -53,7 +53,11 @@ AuthenticationClient.Prototype = function() {
   };
 
   this.changeName = function(userId, name, cb) {
-    this._request('POST', this.config.httpUrl + 'changename', {userId: userId, name: name}, function(err, res) {
+    var path = this.config.httpUrl + 'changename';
+    this._request('POST', path, {
+      userId: userId,
+      name: name
+    }, function(err, res) {
       if (err) return cb(err);
       // We need to update user.name locally too
       this._session.user.name = name;
@@ -74,7 +78,8 @@ AuthenticationClient.Prototype = function() {
     Logindata consists of an object (usually with login/password properties)
   */
   this.authenticate = function(loginData, cb) {
-    this._request('POST', this.config.httpUrl + 'authenticate', loginData, function(err, hubSession) {
+    var path = this.config.httpUrl + 'authenticate';
+    this._request('POST', path, loginData, function(err, hubSession) {
       if (err) return cb(err);
       this._session = hubSession;
       cb(null, hubSession);
@@ -94,7 +99,8 @@ AuthenticationClient.Prototype = function() {
     Request a login link for a given email address
   */
   this.requestLoginLink = function(email, cb) {
-    this._request('POST', this.config.httpUrl + 'loginlink', {email: email}, function(err, res) {
+    var path = this.config.httpUrl + 'loginlink';
+    this._request('POST', path, {email: email}, function(err, res) {
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));

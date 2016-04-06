@@ -197,7 +197,9 @@ Notes.Prototype = function() {
     Open a dashboard
   */
   this._openDashboard = function() {
-    this.setState(this.getInitialState());
+    this.setState({
+      mode: 'my-notes'
+    });
   };
 
   /*
@@ -247,6 +249,11 @@ Notes.Prototype = function() {
         break;
       case 'user-settings':
         el.append($$(Profile).ref('profile'));
+        break;
+      case 'my-notes':
+        // HACK: removes the sm-fixed layout class so the body element gets scrollable
+        document.body.classList.remove('sm-fixed-layout');
+        el.append($$(Dashboard).ref('dashboard'));
         break;
       default: // mode=index or default
         // HACK: removes the sm-fixed layout class so the body element gets scrollable

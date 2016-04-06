@@ -8,6 +8,10 @@ var oo = require('substance/util/oo');
 */
 function NoteInfo(props) {
   this.props = props;
+
+  if (!props.updatedBy) {
+    this.props.updatedBy = 'Anonymous';
+  }
 }
 
 NoteInfo.Prototype = function() {
