@@ -1,6 +1,5 @@
 var oo = require('substance/util/oo');
 var Err = require('substance/util/Error');
-var union = require('lodash/union');
 
 /*
   Implements the NotesEngine API.
@@ -11,63 +10,38 @@ function NotesEngine(config) {
 }
 
 NotesEngine.Prototype = function() {
-
-  this.getDashboardDocs = function(userId, cb) {
-    var self = this;
-
-    this.getMyDocs(userId, function(err, myDocs) {
-      if (err) {
-        return cb(new Err('NotesEngine.ReadDashboardDocumentsError', {
-          cause: err
-        }));
+  
+  this._enhanceDocs = function(docs) {
+    docs.forEach(function(doc) {
+      if (!doc.collaborators) {
+        doc.collaborators = [];
       }
-
-      self.getCollaboratedDocs(userId, function(err, collaboratedDocs) {
-        if (err) {
-          return cb(new Err('NotesEngine.ReadDashboardDocumentsError', {
-            cause: err
-          }));
-        }
-        var result = union(myDocs, collaboratedDocs);
-        cb(null, result);
-      });
+      if (!doc.creator) {
+        doc.creator = 'Anonymous';
+      }
+      if (!doc.updatedBy) {
+        doc.updatedBy = 'Anonymous';
+      }
     });
+    return docs;
   };
 
-  this.getMyDocs = function(userId, cb) {
-    var query = "SELECT d.title, d.documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.userId = ? ORDER BY d.updatedAt DESC";
+  this.getUserDashboard = function(userId, cb) {
 
-    this.db.raw(query, userId).asCallback(function(err, docs) {
+    var userDocsQuery = "SELECT d.title as title, d.documentId as documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt as updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.userId = :userId";
+    var collabDocsQuery = "SELECT d.title as title, d.documentId as documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt as updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.documentId IN (SELECT documentId FROM changes WHERE userId = :userId) AND d.userId != :userId ORDER BY d.updatedAt DESC";
+
+    // Combine the two queries
+    var query = [userDocsQuery, 'UNION', collabDocsQuery].join(' ');
+
+    this.db.raw(query, {userId: userId}).asCallback(function(err, docs) {
       if (err) {
-        return cb(new Err('NotesEngine.ReadMyDocumentsError', {
+        return cb(new Err('ReadError', {
           cause: err
         }));
       }
-      if(!docs.collaborators) {
-        docs.collaborators = [];
-      } else {
-        docs.collaborators = docs.collaborators.split(',');
-      }
-      cb(null, docs);
-    });
-  };
-
-  this.getCollaboratedDocs = function(userId, cb) {
-    var query = "SELECT d.title, d.documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.documentId IN (SELECT documentId FROM changes WHERE userId = ?) AND d.userId != ? ORDER BY d.updatedAt DESC";
-
-    this.db.raw(query, [userId, userId]).asCallback(function(err, docs) {
-      if (err) {
-        return cb(new Err('NotesEngine.ReadCollaboratedDocumentsError', {
-          cause: err
-        }));
-      }
-      if(!docs.collaborators) {
-        docs.collaborators = [];
-      } else {
-        docs.collaborators = docs.collaborators.split(',');
-      }
-      cb(null, docs);
-    });
+      cb(null, this._enhanceDocs(docs));
+    }.bind(this));
   };
 };
 

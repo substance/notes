@@ -16,17 +16,17 @@ NotesServer.Prototype = function() {
     Attach this server to an express instance
   */
   this.bind = function(app) {
-    app.get(this.path + '/dashboard/user/:id', this._getDasboardData.bind(this));
+    app.get(this.path + '/dashboard/user/:id', this._getUserDashboard.bind(this));
   };
 
   /*
     Get a dashboard documents
   */
-  this._getDasboardData = function(req, res, next) {
+  this._getUserDashboard = function(req, res, next) {
     var userId = req.params.id;
-    this.engine.getDashboardDocs(userId, function(err, result) {
+    this.engine.getUserDashboard(userId, function(err, docs) {
       if (err) return next(err);
-      res.json(result);
+      res.json(docs);
     });
   };
 };
