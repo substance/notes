@@ -67,9 +67,10 @@ AuthenticationEngine.Prototype = function() {
   */
   this._sendLoginLink = function(user) {
     var url = appConfig.get('server.appUrl');
-    var subject = "Welcome to the Substance Notes!";
+    var subject = "Welcome to Substance Notes!";
     var msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
-    console.log('Message', msg);
+    
+    console.log('Message: ', msg);
 
     return Mail.sendPlain(user.email, subject, msg)
       .then(function(info){
