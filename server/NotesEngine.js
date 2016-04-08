@@ -15,6 +15,9 @@ NotesEngine.Prototype = function() {
     docs.forEach(function(doc) {
       if (!doc.collaborators) {
         doc.collaborators = [];
+      } else {
+        // Turn comma separated values into array
+        doc.collaborators = doc.collaborators.split(',');
       }
       if (!doc.creator) {
         doc.creator = 'Anonymous';
