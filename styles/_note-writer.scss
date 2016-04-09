@@ -1,18 +1,11 @@
 .sc-notepad {
-  position: fixed;
-  top: 40px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  background: white;
-  color: #222;
 
   .se-note-content {
-    padding: 20px;
+    padding: $default-padding;
     overflow: auto;
-    max-width: 920px;
+    max-width: $large-layout-width;
     width: 100%;
-    margin: 0px auto;
+    margin: 0 auto;
 
     .sc-paragraph {
       padding-bottom: 20px;
@@ -21,8 +14,8 @@
 
   .sc-toolbar {
     .se-toolbar-group {
-      max-width: 900px;
-      margin: 0px auto;
+      max-width: $large-layout-width;
+      margin: 0 auto;
       float: none;
     }
   }

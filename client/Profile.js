@@ -33,7 +33,7 @@ Profile.Prototype = function() {
         this.setState({
           notification: {
             type: 'error',
-            message: 'Please provide a name.'
+            message: this.i18n(err.name)
           }
         });
         return;

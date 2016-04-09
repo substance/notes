@@ -6,10 +6,13 @@ var CollabClient = require('substance/collab/CollabClient');
 var WebSocketConnection = require('substance/collab/WebSocketConnection');
 var Notification = require('./Notification');
 var Header = require('./Header');
+
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
+var NoteReader = require('./NoteReader');
 var NoteInfo = require('./NoteInfo');
 var Component = require('substance/ui/Component');
+var SplitPane = require('substance/ui/SplitPane');
 var $$ = Component.$$;
 
 function EditNote() {
@@ -86,17 +89,25 @@ EditNote.Prototype = function() {
     });
   };
 
-  // Life cycle
-  // ------------------------------------
-
   this.render = function() {
+    if (this.props.mobile) {
+      return this.renderMobile();
+    } else {
+      return this.renderDesktop();
+    }
+  };
+
+  this.renderDesktop = function() {
     var notification = this.state.notification;
-    var el = $$('div').addClass('sc-notepad-wrapper');
+    var el = $$('div').addClass('sc-edit-note');
+    var main = $$('div');
+    var header;
 
     // Configure header
     // --------------
 
-    var header = $$(Header, {
+    header = $$(Header, {
+      mobile: this.props.mobile,
       actions: {
         'openDashboard': 'My Notes',
         'newNote': 'New Note'
@@ -115,10 +126,39 @@ EditNote.Prototype = function() {
         })
       );
     }
-    el.append(header);
 
     // Main content
     // --------------
+
+    // Display top-level errors. E.g. when a doc could not be loaded
+    // we will display the notification on top level
+    if (this.state.error) {
+      main = $$(Notification, {
+        type: 'error',
+        message: this.state.error.message
+      });
+    } else if (this.state.session) {
+      var fileClient = this.context.fileClient;
+      main = $$(NoteWriter, {
+        noteInfo: new NoteInfo(this.state.noteInfo),
+        documentSession: this.state.session,
+        onUploadFile: fileClient.uploadFile
+      }).ref('notepad');
+    }
+
+    el.append(
+      $$(SplitPane, {splitType: 'horizontal'}).append(
+        header,
+        main
+      ).ref('splitPane')
+    );
+
+    return el;
+  };
+
+  this.renderMobile = function() {
+    var el = $$('div').addClass('sc-edit-note');
+    // TODO: Render a mobile optimized header
 
     // Display top-level errors. E.g. when a doc could not be loaded
     // we will display the notification on top level
@@ -128,20 +168,12 @@ EditNote.Prototype = function() {
         message: this.state.error.message
       }));
     } else if (this.state.session) {
-      var fileClient = this.context.fileClient;
       el.append(
-        $$(NoteWriter, {
+        $$(NoteReader, {
           noteInfo: new NoteInfo(this.state.noteInfo),
-          documentSession: this.state.session,
-          onUploadFile: fileClient.uploadFile
-        }).ref('notepad')
+          documentSession: this.state.session
+        }).ref('noteReader')
       );
-    } else {
-      // We don't display the loading message as it just looks ugly
-      // el.append($$(Notification, {
-      //   type: 'info',
-      //   message: 'Loading document...'
-      // }));
     }
     return el;
   };
@@ -184,7 +216,6 @@ EditNote.Prototype = function() {
         noteInfo: docRecord,
         session: session
       });
-      
     }.bind(this));
   };
 };

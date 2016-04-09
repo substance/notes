@@ -56,7 +56,7 @@ Cover.Prototype = function() {
           tagName: "div",
           commands: config.titleEditor.commands,
           path: [metaNode.id, "title"],
-          editing: 'full'
+          editing: this.props.editing || 'full'
         }).addClass('se-title'),
         $$('div').addClass('se-separator'),
         $$('div').addClass('se-authors').append(authors.join(', ')),
@@ -83,7 +83,6 @@ Cover.Prototype = function() {
         )
       );
   };
-
 };
 
 Component.extend(Cover);

@@ -40,7 +40,8 @@ function Notes() {
   this._state = {
     initialized: false,
     error: null,
-    authenticated: false
+    authenticated: false,
+    mobile: this._isMobile()
   };
 
   // Store config for later use (e.g. in child components)
@@ -57,6 +58,8 @@ function Notes() {
   this.fileClient = new FileClient({
     httpUrl: config.fileServerUrl || 'http://'+config.host+':'+config.port+'/api/files/'
   });
+
+  this._onResize = this._onResize.bind(this);
   
   this.handleActions({
     'openNote': this._openNote,
@@ -140,13 +143,41 @@ Notes.Prototype = function() {
 
   this.didMount = function() {
     this._init();
+    window.addEventListener('resize', this._onResize);
   };
 
   /*
     Nothing to do here, as app is always running
   */
   this.dispose = function() {
+    this.ws.removeEventListener('resize', this._onResize);
+  };
 
+  /*
+    Determines when a mobile view should be shown.
+
+    TODO: Check also for user agents. Eg. on iPad we want to show the mobile
+    version, even thought he screenwidth may be greater than the threshold.
+  */
+  this._isMobile = function() {
+    return window.innerWidth < 700;
+  };
+
+  this._onResize = function() {
+    if (this._isMobile()) {
+      // switch to mobile
+      if (!this._state.mobile) {
+        this.extendInternalState({
+          mobile: true
+        });
+      }
+    } else {
+      if (this._state.mobile) {
+        this.extendInternalState({
+          mobile: false
+        });
+      }
+    }
   };
 
   // Action Handlers
@@ -190,7 +221,6 @@ Notes.Prototype = function() {
       });
       // console.log('doc created', err, result);
     }.bind(this));
-
   };
 
   /*
@@ -214,7 +244,6 @@ Notes.Prototype = function() {
     });
   };
 
-
   // Rendering
   // ------------------------------------
 
@@ -227,10 +256,15 @@ Notes.Prototype = function() {
       ));
     }
 
+    // Reset CSS on body element
+    document.body.classList.remove('sm-fixed-layout');
+
     // Just render empty div during initialization phase
     if (!this._state.initialized) {
       return el;
     }
+
+    console.log('mobile', this._state.mobile);
 
     // Just render the login form if not authenticated
     if (this.state.mode === 'edit' && !this._state.authenticated) {
@@ -242,22 +276,21 @@ Notes.Prototype = function() {
     switch (this.state.mode) {
       case 'edit':
         el.append($$(EditNote, {
+          mobile: this._state.mobile,
           docId: this.state.docId
         }).ref('editNote'));
         // HACK: add the sm-fixed layout class, so the body does not scroll
-        document.body.classList.add('sm-fixed-layout');
+        if (!this._state.mobile) {
+          document.body.classList.add('sm-fixed-layout');  
+        }
         break;
       case 'user-settings':
         el.append($$(Profile).ref('profile'));
         break;
       case 'my-notes':
-        // HACK: removes the sm-fixed layout class so the body element gets scrollable
-        document.body.classList.remove('sm-fixed-layout');
         el.append($$(Dashboard).ref('dashboard'));
         break;
       default: // mode=index or default
-        // HACK: removes the sm-fixed layout class so the body element gets scrollable
-        document.body.classList.remove('sm-fixed-layout');
         if (this._state.authenticated) {
           var userName = this._getUserName();
           if(userName) {

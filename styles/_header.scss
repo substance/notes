@@ -1,16 +1,19 @@
 .sc-header {
   height: 40px;
   background: #3B4749;
-  overflow: hidden;
+  overflow: visible;
+  font-size: $small-font-size;
+  font-weight: $strong-font-weight;
 
   .se-actions {
     float: left;
     .se-action {
+
       line-height: 40px;
       display: inline-block;
       padding: 0px 10px;
       color: rgba(255,255,255, 0.7);
-      border-right: 1px solid #2E393A;
+      // border-right: 1px solid #2E393A;
     }
 
     .se-action:hover {
