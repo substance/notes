@@ -1,8 +1,9 @@
 .sc-cover {
 
   .se-title {
-    font-size: 38px;
-    padding: 20px 0;
+    font-size: $title-font-size;
+    padding: $default-padding 0;
+    font-weight: $strong-font-weight;
     text-align: center;    
   }
 
@@ -10,23 +11,22 @@
     height: 2px;
     background: #ddd;
     max-width: 200px;
-    margin: 20px auto;
+    margin: $default-padding auto;
   }
 
   .se-authors {
     text-align: center;
-    padding-bottom: 40px;
+    padding-bottom: 2*$default-padding;
     color: #888;
   }
 
   .se-info-panel {
-
     text-align: center;
-    padding: 10px;
+    padding: $default-padding / 2;
     color: #888;
     background: #F7F9F9;
     height: 45px;
-    margin-bottom: 40px;
+    margin-bottom: 2*$default-padding;
  
     .fa {
       font-size: 23px;
@@ -77,5 +77,4 @@
       }
     }
   }
-
 }
