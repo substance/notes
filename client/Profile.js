@@ -51,12 +51,13 @@ Profile.Prototype = function() {
   this.render = function() {
     var el = $$('div').addClass('sc-profile');
     var userName = this.getUserName();
-    var header = $$(Header);
 
-    header.outlet('actions').append(
-      $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
-      $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
-    );
+    var header = $$(Header, {
+      actions: {
+        'openDashboard': 'My Notes',
+        'newNote': 'New Note'
+      }
+    });
 
     var form = $$(Layout, {
       width: 'medium',

@@ -39,17 +39,11 @@ Dashboard.Prototype = function() {
       return el;
     }
 
-    var header = $$(Header);
-    header.outlet('actions').append(
-      $$('button').addClass('se-action se-new-note').on('click', this.send.bind(this, 'newNote')).append('New Note')
-    );
-
-    // TODO: Use more idiomatic version!
-    // var header = $$(Header, {
-    //   actions: {
-    //     'newNote': 'New Note'
-    //   }
-    // });
+    var header = $$(Header, {
+      actions: {
+        'newNote': 'New Note'
+      }
+    });
 
     var grid = $$(Grid).addClass('sh-limiter se-dashboard-grid');
 

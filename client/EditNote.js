@@ -96,12 +96,12 @@ EditNote.Prototype = function() {
     // Configure header
     // --------------
 
-    var header = $$(Header);
-
-    header.outlet('actions').append(
-      $$('button').addClass('se-action').append('Dashboard').on('click', this.send.bind(this, 'openDashboard')),
-      $$('button').addClass('se-action').append('New Note').on('click', this.send.bind(this, 'newNote'))
-    );
+    var header = $$(Header, {
+      actions: {
+        'openDashboard': 'My Notes',
+        'newNote': 'New Note'
+      }
+    });
 
     // Notification overrules collaborators
     if (notification) {
