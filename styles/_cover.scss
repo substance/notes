@@ -1,4 +1,5 @@
 .sc-cover {
+  margin-bottom: 2*$default-padding;
 
   .se-title {
     font-size: $title-font-size;
@@ -8,8 +9,8 @@
   }
 
   .se-separator {
-    height: 2px;
-    background: #ddd;
+    height: 1px;
+    background: $border-color;
     max-width: 200px;
     margin: $default-padding auto;
   }
@@ -17,64 +18,5 @@
   .se-authors {
     text-align: center;
     padding-bottom: 2*$default-padding;
-    color: #888;
-  }
-
-  .se-info-panel {
-    text-align: center;
-    padding: $default-padding / 2;
-    color: #888;
-    background: #F7F9F9;
-    height: 45px;
-    margin-bottom: 2*$default-padding;
- 
-    .fa {
-      font-size: 23px;
-      margin-right: 10px;
-    }
-
-    .se-separator {
-      width: 1px;
-      background: #ddd;
-      margin: 0px 30px;
-      float: left;
-      height: 25px;
-    }
-
-    .se-changed {
-      width: auto;
-      float: left;
-    }
-
-    .se-comments {
-      float: left;
-    }
-
-    .se-issues {
-      float: left;
-
-      .fa {
-        top: 3px;
-        position: relative;
-      }
-
-      .issues-bar {
-        min-width: 130px;
-        background: #fff;
-        border: 2px #D2D8D8 solid;
-        border-radius: 5px;
-        height: 15px;
-        display: inline-block;
-        margin-right: 10px;
-        top: 2px;
-        position: relative;
-
-        .completed {
-          float: left;
-          height: 100%;
-          background: #D2D8D8;
-        }
-      }
-    }
   }
 }

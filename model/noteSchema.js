@@ -79,6 +79,7 @@ schema.addNodes([
   require('substance/packages/image/Image'),
   require('substance/packages/emphasis/Emphasis'),
   require('substance/packages/strong/Strong'),
+  require('substance/packages/code/Code'),
   require('substance/packages/link/Link'),
   Comment,
   Todo,

@@ -14,6 +14,7 @@ var SwitchTextTypeTool = require('substance/packages/text/SwitchTextTypeTool');
 var StrongTool = require('substance/packages/strong/StrongTool');
 var EmphasisTool = require('substance/packages/emphasis/EmphasisTool');
 var LinkTool = require('substance/packages/link/LinkTool');
+var CodeTool = require('substance/packages/code/CodeTool');
 var ImageTool = require('substance/packages/image/ImageTool');
 var MarkTool = require('./MarkTool');
 var TodoTool = require('./TodoTool');
@@ -37,6 +38,7 @@ NoteWriter.Prototype = function() {
             $$(RedoTool).append($$(Icon, {icon: 'fa-repeat'})),
             $$(StrongTool).append($$(Icon, {icon: 'fa-bold'})),
             $$(EmphasisTool).append($$(Icon, {icon: 'fa-italic'})),
+            $$(CodeTool).append($$(Icon, {icon: 'fa-code'})),
             $$(MarkTool).append($$(Icon, {icon: 'fa-pencil'})),
             $$(LinkTool).append($$(Icon, {icon: 'fa-link'})),
             $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'})),
@@ -106,6 +108,7 @@ NoteWriter.static.config = {
       require('substance/packages/text/SwitchTextTypeCommand'),
       require('substance/packages/strong/StrongCommand'),
       require('substance/packages/emphasis/EmphasisCommand'),
+      require('substance/packages/code/CodeCommand'),
       require('substance/packages/link/LinkCommand'),
       require('substance/packages/image/ImageCommand'),
       require('./MarkCommand'),

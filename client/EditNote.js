@@ -170,6 +170,7 @@ EditNote.Prototype = function() {
     } else if (this.state.session) {
       el.append(
         $$(NoteReader, {
+          mobile: this.props.mobile,
           noteInfo: new NoteInfo(this.state.noteInfo),
           documentSession: this.state.session
         }).ref('noteReader')
