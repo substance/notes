@@ -1,3 +1,5 @@
+'use strict';
+
 var DocumentClient = require('substance/collab/DocumentClient');
 
 /*

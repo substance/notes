@@ -1,6 +1,6 @@
 'use strict';
 
-var _ = require('substance/util/helpers');
+var each = require('lodash/each');
 var Component = require('substance/ui/Component');
 var AuthenticationClient = require('./AuthenticationClient');
 var DocumentClient = require('substance/collab/DocumentClient');
@@ -23,7 +23,7 @@ function Notes() {
   var config = {};
   var metaTags = window.document.querySelectorAll('meta');
 
-  _.each(metaTags, function(tag) {
+  each(metaTags, function(tag) {
     var name = tag.getAttribute('name');
     var content = tag.getAttribute('content');
     if (name && content) {
