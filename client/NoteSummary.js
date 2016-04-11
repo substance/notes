@@ -1,6 +1,6 @@
-var Component = require('substance/ui/Component');
-var $$ = require('substance/ui/Component').$$;
+'use strict';
 
+var Component = require('substance/ui/Component');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var filter = require('lodash/filter');
 var size = require('lodash/size');
@@ -12,7 +12,7 @@ var NoteSummary = function() {
 
 NoteSummary.Prototype = function() {
 
-  this.render = function() {
+  this.render = function($$) {
     var doc = this.context.controller.getDocument();
     var noteInfo = this.props.noteInfo.props;
 

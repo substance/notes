@@ -1,5 +1,4 @@
-var Component = require('substance/ui/Component');
-var $$ = Component.$$;
+'use strict';
 
 var Controller = require('substance/ui/Controller');
 var ContainerEditor = require('substance/ui/ContainerEditor');
@@ -28,7 +27,7 @@ function NoteWriter() {
 NoteWriter.Prototype = function() {
 
   // Custom Render method for your editor
-  this.render = function() {
+  this.render = function($$) {
     var config = this.getConfig();
     return $$('div').addClass('sc-note-writer').append(
       $$(SplitPane, {splitType: 'horizontal'}).append(

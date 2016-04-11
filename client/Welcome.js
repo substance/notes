@@ -1,10 +1,10 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
 var Button = require('substance/ui/Button');
 var Input = require('substance/ui/Input');
 var Layout = require('substance/ui/Layout');
 var Notification = require('./Notification');
-
-var $$ = Component.$$;
 
 function Welcome() {
   Component.apply(this, arguments);
@@ -41,9 +41,9 @@ Welcome.Prototype = function() {
   };
 
 
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-welcome');
-    
+
     // Topbar with branding
     el.append(
       $$('div').addClass('se-topbar').html('')
@@ -93,7 +93,7 @@ Welcome.Prototype = function() {
         layout.append($$(Notification, this.state.notification));
       }
     }
-    
+
     el.append(layout);
     return el;
   };

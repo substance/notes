@@ -1,3 +1,5 @@
+'use strict';
+
 var DocumentClient = require('./NotesDocumentClient');
 var Err = require('substance/util/Error');
 var Header = require('./Header');
@@ -6,12 +8,10 @@ var Layout = require('substance/ui/Layout');
 var Component = require('substance/ui/Component');
 var NoteItem = require('./NoteItem');
 
-var $$ = Component.$$;
-
 function Dashboard() {
   Component.apply(this, arguments);
   var config = this.context.config;
-  
+
   this.documentClient = new DocumentClient({
     httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
   });
@@ -30,7 +30,7 @@ Dashboard.Prototype = function() {
     this._loadDocuments();
   };
 
-  this.render = function() {
+  this.render = function($$) {
     var noteItems = this.state.noteItems;
     var el = $$('div').addClass('sc-dashboard');
 

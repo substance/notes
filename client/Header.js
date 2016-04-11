@@ -1,8 +1,8 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
 var LoginStatus = require('./LoginStatus');
 var forEach = require('lodash/forEach');
-
-var $$ = Component.$$;
 
 function Header() {
   Component.apply(this, arguments);
@@ -10,7 +10,7 @@ function Header() {
 
 Header.Prototype = function() {
 
-  this.render = function() {
+  this.render = function($$) {
     var authenticationClient = this.context.authenticationClient;
     var el = $$('div').addClass('sc-header');
     var actionEls = [];

@@ -1,3 +1,5 @@
+'use strict';
+
 var CollabSession = require('substance/collab/CollabSession');
 var JSONConverter = require('substance/model/JSONConverter');
 var Note = require('../model/Note');
@@ -13,11 +15,11 @@ var NoteInfo = require('./NoteInfo');
 var Component = require('substance/ui/Component');
 var SplitPane = require('substance/ui/SplitPane');
 var Layout = require('substance/ui/Layout');
-var $$ = Component.$$;
+
 
 function EditNote() {
   Component.apply(this, arguments);
-  
+
   var config = this.context.config;
   var authenticationClient = this.context.authenticationClient;
 
@@ -89,15 +91,15 @@ EditNote.Prototype = function() {
     });
   };
 
-  this.render = function() {
+  this.render = function($$) {
     if (this.props.mobile) {
-      return this.renderMobile();
+      return this.renderMobile($$);
     } else {
-      return this.renderDesktop();
+      return this.renderDesktop($$);
     }
   };
 
-  this.renderDesktop = function() {
+  this.renderDesktop = function($$) {
     var notification = this.state.notification;
     var el = $$('div').addClass('sc-edit-note');
     var main = $$('div');
@@ -156,7 +158,7 @@ EditNote.Prototype = function() {
     return el;
   };
 
-  this.renderMobile = function() {
+  this.renderMobile = function($$) {
     var el = $$('div').addClass('sc-edit-note');
 
     var layout = $$(Layout, {
@@ -195,7 +197,7 @@ EditNote.Prototype = function() {
   this._loadDocument = function() {
     var collabClient = this.collabClient;
     var documentClient = this.context.documentClient;
-    
+
     documentClient.getDocument(this.props.docId, function(err, docRecord) {
       if (err) {
         this.setState({
@@ -207,7 +209,7 @@ EditNote.Prototype = function() {
         console.error('ERROR', err);
         return;
       }
-      
+
       var doc = new Note();
       doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {

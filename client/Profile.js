@@ -1,3 +1,5 @@
+'use strict';
+
 var Header = require('./Header');
 var Component = require('substance/ui/Component');
 var Notification = require('./Notification');
@@ -5,8 +7,6 @@ var Icon = require('substance/ui/FontAwesomeIcon');
 var Input = require('substance/ui/Input');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
-
-var $$ = Component.$$;
 
 function Profile() {
   Component.apply(this, arguments);
@@ -25,7 +25,7 @@ Profile.Prototype = function() {
           type: 'error',
           message: 'Please provide a name.'
         }
-      });      
+      });
     }
 
     authenticationClient.changeName(user.userId, name, function(err) {
@@ -48,7 +48,7 @@ Profile.Prototype = function() {
     return user.name;
   };
 
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-profile');
     var userName = this.getUserName();
 

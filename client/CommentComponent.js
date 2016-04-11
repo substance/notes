@@ -1,7 +1,6 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
-var $$ = Component.$$;
 var TextProperty = require('substance/ui/TextPropertyComponent');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var moment = require('moment');
@@ -22,7 +21,7 @@ CommentComponent.Prototype = function() {
     return result;
   };
 
-  this.render = function() {
+  this.render = function($$) {
     var author = this.props.node.author;
     var date = moment(this.props.createdAt).fromNow();
     var authored = '<strong>'+author+'</strong>' + ' ' + date;
@@ -44,7 +43,7 @@ CommentComponent.Prototype = function() {
           $$(TextProperty, {
             doc: this.props.node.getDocument(),
             path: [ this.props.node.id, "content"],
-          })          
+          })
         )
       );
   };

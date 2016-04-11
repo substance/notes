@@ -1,7 +1,6 @@
 "use strict";
 
 var Component = require('substance/ui/Component');
-var $$ = require('substance/ui/Component').$$;
 var TextPropertyEditor = require('substance/ui/TextPropertyEditor');
 var NoteSummary = require('./NoteSummary');
 
@@ -29,12 +28,12 @@ Cover.Prototype = function() {
     doc.off(this);
   };
 
-  this.render = function() {
+  this.render = function($$) {
     var doc = this.context.controller.getDocument();
     var config = this.context.config;
     var noteInfo = this.props.noteInfo.props;
     var authors = [noteInfo.author || noteInfo.userId];
-    
+
     authors = authors.concat(noteInfo.collaborators);
     var metaNode = doc.getDocumentMeta();
     return $$("div").addClass("sc-cover")

@@ -2,7 +2,6 @@
 
 var _ = require('substance/util/helpers');
 var Component = require('substance/ui/Component');
-var $$ = Component.$$;
 var AuthenticationClient = require('./AuthenticationClient');
 var DocumentClient = require('substance/collab/DocumentClient');
 var FileClient = require('./FileClient');
@@ -34,7 +33,7 @@ function Notes() {
 
   config.host = config.host || 'localhost';
   config.port = config.port || 5000;
-  
+
   // We need to maintain some extra private/internal state in addition to
   // this.state, which is used for routing
   this._state = {
@@ -60,7 +59,7 @@ function Notes() {
   });
 
   this._onResize = this._onResize.bind(this);
-  
+
   this.handleActions({
     'openNote': this._openNote,
     'newNote': this._newNote,
@@ -133,7 +132,7 @@ Notes.Prototype = function() {
     } else if (storedToken) {
       loginData = {sessionToken: storedToken};
     }
-    
+
     if (loginData) {
       this.authenticationClient.authenticate(loginData, this._authenticateDone.bind(this));
     } else {
@@ -247,7 +246,7 @@ Notes.Prototype = function() {
   // Rendering
   // ------------------------------------
 
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-app');
     if (this._state.error) {
       el.append($$('div').addClass('se-error').append(
@@ -281,7 +280,7 @@ Notes.Prototype = function() {
         }).ref('editNote'));
         // HACK: add the sm-fixed layout class, so the body does not scroll
         if (!this._state.mobile) {
-          document.body.classList.add('sm-fixed-layout');  
+          document.body.classList.add('sm-fixed-layout');
         }
         break;
       case 'user-settings':

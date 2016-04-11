@@ -1,6 +1,7 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
 var forEach = require('lodash/forEach');
-var $$ = Component.$$;
 
 function Collaborators() {
   Component.apply(this, arguments);
@@ -36,7 +37,7 @@ Collaborators.Prototype = function() {
     });
   };
 
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-collaborators');
 
     var collaborators = this.props.session.collaborators;

@@ -1,5 +1,6 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
-var $$ = Component.$$;
 var moment = require('moment');
 
 function NoteItem() {
@@ -8,7 +9,7 @@ function NoteItem() {
 
 NoteItem.Prototype = function() {
 
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-note-item');
 
     // Title
@@ -33,7 +34,7 @@ NoteItem.Prototype = function() {
     authors.push($$('strong').append(this.props.creator || 'Anonymous'));
     if (this.props.collaborators.length > 0) {
       authors.push(' with ');
-      authors.push(this.props.collaborators.join(', '));      
+      authors.push(this.props.collaborators.join(', '));
     }
 
     var updatedAt = [
