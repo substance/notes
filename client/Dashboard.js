@@ -2,7 +2,7 @@ var DocumentClient = require('./NotesDocumentClient');
 var Err = require('substance/util/Error');
 var Header = require('./Header');
 var Button = require('substance/ui/Button');
-var Grid = require('substance/ui/Grid');
+var Layout = require('substance/ui/Layout');
 var Component = require('substance/ui/Component');
 var NoteItem = require('./NoteItem');
 
@@ -32,7 +32,6 @@ Dashboard.Prototype = function() {
 
   this.render = function() {
     var noteItems = this.state.noteItems;
-
     var el = $$('div').addClass('sc-dashboard');
 
     if (!noteItems) {
@@ -45,40 +44,33 @@ Dashboard.Prototype = function() {
       }
     });
 
-    var grid = $$(Grid).addClass('sh-limiter se-dashboard-grid');
+    var layout = $$(Layout, {
+      width: 'large'
+    });
 
-    // Summary + new note button
-    grid.append(
-      $$(Grid.Row).addClass('se-intro').append(
-        $$(Grid.Cell, {columns: 8}).addClass('sh-quiet').append(
+    layout.append(
+      $$('div').addClass('se-intro').append(
+        $$('div').addClass('se-note-count').append(
           'Showing ',
           noteItems.length.toString(),
           ' notes'
         ),
-        $$(Grid.Cell, {columns: 4}).addClass('sh-right-align').append(
-          $$(Button).append('New Note')
-            .on('click', this.send.bind(this, 'newNote'))
-        )
+        $$(Button).addClass('se-new-note-button').append('New Note')
+          .on('click', this.send.bind(this, 'newNote'))
       )
     );
 
     if (noteItems) {
       noteItems.forEach(function(noteItem) {
-        // HACK: server should serve collaborators as an array
-        // noteItem.collaborators =  noteItem.collaborators ? noteItem.collaborators.split(',') : [];
-        grid.append(
-          $$(Grid.Row).append(
-            $$(Grid.Cell, {columns: 12}).append(
-              $$(NoteItem, noteItem)
-            )
-          )
+        layout.append(
+          $$(NoteItem, noteItem)
         );
       });
     }
 
     el.append(
       header,
-      grid
+      layout
     );
     return el;
   };
@@ -114,15 +106,12 @@ Dashboard.Prototype = function() {
         console.error('ERROR', err);
         return;
       }
-      // HACK: For debugging purposes
-      window.notes = notes;
 
       self.extendState({
         noteItems: notes
       });
     }.bind(this));
   };
-
 };
 
 Component.extend(Dashboard);

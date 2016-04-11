@@ -51,7 +51,7 @@ Welcome.Prototype = function() {
 
     var layout = $$(Layout, {
       width: 'medium',
-      type: 'centered'
+      textAlign: 'center'
     });
 
     if (this.state.requested) {

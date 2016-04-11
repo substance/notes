@@ -7,7 +7,7 @@
   .se-cursor {
     display: inline-block;
     background: #7BB5B3;
-    width: 4px;
+    width: 2px;
   }
   // cursor must have some content, otherwise it won't be displayed inline
   .se-cursor::after  { content: "."; opacity: 0; }
