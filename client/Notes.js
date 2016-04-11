@@ -65,6 +65,8 @@ function Notes() {
 
 Notes.Prototype = function() {
 
+  var _super = Notes.super.prototype;
+
   // Life cycle
   // ------------------------------------
 
@@ -249,15 +251,14 @@ Notes.Prototype = function() {
       mode: 'edit',
       docId: docId
     });
+    this.router.routeFromState();
   };
 
-  /*
-    Open an existing note
-  */
   this._openUserSettings = function() {
     this.extendState({
       mode: 'user-settings'
     });
+    this.router.routeFromState();
   };
 
   /*
@@ -273,10 +274,7 @@ Notes.Prototype = function() {
         userId: userId
       }
     }, function(err, result) {
-      this.extendState({
-        mode: 'edit',
-        docId: result.documentId
-      });
+      this._openNote(result.documentId);
       // console.log('doc created', err, result);
     }.bind(this));
   };
@@ -288,6 +286,7 @@ Notes.Prototype = function() {
     this.setState({
       mode: 'my-notes'
     });
+    this.router.routeFromState();
   };
 
   /*
@@ -349,6 +348,7 @@ Notes.Prototype = function() {
     Object.assign(this._state, obj);
     this.rerender();
   };
+
 };
 
 Component.extend(Notes);

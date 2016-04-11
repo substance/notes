@@ -1,5 +1,6 @@
 'use strict';
 
+var each = require('lodash/each');
 var Router = require('substance/ui/_Router');
 
 function NotesRouter(app) {
@@ -32,7 +33,7 @@ NotesRouter.Prototype = function() {
     var route = [];
     each(state, function(val, key) {
       route.push(key+'='+val);
-    })
+    });
     this.setRoute(route.join(','));
   };
 
