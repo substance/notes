@@ -56,7 +56,7 @@ Cover.Prototype = function() {
   };
 
   this.getDocument = function() {
-    return this.context.controller.getDocument();
+    return this.props.doc;
   };
 };
 

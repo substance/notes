@@ -17,6 +17,7 @@ NoteReader.Prototype = function() {
     return $$('div').addClass('sc-notepad').append(
       $$('div').addClass('se-note-content').append(
         $$(Cover, {
+          doc: this.doc,
           mobile: this.props.mobile,
           editing: 'readonly',
           noteInfo: this.props.noteInfo

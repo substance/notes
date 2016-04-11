@@ -61,6 +61,7 @@ NoteWriter.Prototype = function() {
             width: 'large'
           }).append(
             $$(Cover, {
+              doc: this.doc,
               noteInfo: this.props.noteInfo
             }).ref('cover'),
             $$(ContainerEditor, {
