@@ -94,8 +94,8 @@ Notes.Prototype = function() {
   this.didMount = function() {
     this._init();
     if (inBrowser) {
-      var windowEl = DefaultDOMElement.wrapNativeElement(window);
-      windowEl.on('resize', this._onResize, this);
+      var _window = DefaultDOMElement.getBrowserWindow();
+      _window.on('resize', this._onResize, this);
     }
     this.router.load();
   };
@@ -131,8 +131,8 @@ Notes.Prototype = function() {
   this.dispose = function() {
     this.ws.removeEventListener('resize', this._onResize);
     if (inBrowser) {
-      var windowEl = DefaultDOMElement.wrapNativeElement(window);
-      windowEl.off(this);
+      var _window = DefaultDOMElement.getBrowserWindow();
+      _window.off(this);
     }
   };
 
