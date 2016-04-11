@@ -5,13 +5,13 @@ var inBrowser = require('substance/util/inBrowser');
 var DefaultDOMElement = require('substance/ui/DefaultDOMElement');
 var Component = require('substance/ui/Component');
 var DocumentClient = require('substance/collab/DocumentClient');
-var Router = require('substance/ui/Router');
 var AuthenticationClient = require('./AuthenticationClient');
 var FileClient = require('./FileClient');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
 var Profile = require('./Profile');
 var Welcome = require('./Welcome');
+var NotesRouter = require('./NotesRouter');
 
 var I18n = require('substance/ui/i18n');
 I18n.instance.load(require('../i18n/en'));
@@ -36,17 +36,9 @@ function Notes() {
   config.host = config.host || 'localhost';
   config.port = config.port || 5000;
 
-  // We need to maintain some extra private/internal state in addition to
-  // this.state, which is used for routing
-  this._state = {
-    initialized: false,
-    error: null,
-    authenticated: false,
-    mobile: this._isMobile()
-  };
-
   // Store config for later use (e.g. in child components)
   this.config = config;
+  this._initInternalState();
 
   this.authenticationClient = new AuthenticationClient({
     httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
@@ -67,21 +59,14 @@ function Notes() {
     'openUserSettings': this._openUserSettings,
     'logout': this._logout
   });
+
+  this.router = new NotesRouter(this);
 }
 
 Notes.Prototype = function() {
 
   // Life cycle
   // ------------------------------------
-
-  /*
-    Router initialization
-  */
-  this.getInitialContext = function() {
-    return {
-      router: new Router(this)
-    };
-  };
 
   /*
     Expose hubClient to all child components
@@ -110,6 +95,11 @@ Notes.Prototype = function() {
       var windowEl = DefaultDOMElement.wrapNativeElement(window);
       windowEl.on('resize', this._onResize, this);
     }
+    this.router.load();
+  };
+
+  this.didUpdateState = function() {
+    this._init();
   };
 
   /*
@@ -342,6 +332,16 @@ Notes.Prototype = function() {
     return user.name;
   };
 
+  // We need to maintain some extra private/internal state in addition to
+  // this.state, which is used for routing
+  this._initInternalState = function() {
+    this._state = {
+      initialized: false,
+      error: null,
+      authenticated: false,
+      mobile: this._isMobile()
+    };
+  };
   /*
     We need to maintain some extra private/internal state
   */
