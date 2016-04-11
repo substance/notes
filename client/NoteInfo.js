@@ -16,9 +16,5 @@ function NoteInfo(props) {
   }
 }
 
-NoteInfo.Prototype = function() {
-
-};
-
 oo.initClass(NoteInfo);
 module.exports = NoteInfo;

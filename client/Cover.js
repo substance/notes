@@ -10,26 +10,18 @@ var Cover = function() {
 
 Cover.Prototype = function() {
 
-  this.initialize = function() {
-    var doc = this.context.controller.getDocument();
+  this.didMount = function() {
+    var doc = this.getDocument();
     doc.on('document:changed', this._onDocumentChanged, this);
   };
 
-  this._onDocumentChanged = function(change) {
-    // Only rerender if changed happened outside of the title surface.
-    // Otherwise we would destroy the current selection
-    if (change.after && change.after.surfaceId !== 'title') {
-      this.rerender();
-    }
-  };
-
   this.dispose = function() {
-    var doc = this.context.controller.getDocument();
+    var doc = this.getDocument();
     doc.off(this);
   };
 
   this.render = function($$) {
-    var doc = this.context.controller.getDocument();
+    var doc = this.getDocument();
     var config = this.context.config;
     var noteInfo = this.props.noteInfo.props;
     var authors = [noteInfo.author || noteInfo.userId];
@@ -53,6 +45,18 @@ Cover.Prototype = function() {
           noteInfo: this.props.noteInfo
         })
       );
+  };
+
+  this._onDocumentChanged = function(change) {
+    // Only rerender if changed happened outside of the title surface.
+    // Otherwise we would destroy the current selection
+    if (change.after && change.after.surfaceId !== 'title') {
+      this.rerender();
+    }
+  };
+
+  this.getDocument = function() {
+    return this.context.controller.getDocument();
   };
 };
 

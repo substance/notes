@@ -11,23 +11,13 @@ function CommentComponent() {
 
 CommentComponent.Prototype = function() {
 
-  this.getClassNames = function() {
-    return 'sc-comment';
-  };
-
-  this.getDate = function() {
-    var date = this.props.node.createdAt;
-    var result = this.timeSince(new Date(date)) + ' ago';
-    return result;
-  };
-
   this.render = function($$) {
     var author = this.props.node.author;
     var date = moment(this.props.createdAt).fromNow();
     var authored = '<strong>'+author+'</strong>' + ' ' + date;
 
     return $$('div')
-      .addClass(this.getClassNames())
+      .addClass('sc-comment')
       .attr("data-id", this.props.node.id)
       .append(
         $$('div')
@@ -46,6 +36,12 @@ CommentComponent.Prototype = function() {
           })
         )
       );
+  };
+
+  this.getDate = function() {
+    var date = this.props.node.createdAt;
+    var result = this.timeSince(new Date(date)) + ' ago';
+    return result;
   };
 };
 

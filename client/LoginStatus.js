@@ -8,14 +8,6 @@ function LoginStatus() {
 
 LoginStatus.Prototype = function() {
 
-  this._logout = function() {
-    this.send('logout');
-  };
-
-  this._openUserSettings = function() {
-    this.send('openUserSettings');
-  };
-
   this.render = function($$) {
     var user = this.props.user;
     var name = user.name || 'Anonymous';
@@ -30,6 +22,15 @@ LoginStatus.Prototype = function() {
     ));
     return el;
   };
+
+  this._logout = function() {
+    this.send('logout');
+  };
+
+  this._openUserSettings = function() {
+    this.send('openUserSettings');
+  };
+
 };
 
 Component.extend(LoginStatus);

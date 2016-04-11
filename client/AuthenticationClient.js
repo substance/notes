@@ -13,29 +13,6 @@ function AuthenticationClient(config) {
 
 AuthenticationClient.Prototype = function() {
 
-  /*
-    A generic request method
-  */
-  this._request = function(method, url, data, cb) {
-    var ajaxOpts = {
-      type: method,
-      url: url,
-      contentType: "application/json; charset=UTF-8",
-      dataType: "json",
-      success: function(data) {
-        cb(null, data);
-      },
-      error: function(err) {
-        // console.error(err);
-        cb(new Error(err.responseJSON.errorMessage));
-      }
-    };
-    if (data) {
-      ajaxOpts.data = JSON.stringify(data);
-    }
-    $.ajax(ajaxOpts);
-  };
-
   this.getSession = function() {
     return this._session;
   };
@@ -104,6 +81,29 @@ AuthenticationClient.Prototype = function() {
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));
+  };
+
+  /*
+    A generic request method
+  */
+  this._request = function(method, url, data, cb) {
+    var ajaxOpts = {
+      type: method,
+      url: url,
+      contentType: "application/json; charset=UTF-8",
+      dataType: "json",
+      success: function(data) {
+        cb(null, data);
+      },
+      error: function(err) {
+        // console.error(err);
+        cb(new Error(err.responseJSON.errorMessage));
+      }
+    };
+    if (data) {
+      ajaxOpts.data = JSON.stringify(data);
+    }
+    $.ajax(ajaxOpts);
   };
 
 };

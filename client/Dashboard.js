@@ -10,8 +10,8 @@ var NoteItem = require('./NoteItem');
 
 function Dashboard() {
   Component.apply(this, arguments);
-  var config = this.context.config;
 
+  var config = this.context.config;
   this.documentClient = new DocumentClient({
     httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
   });
@@ -19,14 +19,7 @@ function Dashboard() {
 
 Dashboard.Prototype = function() {
 
-  // Life cycle
-  // ------------------------------------
-
   this.didMount = function() {
-    this._init();
-  };
-
-  this._init = function() {
     this._loadDocuments();
   };
 

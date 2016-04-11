@@ -15,20 +15,16 @@ function TodoComponent() {
 
 TodoComponent.Prototype = function() {
 
-  this.getClassNames = function() {
-    return "sc-todo";
+  // Listen to updates of the 'done' property and trigger a rerender if changed
+  this.didMount = function() {
+    var node = this.props.node;
+    this.doc = node.getDocument();
+    this.doc.getEventProxy('path').connect(this, [node.id, 'done'], this.rerender);
   };
 
-  this.toggleDone = function(e) {
-    e.preventDefault();
-    var node = this.props.node;
-    var surface = this.context.surface;
-
-    // A Surface transaction performs a sequence of document operations
-    // and also considers the active selection.
-    surface.transaction(function(tx) {
-      tx.set([node.id, "done"], !node.done);
-    });
+  // Unbind event handlers
+  this.dispose = function() {
+    this.doc.getEventProxy('path').disconnect(this);
   };
 
   this.render = function($$) {
@@ -40,7 +36,7 @@ TodoComponent.Prototype = function() {
     checkbox.on('mousedown', this.toggleDone);
 
     var el = $$('div')
-      .addClass(this.getClassNames())
+      .addClass("sc-todo")
       .attr("data-id", this.props.node.id)
       .append([
         checkbox,
@@ -58,17 +54,18 @@ TodoComponent.Prototype = function() {
     return el;
   };
 
-  // Listen to updates of the 'done' property and trigger a rerender if changed
-  this.didMount = function() {
+  this.toggleDone = function(e) {
+    e.preventDefault();
     var node = this.props.node;
-    this.doc = node.getDocument();
-    this.doc.getEventProxy('path').connect(this, [node.id, 'done'], this.rerender);
+    var surface = this.context.surface;
+
+    // A Surface transaction performs a sequence of document operations
+    // and also considers the active selection.
+    surface.transaction(function(tx) {
+      tx.set([node.id, "done"], !node.done);
+    });
   };
 
-  // Unbind event handlers
-  this.dispose = function() {
-    this.doc.getEventProxy('path').disconnect(this);
-  };
 };
 
 Component.extend(TodoComponent);

@@ -26,17 +26,6 @@ Collaborators.Prototype = function() {
     this.props.session.off(this);
   };
 
-  this._extractInitials = function(collaborator) {
-    var name = collaborator.name;
-    if (!name) {
-      return 'A';
-    }
-    var parts = name.split(' ');
-    return parts.map(function(part) {
-      return part[0].toUpperCase(); // only use the first letter of a part
-    });
-  };
-
   this.render = function($$) {
     var el = $$('div').addClass('sc-collaborators');
 
@@ -50,6 +39,17 @@ Collaborators.Prototype = function() {
       );
     }.bind(this));
     return el;
+  };
+
+  this._extractInitials = function(collaborator) {
+    var name = collaborator.name;
+    if (!name) {
+      return 'A';
+    }
+    var parts = name.split(' ');
+    return parts.map(function(part) {
+      return part[0].toUpperCase(); // only use the first letter of a part
+    });
   };
 };
 

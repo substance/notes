@@ -2,20 +2,20 @@
 
 var CollabSession = require('substance/collab/CollabSession');
 var JSONConverter = require('substance/model/JSONConverter');
-var Note = require('../model/Note');
-var Collaborators = require('./Collaborators');
 var CollabClient = require('substance/collab/CollabClient');
 var WebSocketConnection = require('substance/collab/WebSocketConnection');
+var Component = require('substance/ui/Component');
+var SplitPane = require('substance/ui/SplitPane');
+var Note = require('../model/Note');
+var Collaborators = require('./Collaborators');
 var Notification = require('./Notification');
 var Header = require('./Header');
-var converter = new JSONConverter();
+var Layout = require('substance/ui/Layout');
+
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
 var NoteInfo = require('./NoteInfo');
-var Component = require('substance/ui/Component');
-var SplitPane = require('substance/ui/SplitPane');
-var Layout = require('substance/ui/Layout');
-
+var converter = new JSONConverter();
 
 function EditNote() {
   Component.apply(this, arguments);
@@ -49,9 +49,6 @@ EditNote.Prototype = function() {
     };
   };
 
-  // Life cycle
-  // ------------------------------------
-
   this.didMount = function() {
     this._loadDocument();
   };
@@ -60,6 +57,7 @@ EditNote.Prototype = function() {
     this.dispose();
     // TODO: This is a bit bad taste. but we need to reset to initial
     // state if we are looking at a different document.
+    // FIXME: if you want to do so, please check if the old doc is the same!
     this.state = this.getInitialState();
   };
 
@@ -72,23 +70,6 @@ EditNote.Prototype = function() {
       this.state.session.dispose();
     }
     this.collabClient.off(this);
-  };
-
-  this._onCollabClientDisconnected = function() {
-    console.log('disconnected');
-    this.extendState({
-      notification: {
-        type: 'error',
-        message: 'Connection lost! After reconnecting, your changes will be saved.'
-      }
-    });
-  };
-
-  this._onCollabClientConnected = function() {
-    console.log('connected');
-    this.extendState({
-      notification: null
-    });
   };
 
   this.render = function($$) {
@@ -188,8 +169,22 @@ EditNote.Prototype = function() {
     return el;
   };
 
-  // Helpers
-  // ------------------------------------
+  this._onCollabClientDisconnected = function() {
+    console.log('disconnected');
+    this.extendState({
+      notification: {
+        type: 'error',
+        message: 'Connection lost! After reconnecting, your changes will be saved.'
+      }
+    });
+  };
+
+  this._onCollabClientConnected = function() {
+    console.log('connected');
+    this.extendState({
+      notification: null
+    });
+  };
 
   /*
     Loads a document and initializes a CollabSession

@@ -1,11 +1,13 @@
 'use strict';
 
 var each = require('lodash/each');
+var inBrowser = require('substance/util/inBrowser');
+var DefaultDOMElement = require('substance/ui/DefaultDOMElement');
 var Component = require('substance/ui/Component');
-var AuthenticationClient = require('./AuthenticationClient');
 var DocumentClient = require('substance/collab/DocumentClient');
-var FileClient = require('./FileClient');
 var Router = require('substance/ui/Router');
+var AuthenticationClient = require('./AuthenticationClient');
+var FileClient = require('./FileClient');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
 var Profile = require('./Profile');
@@ -58,8 +60,6 @@ function Notes() {
     httpUrl: config.fileServerUrl || 'http://'+config.host+':'+config.port+'/api/files/'
   });
 
-  this._onResize = this._onResize.bind(this);
-
   this.handleActions({
     'openNote': this._openNote,
     'newNote': this._newNote,
@@ -104,19 +104,12 @@ Notes.Prototype = function() {
     };
   };
 
-  /*
-    Handle result of initial authenticate
-  */
-  this._authenticateDone = function(err, userSession) {
-    if (err) {
-      return this._logout();
+  this.didMount = function() {
+    this._init();
+    if (inBrowser) {
+      var windowEl = DefaultDOMElement.wrapNativeElement(window);
+      windowEl.on('resize', this._onResize, this);
     }
-
-    this._setSessionToken(userSession.sessionToken);
-    this.extendInternalState({
-      initialized: true,
-      authenticated: !err
-    });
   };
 
   /*
@@ -140,16 +133,92 @@ Notes.Prototype = function() {
     }
   };
 
-  this.didMount = function() {
-    this._init();
-    window.addEventListener('resize', this._onResize);
-  };
-
   /*
     Nothing to do here, as app is always running
   */
   this.dispose = function() {
     this.ws.removeEventListener('resize', this._onResize);
+    if (inBrowser) {
+      var windowEl = DefaultDOMElement.wrapNativeElement(window);
+      windowEl.off(this);
+    }
+  };
+
+  // Rendering
+  // ------------------------------------
+
+  this.render = function($$) {
+    var el = $$('div').addClass('sc-app');
+    if (this._state.error) {
+      el.append($$('div').addClass('se-error').append(
+        this._state.error.message,
+        $$('span').addClass('se-dismiss').append('Dismiss')
+      ));
+    }
+
+    // Reset CSS on body element
+    document.body.classList.remove('sm-fixed-layout');
+
+    // Just render empty div during initialization phase
+    if (!this._state.initialized) {
+      return el;
+    }
+
+    console.log('mobile', this._state.mobile);
+
+    // Just render the login form if not authenticated
+    if (this.state.mode === 'edit' && !this._state.authenticated) {
+      // We just show the welcome screen here for now
+      el.append($$(Welcome).ref('welcome'));
+      return el;
+    }
+
+    switch (this.state.mode) {
+      case 'edit':
+        el.append($$(EditNote, {
+          mobile: this._state.mobile,
+          docId: this.state.docId
+        }).ref('editNote'));
+        // HACK: add the sm-fixed layout class, so the body does not scroll
+        if (!this._state.mobile) {
+          document.body.classList.add('sm-fixed-layout');
+        }
+        break;
+      case 'user-settings':
+        el.append($$(Profile).ref('profile'));
+        break;
+      case 'my-notes':
+        el.append($$(Dashboard).ref('dashboard'));
+        break;
+      default: // mode=index or default
+        if (this._state.authenticated) {
+          var userName = this._getUserName();
+          if(userName) {
+            el.append($$(Dashboard).ref('dashboard'));
+          } else {
+            el.append($$(Profile).ref('profile'));
+          }
+        } else {
+          el.append($$(Welcome).ref('welcome'));
+        }
+        break;
+    }
+    return el;
+  };
+
+  /*
+    Handle result of initial authenticate
+  */
+  this._authenticateDone = function(err, userSession) {
+    if (err) {
+      return this._logout();
+    }
+
+    this._setSessionToken(userSession.sessionToken);
+    this.extendInternalState({
+      initialized: true,
+      authenticated: !err
+    });
   };
 
   /*
@@ -241,68 +310,6 @@ Notes.Prototype = function() {
       authenticated: false,
       initialized: true
     });
-  };
-
-  // Rendering
-  // ------------------------------------
-
-  this.render = function($$) {
-    var el = $$('div').addClass('sc-app');
-    if (this._state.error) {
-      el.append($$('div').addClass('se-error').append(
-        this._state.error.message,
-        $$('span').addClass('se-dismiss').append('Dismiss')
-      ));
-    }
-
-    // Reset CSS on body element
-    document.body.classList.remove('sm-fixed-layout');
-
-    // Just render empty div during initialization phase
-    if (!this._state.initialized) {
-      return el;
-    }
-
-    console.log('mobile', this._state.mobile);
-
-    // Just render the login form if not authenticated
-    if (this.state.mode === 'edit' && !this._state.authenticated) {
-      // We just show the welcome screen here for now
-      el.append($$(Welcome).ref('welcome'));
-      return el;
-    }
-
-    switch (this.state.mode) {
-      case 'edit':
-        el.append($$(EditNote, {
-          mobile: this._state.mobile,
-          docId: this.state.docId
-        }).ref('editNote'));
-        // HACK: add the sm-fixed layout class, so the body does not scroll
-        if (!this._state.mobile) {
-          document.body.classList.add('sm-fixed-layout');
-        }
-        break;
-      case 'user-settings':
-        el.append($$(Profile).ref('profile'));
-        break;
-      case 'my-notes':
-        el.append($$(Dashboard).ref('dashboard'));
-        break;
-      default: // mode=index or default
-        if (this._state.authenticated) {
-          var userName = this._getUserName();
-          if(userName) {
-            el.append($$(Dashboard).ref('dashboard'));
-          } else {
-            el.append($$(Profile).ref('profile'));
-          }
-        } else {
-          el.append($$(Welcome).ref('welcome'));
-        }
-        break;
-    }
-    return el;
   };
 
   // Helpers
