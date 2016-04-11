@@ -39,7 +39,7 @@
   "browserify": {},
   "scripts": {
     "bundle": "gulp bundle",
-    "postinstall": "mkdir -p uploads",
+    "postinstall": "node ./create-upload-folder",
     "seed": "node seed",
     "test": "NODE_ENV=test gulp test"
   },
