@@ -6,13 +6,13 @@ var CollabClient = require('substance/collab/CollabClient');
 var WebSocketConnection = require('substance/collab/WebSocketConnection');
 var Notification = require('./Notification');
 var Header = require('./Header');
-
 var converter = new JSONConverter();
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
 var NoteInfo = require('./NoteInfo');
 var Component = require('substance/ui/Component');
 var SplitPane = require('substance/ui/SplitPane');
+var Layout = require('substance/ui/Layout');
 var $$ = Component.$$;
 
 function EditNote() {
@@ -158,17 +158,22 @@ EditNote.Prototype = function() {
 
   this.renderMobile = function() {
     var el = $$('div').addClass('sc-edit-note');
+
+    var layout = $$(Layout, {
+      width: 'large'
+    });
+
     // TODO: Render a mobile optimized header
 
     // Display top-level errors. E.g. when a doc could not be loaded
     // we will display the notification on top level
     if (this.state.error) {
-      el.append($$(Notification, {
+      layout.append($$(Notification, {
         type: 'error',
         message: this.state.error.message
       }));
     } else if (this.state.session) {
-      el.append(
+      layout.append(
         $$(NoteReader, {
           mobile: this.props.mobile,
           noteInfo: new NoteInfo(this.state.noteInfo),
@@ -176,6 +181,8 @@ EditNote.Prototype = function() {
         }).ref('noteReader')
       );
     }
+
+    el.append(layout);
     return el;
   };
 

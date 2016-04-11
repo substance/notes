@@ -7,6 +7,7 @@ var SplitPane = require('substance/ui/SplitPane');
 var ScrollPane = require('substance/ui/ScrollPane');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var Toolbar = require('substance/ui/Toolbar');
+var Layout = require('substance/ui/Layout');
 var Cover = require('./Cover');
 var UndoTool = require('substance/ui/UndoTool');
 var RedoTool = require('substance/ui/RedoTool');
@@ -29,28 +30,37 @@ NoteWriter.Prototype = function() {
   // Custom Render method for your editor
   this.render = function() {
     var config = this.getConfig();
-    return $$('div').addClass('sc-notepad').append(
+    return $$('div').addClass('sc-note-writer').append(
       $$(SplitPane, {splitType: 'horizontal'}).append(
-        $$(Toolbar).append(
-          $$(Toolbar.Group).append(
-            $$(SwitchTextTypeTool, {'title': this.i18n.t('switch_text')}),
-            $$(UndoTool).append($$(Icon, {icon: 'fa-undo'})),
-            $$(RedoTool).append($$(Icon, {icon: 'fa-repeat'})),
-            $$(StrongTool).append($$(Icon, {icon: 'fa-bold'})),
-            $$(EmphasisTool).append($$(Icon, {icon: 'fa-italic'})),
-            $$(CodeTool).append($$(Icon, {icon: 'fa-code'})),
-            $$(MarkTool).append($$(Icon, {icon: 'fa-pencil'})),
-            $$(LinkTool).append($$(Icon, {icon: 'fa-link'})),
-            $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'})),
-            $$(CommentTool).append($$(Icon, {icon: 'fa-comment'})),
-            $$(ImageTool).append($$(Icon, {icon: 'fa-image'}))
+        // Top area (toolbar)
+        $$('div').addClass('se-toolbar-wrapper').append(
+          $$(Layout, {width: 'large', noPadding: true}).append(
+            $$(Toolbar).append(
+              $$(Toolbar.Group).append(
+                $$(SwitchTextTypeTool, {'title': this.i18n.t('switch_text')}),
+                $$(UndoTool).append($$(Icon, {icon: 'fa-undo'})),
+                $$(RedoTool).append($$(Icon, {icon: 'fa-repeat'})),
+                $$(StrongTool).append($$(Icon, {icon: 'fa-bold'})),
+                $$(EmphasisTool).append($$(Icon, {icon: 'fa-italic'})),
+                $$(CodeTool).append($$(Icon, {icon: 'fa-code'})),
+                $$(MarkTool).append($$(Icon, {icon: 'fa-pencil'})),
+                $$(LinkTool).append($$(Icon, {icon: 'fa-link'})),
+                $$(TodoTool).append($$(Icon, {icon: 'fa-check-square-o'})),
+                $$(CommentTool).append($$(Icon, {icon: 'fa-comment'})),
+                $$(ImageTool).append($$(Icon, {icon: 'fa-image'}))
+              )
+            )
           )
         ),
+        // Bottom area (content)
         $$(ScrollPane, {
           scrollbarType: 'native',
           scrollbarPosition: 'right'
         }).append(
-          $$('div').addClass('se-note-content').append(
+          // $$('div').addClass('se-note-content').append(
+          $$(Layout, {
+            width: 'large'
+          }).append(
             $$(Cover, {
               noteInfo: this.props.noteInfo
             }).ref('cover'),

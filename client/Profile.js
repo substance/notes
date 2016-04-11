@@ -61,7 +61,7 @@ Profile.Prototype = function() {
 
     var form = $$(Layout, {
       width: 'medium',
-      type: 'centered'
+      textAlign: 'center'
     });
 
     form.append(

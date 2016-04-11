@@ -1,25 +1,10 @@
-.sc-notepad {
+.sc-note-writer {
 
-  .se-note-content {
-    padding: $default-padding;
-    overflow: auto;
-    max-width: $large-layout-width;
-    width: 100%;
-    margin: 0 auto;
-
-    .sc-paragraph {
-      padding-bottom: 20px;
-    }
+  .se-toolbar-wrapper {
+    border-bottom: 1px solid $border-color;
   }
 
-  .sc-toolbar {
-    .se-toolbar-group {
-      max-width: $large-layout-width;
-      margin: 0 auto;
-      float: none;
-    }
+  .sc-paragraph {
+    padding-bottom: $default-padding;
   }
 }
-
-
-
