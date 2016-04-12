@@ -1,23 +1,25 @@
+'use strict';
+
 var CollabSession = require('substance/collab/CollabSession');
 var JSONConverter = require('substance/model/JSONConverter');
-var Note = require('../model/Note');
-var Collaborators = require('./Collaborators');
 var CollabClient = require('substance/collab/CollabClient');
 var WebSocketConnection = require('substance/collab/WebSocketConnection');
+var Component = require('substance/ui/Component');
+var SplitPane = require('substance/ui/SplitPane');
+var Note = require('../model/Note');
+var Collaborators = require('./Collaborators');
 var Notification = require('./Notification');
 var Header = require('./Header');
-var converter = new JSONConverter();
+var Layout = require('substance/ui/Layout');
+
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
 var NoteInfo = require('./NoteInfo');
-var Component = require('substance/ui/Component');
-var SplitPane = require('substance/ui/SplitPane');
-var Layout = require('substance/ui/Layout');
-var $$ = Component.$$;
+var converter = new JSONConverter();
 
 function EditNote() {
   Component.apply(this, arguments);
-  
+
   var config = this.context.config;
   var authenticationClient = this.context.authenticationClient;
 
@@ -47,22 +49,17 @@ EditNote.Prototype = function() {
     };
   };
 
-  // Life cycle
-  // ------------------------------------
-
   this.didMount = function() {
-    this._loadDocument();
+    // load the document after mounting
+    this._loadDocument(this.props.docId);
   };
 
-  this.willReceiveProps = function() {
-    this.dispose();
-    // TODO: This is a bit bad taste. but we need to reset to initial
-    // state if we are looking at a different document.
-    this.state = this.getInitialState();
-  };
-
-  this.didReceiveProps = function() {
-    this._loadDocument();
+  this.willReceiveProps = function(newProps) {
+    if (newProps.docId !== this.props.docId) {
+      this.dispose();
+      this.state = this.getInitialState();
+      this._loadDocument(newProps.docId);
+    }
   };
 
   this.dispose = function() {
@@ -72,32 +69,15 @@ EditNote.Prototype = function() {
     this.collabClient.off(this);
   };
 
-  this._onCollabClientDisconnected = function() {
-    console.log('disconnected');
-    this.extendState({
-      notification: {
-        type: 'error',
-        message: 'Connection lost! After reconnecting, your changes will be saved.'
-      }
-    });
-  };
-
-  this._onCollabClientConnected = function() {
-    console.log('connected');
-    this.extendState({
-      notification: null
-    });
-  };
-
-  this.render = function() {
+  this.render = function($$) {
     if (this.props.mobile) {
-      return this.renderMobile();
+      return this.renderMobile($$);
     } else {
-      return this.renderDesktop();
+      return this.renderDesktop($$);
     }
   };
 
-  this.renderDesktop = function() {
+  this.renderDesktop = function($$) {
     var notification = this.state.notification;
     var el = $$('div').addClass('sc-edit-note');
     var main = $$('div');
@@ -156,7 +136,7 @@ EditNote.Prototype = function() {
     return el;
   };
 
-  this.renderMobile = function() {
+  this.renderMobile = function($$) {
     var el = $$('div').addClass('sc-edit-note');
 
     var layout = $$(Layout, {
@@ -186,17 +166,31 @@ EditNote.Prototype = function() {
     return el;
   };
 
-  // Helpers
-  // ------------------------------------
+  this._onCollabClientDisconnected = function() {
+    console.log('disconnected');
+    this.extendState({
+      notification: {
+        type: 'error',
+        message: 'Connection lost! After reconnecting, your changes will be saved.'
+      }
+    });
+  };
+
+  this._onCollabClientConnected = function() {
+    console.log('connected');
+    this.extendState({
+      notification: null
+    });
+  };
 
   /*
     Loads a document and initializes a CollabSession
   */
-  this._loadDocument = function() {
+  this._loadDocument = function(docId) {
     var collabClient = this.collabClient;
     var documentClient = this.context.documentClient;
-    
-    documentClient.getDocument(this.props.docId, function(err, docRecord) {
+
+    documentClient.getDocument(docId, function(err, docRecord) {
       if (err) {
         this.setState({
           notification: {
@@ -207,11 +201,11 @@ EditNote.Prototype = function() {
         console.error('ERROR', err);
         return;
       }
-      
+
       var doc = new Note();
       doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {
-        documentId: this.props.docId,
+        documentId: docId,
         version: docRecord.version,
         collabClient: collabClient
       });

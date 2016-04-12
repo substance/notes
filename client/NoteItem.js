@@ -1,22 +1,30 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
-var $$ = Component.$$;
 var moment = require('moment');
 
 function NoteItem() {
   Component.apply(this, arguments);
+
+  if (!this.context.urlHelper) {
+    throw new Error('NoteItem requires urlHelper.');
+  }
 }
 
 NoteItem.Prototype = function() {
 
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-note-item');
+
+    var urlHelper = this.context.urlHelper;
+    var url = urlHelper.openNote(this.props.documentId);
 
     // Title
     el.append(
       $$('div').addClass('se-title')
         .append(
           $$('a')
-            .attr({href: '#mode=edit,docId='+this.props.documentId})
+            .attr({href: url})
             .append(this.props.title)
         )
     );
@@ -33,7 +41,7 @@ NoteItem.Prototype = function() {
     authors.push($$('strong').append(this.props.creator || 'Anonymous'));
     if (this.props.collaborators.length > 0) {
       authors.push(' with ');
-      authors.push(this.props.collaborators.join(', '));      
+      authors.push(this.props.collaborators.join(', '));
     }
 
     var updatedAt = [

@@ -1,5 +1,6 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
-var $$ = Component.$$;
 
 function LoginStatus() {
   Component.apply(this, arguments);
@@ -7,15 +8,7 @@ function LoginStatus() {
 
 LoginStatus.Prototype = function() {
 
-  this._logout = function() {
-    this.send('logout');
-  };
-
-  this._openUserSettings = function() {
-    this.send('openUserSettings');
-  };
-
-  this.render = function() {
+  this.render = function($$) {
     var user = this.props.user;
     var name = user.name || 'Anonymous';
     var el = $$('div').addClass('sc-login-status se-dropdown');
@@ -29,6 +22,15 @@ LoginStatus.Prototype = function() {
     ));
     return el;
   };
+
+  this._logout = function() {
+    this.send('logout');
+  };
+
+  this._openUserSettings = function() {
+    this.send('openUserSettings');
+  };
+
 };
 
 Component.extend(LoginStatus);

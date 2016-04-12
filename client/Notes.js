@@ -1,16 +1,17 @@
 'use strict';
 
-var _ = require('substance/util/helpers');
+var each = require('lodash/each');
+var inBrowser = require('substance/util/inBrowser');
+var DefaultDOMElement = require('substance/ui/DefaultDOMElement');
 var Component = require('substance/ui/Component');
-var $$ = Component.$$;
-var AuthenticationClient = require('./AuthenticationClient');
 var DocumentClient = require('substance/collab/DocumentClient');
+var AuthenticationClient = require('./AuthenticationClient');
 var FileClient = require('./FileClient');
-var Router = require('substance/ui/Router');
 var EditNote = require('./EditNote');
 var Dashboard = require('./Dashboard');
 var Profile = require('./Profile');
 var Welcome = require('./Welcome');
+var NotesRouter = require('./NotesRouter');
 
 var I18n = require('substance/ui/i18n');
 I18n.instance.load(require('../i18n/en'));
@@ -24,7 +25,7 @@ function Notes() {
   var config = {};
   var metaTags = window.document.querySelectorAll('meta');
 
-  _.each(metaTags, function(tag) {
+  each(metaTags, function(tag) {
     var name = tag.getAttribute('name');
     var content = tag.getAttribute('content');
     if (name && content) {
@@ -34,18 +35,10 @@ function Notes() {
 
   config.host = config.host || 'localhost';
   config.port = config.port || 5000;
-  
-  // We need to maintain some extra private/internal state in addition to
-  // this.state, which is used for routing
-  this._state = {
-    initialized: false,
-    error: null,
-    authenticated: false,
-    mobile: this._isMobile()
-  };
 
   // Store config for later use (e.g. in child components)
   this.config = config;
+  this._initInternalState();
 
   this.authenticationClient = new AuthenticationClient({
     httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
@@ -59,8 +52,6 @@ function Notes() {
     httpUrl: config.fileServerUrl || 'http://'+config.host+':'+config.port+'/api/files/'
   });
 
-  this._onResize = this._onResize.bind(this);
-  
   this.handleActions({
     'openNote': this._openNote,
     'newNote': this._newNote,
@@ -68,21 +59,14 @@ function Notes() {
     'openUserSettings': this._openUserSettings,
     'logout': this._logout
   });
+
+  this.router = new NotesRouter(this);
 }
 
 Notes.Prototype = function() {
 
   // Life cycle
   // ------------------------------------
-
-  /*
-    Router initialization
-  */
-  this.getInitialContext = function() {
-    return {
-      router: new Router(this)
-    };
-  };
 
   /*
     Expose hubClient to all child components
@@ -92,7 +76,8 @@ Notes.Prototype = function() {
       authenticationClient: this.authenticationClient,
       documentClient: this.documentClient,
       fileClient: this.fileClient,
-      config: this.config
+      config: this.config,
+      urlHelper: this.router
     };
   };
 
@@ -105,19 +90,17 @@ Notes.Prototype = function() {
     };
   };
 
-  /*
-    Handle result of initial authenticate
-  */
-  this._authenticateDone = function(err, userSession) {
-    if (err) {
-      return this._logout();
+  this.didMount = function() {
+    this._init();
+    if (inBrowser) {
+      var _window = DefaultDOMElement.getBrowserWindow();
+      _window.on('resize', this._onResize, this);
     }
+    this.router.readURL();
+  };
 
-    this._setSessionToken(userSession.sessionToken);
-    this.extendInternalState({
-      initialized: true,
-      authenticated: !err
-    });
+  this.didUpdateState = function() {
+    this._init();
   };
 
   /*
@@ -133,7 +116,7 @@ Notes.Prototype = function() {
     } else if (storedToken) {
       loginData = {sessionToken: storedToken};
     }
-    
+
     if (loginData) {
       this.authenticationClient.authenticate(loginData, this._authenticateDone.bind(this));
     } else {
@@ -141,16 +124,97 @@ Notes.Prototype = function() {
     }
   };
 
-  this.didMount = function() {
-    this._init();
-    window.addEventListener('resize', this._onResize);
-  };
-
   /*
     Nothing to do here, as app is always running
   */
   this.dispose = function() {
     this.ws.removeEventListener('resize', this._onResize);
+    if (inBrowser) {
+      var _window = DefaultDOMElement.getBrowserWindow();
+      _window.off(this);
+    }
+  };
+
+  // Rendering
+  // ------------------------------------
+
+  this.render = function($$) {
+    var el = $$('div').addClass('sc-app');
+    if (this._state.error) {
+      el.append($$('div').addClass('se-error').append(
+        this._state.error.message,
+        $$('span').addClass('se-dismiss').append('Dismiss')
+      ));
+    }
+
+    // FIXME: don't manipulate document.body here.
+    // You can reset it in willRender()
+    // and set it in didRender()
+    // Make sure to guard it with `if (inBrowser) {}`
+
+    // Reset CSS on body element
+    document.body.classList.remove('sm-fixed-layout');
+
+    // Just render empty div during initialization phase
+    if (!this._state.initialized) {
+      return el;
+    }
+
+    console.log('mobile', this._state.mobile);
+
+    // Just render the login form if not authenticated
+    if (this.state.mode === 'edit' && !this._state.authenticated) {
+      // We just show the welcome screen here for now
+      el.append($$(Welcome).ref('welcome'));
+      return el;
+    }
+
+    switch (this.state.mode) {
+      case 'edit':
+        el.append($$(EditNote, {
+          mobile: this._state.mobile,
+          docId: this.state.docId
+        }).ref('editNote'));
+        // HACK: add the sm-fixed layout class, so the body does not scroll
+        if (!this._state.mobile) {
+          document.body.classList.add('sm-fixed-layout');
+        }
+        break;
+      case 'user-settings':
+        el.append($$(Profile).ref('profile'));
+        break;
+      case 'my-notes':
+        el.append($$(Dashboard).ref('dashboard'));
+        break;
+      default: // mode=index or default
+        if (this._state.authenticated) {
+          var userName = this._getUserName();
+          if(userName) {
+            el.append($$(Dashboard).ref('dashboard'));
+          } else {
+            el.append($$(Profile).ref('profile'));
+          }
+        } else {
+          el.append($$(Welcome).ref('welcome'));
+        }
+        break;
+    }
+    return el;
+  };
+
+  /*
+    Handle result of initial authenticate
+  */
+  this._authenticateDone = function(err, userSession) {
+    if (err) {
+      return this._logout();
+    }
+
+    this._setSessionToken(userSession.sessionToken);
+    this.extendInternalState({
+      initialized: true,
+      authenticated: !err
+    });
   };
 
   /*
@@ -191,15 +255,14 @@ Notes.Prototype = function() {
       mode: 'edit',
       docId: docId
     });
+    this.router.writeURL();
   };
 
-  /*
-    Open an existing note
-  */
   this._openUserSettings = function() {
     this.extendState({
       mode: 'user-settings'
     });
+    this.router.writeURL();
   };
 
   /*
@@ -215,10 +278,7 @@ Notes.Prototype = function() {
         userId: userId
       }
     }, function(err, result) {
-      this.extendState({
-        mode: 'edit',
-        docId: result.documentId
-      });
+      this._openNote(result.documentId);
       // console.log('doc created', err, result);
     }.bind(this));
   };
@@ -230,6 +290,7 @@ Notes.Prototype = function() {
     this.setState({
       mode: 'my-notes'
     });
+    this.router.writeURL();
   };
 
   /*
@@ -242,68 +303,6 @@ Notes.Prototype = function() {
       authenticated: false,
       initialized: true
     });
-  };
-
-  // Rendering
-  // ------------------------------------
-
-  this.render = function() {
-    var el = $$('div').addClass('sc-app');
-    if (this._state.error) {
-      el.append($$('div').addClass('se-error').append(
-        this._state.error.message,
-        $$('span').addClass('se-dismiss').append('Dismiss')
-      ));
-    }
-
-    // Reset CSS on body element
-    document.body.classList.remove('sm-fixed-layout');
-
-    // Just render empty div during initialization phase
-    if (!this._state.initialized) {
-      return el;
-    }
-
-    console.log('mobile', this._state.mobile);
-
-    // Just render the login form if not authenticated
-    if (this.state.mode === 'edit' && !this._state.authenticated) {
-      // We just show the welcome screen here for now
-      el.append($$(Welcome).ref('welcome'));
-      return el;
-    }
-
-    switch (this.state.mode) {
-      case 'edit':
-        el.append($$(EditNote, {
-          mobile: this._state.mobile,
-          docId: this.state.docId
-        }).ref('editNote'));
-        // HACK: add the sm-fixed layout class, so the body does not scroll
-        if (!this._state.mobile) {
-          document.body.classList.add('sm-fixed-layout');  
-        }
-        break;
-      case 'user-settings':
-        el.append($$(Profile).ref('profile'));
-        break;
-      case 'my-notes':
-        el.append($$(Dashboard).ref('dashboard'));
-        break;
-      default: // mode=index or default
-        if (this._state.authenticated) {
-          var userName = this._getUserName();
-          if(userName) {
-            el.append($$(Dashboard).ref('dashboard'));
-          } else {
-            el.append($$(Profile).ref('profile'));
-          }
-        } else {
-          el.append($$(Welcome).ref('welcome'));
-        }
-        break;
-    }
-    return el;
   };
 
   // Helpers
@@ -336,6 +335,16 @@ Notes.Prototype = function() {
     return user.name;
   };
 
+  // We need to maintain some extra private/internal state in addition to
+  // this.state, which is used for routing
+  this._initInternalState = function() {
+    this._state = {
+      initialized: false,
+      error: null,
+      authenticated: false,
+      mobile: this._isMobile()
+    };
+  };
   /*
     We need to maintain some extra private/internal state
   */
@@ -343,6 +352,7 @@ Notes.Prototype = function() {
     Object.assign(this._state, obj);
     this.rerender();
   };
+
 };
 
 Component.extend(Notes);

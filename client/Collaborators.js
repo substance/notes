@@ -1,6 +1,7 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
 var forEach = require('lodash/forEach');
-var $$ = Component.$$;
 
 function Collaborators() {
   Component.apply(this, arguments);
@@ -25,18 +26,7 @@ Collaborators.Prototype = function() {
     this.props.session.off(this);
   };
 
-  this._extractInitials = function(collaborator) {
-    var name = collaborator.name;
-    if (!name) {
-      return 'A';
-    }
-    var parts = name.split(' ');
-    return parts.map(function(part) {
-      return part[0].toUpperCase(); // only use the first letter of a part
-    });
-  };
-
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-collaborators');
 
     var collaborators = this.props.session.collaborators;
@@ -49,6 +39,17 @@ Collaborators.Prototype = function() {
       );
     }.bind(this));
     return el;
+  };
+
+  this._extractInitials = function(collaborator) {
+    var name = collaborator.name;
+    if (!name) {
+      return 'A';
+    }
+    var parts = name.split(' ');
+    return parts.map(function(part) {
+      return part[0].toUpperCase(); // only use the first letter of a part
+    });
   };
 };
 

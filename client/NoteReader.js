@@ -1,5 +1,5 @@
-var Component = require('substance/ui/Component');
-var $$ = Component.$$;
+'use strict';
+
 var Controller = require('substance/ui/Controller');
 var ContainerEditor = require('substance/ui/ContainerEditor');
 var Cover = require('./Cover');
@@ -12,11 +12,12 @@ function NoteReader() {
 NoteReader.Prototype = function() {
 
   // Custom Render method for your editor
-  this.render = function() {
+  this.render = function($$) {
     var config = this.getConfig();
-    return $$('div').addClass('sc-notepad').append(   
+    return $$('div').addClass('sc-notepad').append(
       $$('div').addClass('se-note-content').append(
         $$(Cover, {
+          doc: this.doc,
           mobile: this.props.mobile,
           editing: 'readonly',
           noteInfo: this.props.noteInfo

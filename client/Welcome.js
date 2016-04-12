@@ -1,10 +1,10 @@
+'use strict';
+
 var Component = require('substance/ui/Component');
 var Button = require('substance/ui/Button');
 var Input = require('substance/ui/Input');
 var Layout = require('substance/ui/Layout');
 var Notification = require('./Notification');
-
-var $$ = Component.$$;
 
 function Welcome() {
   Component.apply(this, arguments);
@@ -12,38 +12,9 @@ function Welcome() {
 
 Welcome.Prototype = function() {
 
-  this._requestLoginLink = function() {
-    var email = this.refs.email.val();
-    var authenticationClient = this.context.authenticationClient;
-
-    // Set loading state
-    this.setState({
-      email: email,
-      loading: true
-    });
-
-    authenticationClient.requestLoginLink(email, function(err) {
-      if (err) {
-        this.setState({
-          loading: false,
-          notification: {
-            type: 'error',
-            message: 'Your request could not be processed. Make sure you provided a valid email.'
-          }
-        });
-      } else {
-        this.setState({
-          loading: false,
-          requested: true
-        });
-      }
-    }.bind(this));
-  };
-
-
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-welcome');
-    
+
     // Topbar with branding
     el.append(
       $$('div').addClass('se-topbar').html('')
@@ -93,10 +64,39 @@ Welcome.Prototype = function() {
         layout.append($$(Notification, this.state.notification));
       }
     }
-    
+
     el.append(layout);
     return el;
   };
+
+  this._requestLoginLink = function() {
+    var email = this.refs.email.val();
+    var authenticationClient = this.context.authenticationClient;
+
+    // Set loading state
+    this.setState({
+      email: email,
+      loading: true
+    });
+
+    authenticationClient.requestLoginLink(email, function(err) {
+      if (err) {
+        this.setState({
+          loading: false,
+          notification: {
+            type: 'error',
+            message: 'Your request could not be processed. Make sure you provided a valid email.'
+          }
+        });
+      } else {
+        this.setState({
+          loading: false,
+          requested: true
+        });
+      }
+    }.bind(this));
+  };
+
 };
 
 Component.extend(Welcome);

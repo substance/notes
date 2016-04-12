@@ -1,3 +1,5 @@
+'use strict';
+
 var Header = require('./Header');
 var Component = require('substance/ui/Component');
 var Notification = require('./Notification');
@@ -6,49 +8,13 @@ var Input = require('substance/ui/Input');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
 
-var $$ = Component.$$;
-
 function Profile() {
   Component.apply(this, arguments);
 }
 
 Profile.Prototype = function() {
 
-  this._updateUserName = function() {
-    var name = this.refs.name.val();
-    var authenticationClient = this.context.authenticationClient;
-    var user = authenticationClient.getUser();
-
-    if (!name) {
-      this.setState({
-        notification: {
-          type: 'error',
-          message: 'Please provide a name.'
-        }
-      });      
-    }
-
-    authenticationClient.changeName(user.userId, name, function(err) {
-      if(err) {
-        this.setState({
-          notification: {
-            type: 'error',
-            message: this.i18n(err.name)
-          }
-        });
-        return;
-      }
-      this.send('openDashboard');
-    }.bind(this));
-  };
-
-  this.getUserName = function() {
-    var authenticationClient = this.context.authenticationClient;
-    var user = authenticationClient.getUser();
-    return user.name;
-  };
-
-  this.render = function() {
+  this.render = function($$) {
     var el = $$('div').addClass('sc-profile');
     var userName = this.getUserName();
 
@@ -104,6 +70,41 @@ Profile.Prototype = function() {
     );
     return el;
   };
+
+  this.getUserName = function() {
+    var authenticationClient = this.context.authenticationClient;
+    var user = authenticationClient.getUser();
+    return user.name;
+  };
+
+  this._updateUserName = function() {
+    var name = this.refs.name.val();
+    var authenticationClient = this.context.authenticationClient;
+    var user = authenticationClient.getUser();
+
+    if (!name) {
+      this.setState({
+        notification: {
+          type: 'error',
+          message: 'Please provide a name.'
+        }
+      });
+    }
+
+    authenticationClient.changeName(user.userId, name, function(err) {
+      if(err) {
+        this.setState({
+          notification: {
+            type: 'error',
+            message: this.i18n(err.name)
+          }
+        });
+        return;
+      }
+      this.send('openDashboard');
+    }.bind(this));
+  };
+
 };
 
 Component.extend(Profile);

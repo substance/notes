@@ -14,7 +14,7 @@
     "multer": "1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#2cd487f8dc096bf6501d3ec566fcf875c9b1ab4d",
+    "substance": "substance/substance#1b101eb86bafb806c042066a2acafec03b6d331a",
     "ws": "^1.0.1"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
   "browserify": {},
   "scripts": {
     "bundle": "gulp bundle",
-    "postinstall": "mkdir -p uploads",
+    "postinstall": "node ./create-upload-folder",
     "seed": "node seed",
     "test": "NODE_ENV=test gulp test"
   },

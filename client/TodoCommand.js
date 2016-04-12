@@ -8,28 +8,6 @@ var TodoCommand = function(surface) {
 
 TodoCommand.Prototype = function() {
 
-  this.getSelection = function() {
-    return this.getSurface().getSelection();
-  };
-
-  this.getTargetType = function() {
-    var sel = this.getSelection();
-    if (sel.isNull() || !sel.isPropertySelection()) return null;
-    var doc = this.getDocument();
-    var path = sel.getPath();
-    var node = doc.get(path[0]);
-    // HACK: We should make sure the getCommandState is not called for
-    // an invalid selection.
-    if (!node) return 'paragraph';
-    var nodeType = node.type;
-
-    if (nodeType === 'todo') {
-      return 'paragraph';
-    } else {
-      return 'todo';
-    }
-  };
-
   this.getCommandState = function() {
     var surface = this.getSurface();
     var sel = this.getSelection();
@@ -52,7 +30,7 @@ TodoCommand.Prototype = function() {
 
     if (targetType) {
       // A Surface transaction performs a sequence of document operations
-      // and also considers the active selection.    
+      // and also considers the active selection.
       surface.transaction(function(tx, args) {
         args.data = {
           type: targetType
@@ -60,6 +38,24 @@ TodoCommand.Prototype = function() {
         return surface.switchType(tx, args);
       });
       return {status: 'ok'};
+    }
+  };
+
+  this.getTargetType = function() {
+    var sel = this.getSelection();
+    if (sel.isNull() || !sel.isPropertySelection()) return null;
+    var doc = this.getDocument();
+    var path = sel.getPath();
+    var node = doc.get(path[0]);
+    // HACK: We should make sure the getCommandState is not called for
+    // an invalid selection.
+    if (!node) return 'paragraph';
+    var nodeType = node.type;
+
+    if (nodeType === 'todo') {
+      return 'paragraph';
+    } else {
+      return 'todo';
     }
   };
 };
