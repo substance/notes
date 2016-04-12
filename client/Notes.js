@@ -65,8 +65,6 @@ function Notes() {
 
 Notes.Prototype = function() {
 
-  var _super = Notes.super.prototype;
-
   // Life cycle
   // ------------------------------------
 
@@ -148,6 +146,11 @@ Notes.Prototype = function() {
         $$('span').addClass('se-dismiss').append('Dismiss')
       ));
     }
+
+    // FIXME: don't manipulate document.body here.
+    // You can reset it in willRender()
+    // and set it in didRender()
+    // Make sure to guard it with `if (inBrowser) {}`
 
     // Reset CSS on body element
     document.body.classList.remove('sm-fixed-layout');

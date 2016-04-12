@@ -1,6 +1,5 @@
 'use strict';
 
-var each = require('lodash/each');
 var Router = require('substance/ui/Router');
 
 function NotesRouter(app) {
