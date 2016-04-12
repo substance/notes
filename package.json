@@ -14,7 +14,7 @@
     "multer": "1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance#routing",
+    "substance": "substance/substance#1b101eb86bafb806c042066a2acafec03b6d331a",
     "ws": "^1.0.1"
   },
   "devDependencies": {
