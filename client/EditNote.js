@@ -50,19 +50,16 @@ EditNote.Prototype = function() {
   };
 
   this.didMount = function() {
-    this._loadDocument();
+    // load the document after mounting
+    this._loadDocument(this.props.docId);
   };
 
-  this.willReceiveProps = function() {
-    this.dispose();
-    // TODO: This is a bit bad taste. but we need to reset to initial
-    // state if we are looking at a different document.
-    // FIXME: if you want to do so, please check if the old doc is the same!
-    this.state = this.getInitialState();
-  };
-
-  this.didReceiveProps = function() {
-    this._loadDocument();
+  this.willReceiveProps = function(newProps) {
+    if (newProps.docId !== this.props.docId) {
+      this.dispose();
+      this.state = this.getInitialState();
+      this._loadDocument(newProps.docId);
+    }
   };
 
   this.dispose = function() {
@@ -189,11 +186,11 @@ EditNote.Prototype = function() {
   /*
     Loads a document and initializes a CollabSession
   */
-  this._loadDocument = function() {
+  this._loadDocument = function(docId) {
     var collabClient = this.collabClient;
     var documentClient = this.context.documentClient;
 
-    documentClient.getDocument(this.props.docId, function(err, docRecord) {
+    documentClient.getDocument(docId, function(err, docRecord) {
       if (err) {
         this.setState({
           notification: {
@@ -208,7 +205,7 @@ EditNote.Prototype = function() {
       var doc = new Note();
       doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {
-        documentId: this.props.docId,
+        documentId: docId,
         version: docRecord.version,
         collabClient: collabClient
       });
