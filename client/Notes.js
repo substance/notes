@@ -78,7 +78,8 @@ Notes.Prototype = function() {
       authenticationClient: this.authenticationClient,
       documentClient: this.documentClient,
       fileClient: this.fileClient,
-      config: this.config
+      config: this.config,
+      urlHelper: this.router
     };
   };
 
@@ -97,7 +98,7 @@ Notes.Prototype = function() {
       var _window = DefaultDOMElement.getBrowserWindow();
       _window.on('resize', this._onResize, this);
     }
-    this.router.load();
+    this.router.readURL();
   };
 
   this.didUpdateState = function() {
@@ -251,14 +252,14 @@ Notes.Prototype = function() {
       mode: 'edit',
       docId: docId
     });
-    this.router.routeFromState();
+    this.router.writeURL();
   };
 
   this._openUserSettings = function() {
     this.extendState({
       mode: 'user-settings'
     });
-    this.router.routeFromState();
+    this.router.writeURL();
   };
 
   /*
@@ -286,7 +287,7 @@ Notes.Prototype = function() {
     this.setState({
       mode: 'my-notes'
     });
-    this.router.routeFromState();
+    this.router.writeURL();
   };
 
   /*

@@ -18,13 +18,13 @@ TodoComponent.Prototype = function() {
   // Listen to updates of the 'done' property and trigger a rerender if changed
   this.didMount = function() {
     var node = this.props.node;
-    this.doc = node.getDocument();
-    this.doc.getEventProxy('path').connect(this, [node.id, 'done'], this.rerender);
+    node.on('done:changed', this.rerender, this);
   };
 
   // Unbind event handlers
   this.dispose = function() {
-    this.doc.getEventProxy('path').disconnect(this);
+    var node = this.props.node;
+    node.off(this);
   };
 
   this.render = function($$) {

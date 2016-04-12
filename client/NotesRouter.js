@@ -1,7 +1,7 @@
 'use strict';
 
 var each = require('lodash/each');
-var Router = require('substance/ui/_Router');
+var Router = require('substance/ui/Router');
 
 function NotesRouter(app) {
   Router.call(this);
@@ -15,26 +15,26 @@ NotesRouter.Prototype = function() {
     if (!route) {
       this.app.setState(this.app.getInitialState());
     } else {
-      var params = route.split(',');
-      var state = {};
-      params.forEach(function(param) {
-        var tuple = param.split('=');
-        if (tuple.length !== 2) {
-          throw new Error('Illegal route.');
-        }
-        state[tuple[0].trim()] = tuple[1].trim();
-      });
+      var state = Router.routeStringToObject(route);
       this.app.setState(state);
     }
   };
 
   this.routeFromState = function() {
-    var state = this.app.state;
-    var route = [];
-    each(state, function(val, key) {
-      route.push(key+'='+val);
+    var state = {};
+    var appState = this.app.state;
+    ["mode", "docId"].forEach(function(key) {
+      state[key] = appState[key];
     });
-    this.setRoute(route.join(','));
+    return Router.objectToRouteString(state);
+  };
+
+  // URL helpers
+  this.openNote = function(docId) {
+    return '#' + Router.objectToRouteString({
+      mode: 'edit',
+      docId: docId
+    });
   };
 
 };
