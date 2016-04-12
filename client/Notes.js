@@ -38,7 +38,6 @@ function Notes() {
 
   // Store config for later use (e.g. in child components)
   this.config = config;
-  this._initInternalState();
 
   this.authenticationClient = new AuthenticationClient({
     httpUrl: config.authenticationServerUrl || 'http://'+config.host+':'+config.port+'/api/auth/'
@@ -65,6 +64,8 @@ function Notes() {
 
 Notes.Prototype = function() {
 
+  // var _super = Notes.super.prototype;
+
   // Life cycle
   // ------------------------------------
 
@@ -86,12 +87,15 @@ Notes.Prototype = function() {
   */
   this.getInitialState = function() {
     return {
-      mode: 'index'
+      mode: 'index',
+      initialized: false,
+      authenticated: false,
+      error: null,
+      mobile: this._isMobile()
     };
   };
 
   this.didMount = function() {
-    this._init();
     if (inBrowser) {
       var _window = DefaultDOMElement.getBrowserWindow();
       _window.on('resize', this._onResize, this);
@@ -100,7 +104,10 @@ Notes.Prototype = function() {
   };
 
   this.didUpdateState = function() {
-    this._init();
+    if (!this.state.initialized) {
+      console.log('initializing..');
+      this._init();
+    }
   };
 
   /*
@@ -120,7 +127,7 @@ Notes.Prototype = function() {
     if (loginData) {
       this.authenticationClient.authenticate(loginData, this._authenticateDone.bind(this));
     } else {
-      this.extendInternalState({initialized: true});
+      this.extendState({initialized: true});
     }
   };
 
@@ -140,9 +147,9 @@ Notes.Prototype = function() {
 
   this.render = function($$) {
     var el = $$('div').addClass('sc-app');
-    if (this._state.error) {
+    if (this.state.error) {
       el.append($$('div').addClass('se-error').append(
-        this._state.error.message,
+        this.state.error.message,
         $$('span').addClass('se-dismiss').append('Dismiss')
       ));
     }
@@ -156,14 +163,12 @@ Notes.Prototype = function() {
     document.body.classList.remove('sm-fixed-layout');
 
     // Just render empty div during initialization phase
-    if (!this._state.initialized) {
+    if (!this.state.initialized) {
       return el;
     }
 
-    console.log('mobile', this._state.mobile);
-
     // Just render the login form if not authenticated
-    if (this.state.mode === 'edit' && !this._state.authenticated) {
+    if (this.state.mode === 'edit' && !this.state.authenticated) {
       // We just show the welcome screen here for now
       el.append($$(Welcome).ref('welcome'));
       return el;
@@ -172,11 +177,11 @@ Notes.Prototype = function() {
     switch (this.state.mode) {
       case 'edit':
         el.append($$(EditNote, {
-          mobile: this._state.mobile,
+          mobile: this.state.mobile,
           docId: this.state.docId
         }).ref('editNote'));
         // HACK: add the sm-fixed layout class, so the body does not scroll
-        if (!this._state.mobile) {
+        if (!this.state.mobile) {
           document.body.classList.add('sm-fixed-layout');
         }
         break;
@@ -187,9 +192,9 @@ Notes.Prototype = function() {
         el.append($$(Dashboard).ref('dashboard'));
         break;
       default: // mode=index or default
-        if (this._state.authenticated) {
+        if (this.state.authenticated) {
           var userName = this._getUserName();
-          if(userName) {
+          if (userName) {
             el.append($$(Dashboard).ref('dashboard'));
           } else {
             el.append($$(Profile).ref('profile'));
@@ -209,9 +214,8 @@ Notes.Prototype = function() {
     if (err) {
       return this._logout();
     }
-
     this._setSessionToken(userSession.sessionToken);
-    this.extendInternalState({
+    this.extendState({
       initialized: true,
       authenticated: !err
     });
@@ -230,14 +234,14 @@ Notes.Prototype = function() {
   this._onResize = function() {
     if (this._isMobile()) {
       // switch to mobile
-      if (!this._state.mobile) {
-        this.extendInternalState({
+      if (!this.state.mobile) {
+        this.extendState({
           mobile: true
         });
       }
     } else {
-      if (this._state.mobile) {
-        this.extendInternalState({
+      if (this.state.mobile) {
+        this.extendState({
           mobile: false
         });
       }
@@ -251,18 +255,18 @@ Notes.Prototype = function() {
     Open an existing note
   */
   this._openNote = function(docId) {
-    this.extendState({
+    this.updateState({
       mode: 'edit',
       docId: docId
     });
-    this.router.writeURL();
+    // this.router.writeURL();
   };
 
   this._openUserSettings = function() {
-    this.extendState({
+    this.updateState({
       mode: 'user-settings'
     });
-    this.router.writeURL();
+    // this.router.writeURL();
   };
 
   /*
@@ -287,10 +291,23 @@ Notes.Prototype = function() {
     Open a dashboard
   */
   this._openDashboard = function() {
-    this.setState({
+    this.updateState({
       mode: 'my-notes'
     });
-    this.router.writeURL();
+  };
+
+  /*
+    Like setState but keeps several internal properties (initialized, authenticated)
+
+    Also updates the route.
+  */
+  this.updateState = function(newState, silent) {
+    newState.initialized = this.state.initialized;
+    newState.authenticated = this.state.authenticated;
+    this.setState(newState);
+    if (!silent) {
+      this.router.writeURL();
+    }
   };
 
   /*
@@ -299,7 +316,7 @@ Notes.Prototype = function() {
   this._logout = function() {
     this.authenticationClient.logout();
     window.localStorage.removeItem('sessionToken');
-    this.extendInternalState({
+    this.extendState({
       authenticated: false,
       initialized: true
     });
@@ -333,24 +350,6 @@ Notes.Prototype = function() {
     var authenticationClient = this.authenticationClient;
     var user = authenticationClient.getUser();
     return user.name;
-  };
-
-  // We need to maintain some extra private/internal state in addition to
-  // this.state, which is used for routing
-  this._initInternalState = function() {
-    this._state = {
-      initialized: false,
-      error: null,
-      authenticated: false,
-      mobile: this._isMobile()
-    };
-  };
-  /*
-    We need to maintain some extra private/internal state
-  */
-  this.extendInternalState = function(obj) {
-    Object.assign(this._state, obj);
-    this.rerender();
   };
 
 };

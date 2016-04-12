@@ -4,18 +4,18 @@ var Router = require('substance/ui/Router');
 
 function NotesRouter(app) {
   Router.call(this);
-
   this.app = app;
 }
 
 NotesRouter.Prototype = function() {
 
   this.stateFromRoute = function(route) {
+    console.log('NotesRouter.stateFromRoute');
     if (!route) {
-      this.app.setState(this.app.getInitialState());
+      this.app.updateState(this.app.getInitialState(), 'silent');
     } else {
       var state = Router.routeStringToObject(route);
-      this.app.setState(state);
+      this.app.updateState(state, 'silent');
     }
   };
 
@@ -23,7 +23,9 @@ NotesRouter.Prototype = function() {
     var state = {};
     var appState = this.app.state;
     ["mode", "docId"].forEach(function(key) {
-      state[key] = appState[key];
+      if (appState.hasOwnProperty(key)) {
+        state[key] = appState[key];
+      }
     });
     return Router.objectToRouteString(state);
   };
