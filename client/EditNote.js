@@ -64,6 +64,7 @@ EditNote.Prototype = function() {
 
   this.dispose = function() {
     if (this.state.session) {
+      this.state.session.off(this);
       this.state.session.dispose();
     }
     this.collabClient.off(this);
@@ -184,6 +185,34 @@ EditNote.Prototype = function() {
   };
 
   /*
+    Extract error message for error object. Also consider first cause.
+  */
+  this._onCollabSessionError = function(err) {
+    var message = [
+      this.i18n.t(err.name)
+    ];
+    if (err.cause) {
+      message.push(this.i18n.t(err.cause.name));
+    }
+    this.extendState({
+      notification: {
+        type: 'error',
+        message: message.join(' ')
+      }
+    });
+  };
+
+  this._onCollabSessionSync = function(err) {
+    if (this.state.notification) {
+      console.log('unsetting...');
+      // Unset notification (error message)
+      this.extendState({
+        notification: null
+      });
+    }
+  };
+
+  /*
     Loads a document and initializes a CollabSession
   */
   this._loadDocument = function(docId) {
@@ -192,7 +221,7 @@ EditNote.Prototype = function() {
 
     documentClient.getDocument(docId, function(err, docRecord) {
       if (err) {
-        this.setState({
+        this.extendState({
           notification: {
             type: 'error',
             message: 'Document could not be loaded.'
@@ -209,6 +238,10 @@ EditNote.Prototype = function() {
         version: docRecord.version,
         collabClient: collabClient
       });
+
+      // Listen for errors and sync start events for error reporting
+      session.on('error', this._onCollabSessionError, this);
+      session.on('sync', this._onCollabSessionSync, this);
 
       // HACK: For debugging purposes
       window.doc = doc;
