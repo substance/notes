@@ -103,7 +103,7 @@ Notes.Prototype = function() {
     this.router.readURL();
   };
 
-  this.didUpdateState = function() {
+  this.didUpdate = function() {
     if (!this.state.initialized) {
       console.log('initializing..');
       this._init();
