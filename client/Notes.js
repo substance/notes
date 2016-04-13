@@ -167,8 +167,7 @@ Notes.Prototype = function() {
       return el;
     }
 
-    // Just render the login form if not authenticated
-    if (this.state.mode === 'edit' && !this.state.authenticated) {
+    if (!this.state.authenticated) {
       // We just show the welcome screen here for now
       el.append($$(Welcome).ref('welcome'));
       return el;
@@ -192,15 +191,11 @@ Notes.Prototype = function() {
         el.append($$(Dashboard).ref('dashboard'));
         break;
       default: // mode=index or default
-        if (this.state.authenticated) {
-          var userName = this._getUserName();
-          if (userName) {
-            el.append($$(Dashboard).ref('dashboard'));
-          } else {
-            el.append($$(Profile).ref('profile'));
-          }
+        var userName = this._getUserName();
+        if (userName) {
+          el.append($$(Dashboard).ref('dashboard'));
         } else {
-          el.append($$(Welcome).ref('welcome'));
+          el.append($$(Profile).ref('profile'));
         }
         break;
     }
@@ -283,7 +278,6 @@ Notes.Prototype = function() {
       }
     }, function(err, result) {
       this._openNote(result.documentId);
-      // console.log('doc created', err, result);
     }.bind(this));
   };
 
