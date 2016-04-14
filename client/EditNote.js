@@ -202,7 +202,7 @@ EditNote.Prototype = function() {
     });
   };
 
-  this._onCollabSessionSync = function(err) {
+  this._onCollabSessionSync = function() {
     if (this.state.notification) {
       console.log('unsetting...');
       // Unset notification (error message)
