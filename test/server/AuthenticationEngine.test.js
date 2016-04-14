@@ -39,7 +39,7 @@ QUnit.module('server/AuthenticationEngine', {
 });
 
 QUnit.test('Authenticate with session token', function(assert) {
-  assert.expect(7);
+  assert.expect(5);
   var sessionToken = 'user1token';
   return engine.authenticate({sessionToken: sessionToken})
     .then(function(session) {
@@ -48,20 +48,15 @@ QUnit.test('Authenticate with session token', function(assert) {
       assert.ok(session.sessionToken, 'Session should have a sessionToken');
       assert.equal(session.user.userId,  '1', 'userId should be "1"');
       assert.equal(session.userId,  '1', 'userId should be "1"');
-      assert.notEqual(session.sessionToken, sessionToken, 'There should be a new sessionToken assigned');
-      return sessionStore.getSession(sessionToken);
-    }).catch(function(err) {
-      assert.equal(err.message, 'No session found for token user1token', 'Should be no session found error');
     });
 });
 
 QUnit.test('Authenticate with wrong session token', function(assert) {
   assert.expect(1);
   return engine.authenticate({sessionToken: 'xyz'}).catch(function(err) {
-    assert.equal(err.name, 'AuthenticationEngine.AuthenticateWithTokenError', 'Should throw the right error');
+    assert.equal(err.name, 'AuthenticationError', 'Should throw the right error');
   });
 });
-
 
 QUnit.test('Authenticate with loginKey', function(assert) {
   assert.expect(5);
@@ -79,7 +74,7 @@ QUnit.test('Authenticate with loginKey', function(assert) {
 QUnit.test('Authenticate with wrong loginKey', function(assert) {
   assert.expect(1);
   return engine.authenticate({loginKey: 'xyz'}).catch(function(err) {
-    assert.equal(err.name, 'AuthenticationEngine.AuthenticateWithLoginKeyError', 'Should throw the right error');
+    assert.equal(err.name, 'AuthenticationError', 'Should throw the right error');
   });
 });
 

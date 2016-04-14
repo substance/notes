@@ -42,6 +42,12 @@ AuthenticationEngine.Prototype = function() {
     }
   };
 
+  /*
+    Get session by session token
+
+    TODO: Include session expiration mechanism. If session is found but expired
+    the session entry should be deleted here
+  */
   this.getSession = function(sessionToken) {
     return this.sessionStore.getSession(sessionToken).then(
       this._enrichSession.bind(this)
@@ -71,7 +77,6 @@ AuthenticationEngine.Prototype = function() {
     var msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
     
     console.log('Message: ', msg);
-
     return Mail.sendPlain(user.email, subject, msg)
       .then(function(info){
         console.log(info);
@@ -79,7 +84,7 @@ AuthenticationEngine.Prototype = function() {
           loginKey: user.loginKey
         };
       }).catch(function(err) {
-        throw new Err('AuthenticationEngine.SendLoginLinkError', {
+        throw new Err('EmailError', {
           message: 'invalid-email',
           cause: err
         });
@@ -100,17 +105,11 @@ AuthenticationEngine.Prototype = function() {
 
     return new Promise(function(resolve, reject) {
       sessionStore.getSession(sessionToken).then(function(session) {
-        // Delete old session
-        return sessionStore.deleteSession(session.sessionToken);
-      }).then(function(session) {
-        // Create a new session
-        return sessionStore.createSession({userId: session.userId});
-      }).then(function(newSession) {
-        return self._enrichSession(newSession);
+        return self._enrichSession(session);
       }).then(function(richSession) {
         resolve(richSession);
       }).catch(function(err) {
-        reject(new Err('AuthenticationEngine.AuthenticateWithTokenError', {
+        reject(new Err('AuthenticationError', {
           cause: err
         }));
       });
@@ -133,7 +132,7 @@ AuthenticationEngine.Prototype = function() {
       }).then(function(richSession) {
         resolve(richSession);
       }).catch(function(err) {
-        reject(new Err('AuthenticationEngine.AuthenticateWithLoginKeyError', {
+        reject(new Err('AuthenticationError', {
           cause: err
         }));
       });
@@ -150,7 +149,7 @@ AuthenticationEngine.Prototype = function() {
         session.user = user;
         resolve(session);
       }).catch(function(err) {
-        reject(new Err('AuthenticationEngine.EnrichSessionError', {
+        reject(new Err('AuthenticationError', {
           cause: err
         }));
       });
