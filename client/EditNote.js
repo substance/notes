@@ -123,7 +123,7 @@ EditNote.Prototype = function() {
       main = $$(NoteWriter, {
         noteInfo: new NoteInfo(this.state.noteInfo),
         documentSession: this.state.session,
-        onUploadFile: fileClient.uploadFile
+        onUploadFile: fileClient.uploadFile.bind(fileClient)
       }).ref('notepad');
     }
 

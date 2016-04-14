@@ -254,14 +254,12 @@ Notes.Prototype = function() {
       mode: 'edit',
       docId: docId
     });
-    // this.router.writeURL();
   };
 
   this._openUserSettings = function() {
     this.updateState({
       mode: 'user-settings'
     });
-    // this.router.writeURL();
   };
 
   /*
