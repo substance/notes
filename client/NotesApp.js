@@ -53,16 +53,20 @@ function NotesApp() {
   this.handleActions({
     'navigate': this.navigate,
     'newNote': this._newNote,
+    'home': this._home,
+    'settings': this._settings,
     'logout': this._logout
   });
 
   this.router = new NotesRouter(this);
-  this.router.on('route:changed', function(route) {
-    this.navigate(route, 'silent');
-  });
+  this.router.on('route:changed', this._onRouteChanged, this);
 }
 
 NotesApp.Prototype = function() {
+
+  this._onRouteChanged = function(route) {
+    this.navigate(route, 'silent');
+  };
 
   /*
     That's the public state reflected in the route
@@ -80,7 +84,8 @@ NotesApp.Prototype = function() {
       var _window = DefaultDOMElement.getBrowserWindow();
       _window.on('resize', this._onResize, this);
     }
-    var route = this.router.getRoute();
+    var route = this.router.readRoute();
+    console.log('route', route);
     this.navigate(route, 'silent');
   };
 
@@ -165,21 +170,20 @@ NotesApp.Prototype = function() {
   this.render = function($$) {
     var el = $$('div').addClass('sc-notes-app');
 
+    // Uninitialized
     if (this.state.route === undefined) {
-      // Uninitialized
       return el;
     }
 
     switch (this.state.route.section) {
       case 'note':
-        // display note
         el.append($$(NoteSection, this.state).ref('noteSection'));
         break;
       case 'settings':
         el.append($$(SettingsSection, this.state).ref('settingsSection'));
         break;
-      default: // mode=index
-        el.append($$(IndexSection, this.state).ref('editNote'));
+      default: // section=index
+        el.append($$(IndexSection, this.state).ref('indexSection'));
         break;
     }
     return el;
@@ -187,6 +191,18 @@ NotesApp.Prototype = function() {
 
   // Action Handlers
   // ------------------------------------
+
+  this._home = function() {
+    this.navigate({
+      section: 'index'
+    });
+  };
+
+  this._settings = function() {
+    this.navigate({
+      section: 'settings'
+    });
+  };
 
   /*
     Create a new note
@@ -212,14 +228,15 @@ NotesApp.Prototype = function() {
     Forget current user session
   */
   this._logout = function() {
-    this.authenticationClient.logout();
-    window.localStorage.removeItem('sessionToken');
-    this.extendState({
-      userSession: null,
-      route: {
-        section: 'index'
-      }
-    });
+    this.authenticationClient.logout(function(err) {
+      window.localStorage.removeItem('sessionToken');
+      this.extendState({
+        userSession: null,
+        route: {
+          section: 'index'
+        }
+      });
+    }.bind(this));
   };
 
   // Helpers

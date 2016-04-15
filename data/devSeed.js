@@ -27,7 +27,7 @@ var devSeed = {
     },
     'testuser2': {
       userId: 'testuser2',
-      name: 'Test User 2',
+      name: '',
       loginKey: '12345',
       email: 'test2@example.com'
     }

@@ -15,7 +15,7 @@ NotesRouter.Prototype = function() {
     if (!routeString) {
       route = this.app.getInitialState();
     } else {
-      route = Router.routeStringToObject(route);
+      route = Router.routeStringToObject(routeString);
     }
     return route;
   };
@@ -25,10 +25,10 @@ NotesRouter.Prototype = function() {
   };
 
   // URL helpers
-  this.openNote = function(docId) {
+  this.openNote = function(documentId) {
     return '#' + Router.objectToRouteString({
-      mode: 'edit',
-      docId: docId
+      section: 'note',
+      documentId: documentId
     });
   };
 

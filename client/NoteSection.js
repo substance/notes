@@ -29,7 +29,10 @@ function NoteSection() {
   this.collabClient = new CollabClient({
     connection: this.conn,
     enhanceMessage: function(message) {
-      message.sessionToken = this.props.userSession.sessionToken;
+      var userSession = this.props.userSession;
+      if (userSession) {
+        message.sessionToken = userSession.sessionToken;
+      }
       return message;
     }.bind(this)
   });
@@ -48,16 +51,20 @@ NoteSection.Prototype = function() {
     };
   };
 
+  this.getDocumentId = function() {
+    return this.props.route.documentId;
+  };
+
   this.didMount = function() {
     // load the document after mounting
-    this._loadDocument(this.props.documentId);
+    this._loadDocument(this.getDocumentId());
   };
 
   this.willReceiveProps = function(newProps) {
-    if (newProps.documentId !== this.props.documentId) {
+    if (newProps.route.documentId !== this.props.route.documentId) {
       this.dispose();
       this.state = this.getInitialState();
-      this._loadDocument(newProps.documentId);
+      this._loadDocument(this.getDocumentId());
     }
   };
 
@@ -65,20 +72,19 @@ NoteSection.Prototype = function() {
     if (this.state.session) {
       this.state.session.off(this);
       this.state.session.dispose();
-      this.state.session = null;
     }
     this.collabClient.off(this);
   };
 
   this.render = function($$) {
-    if (this.props.mobile) {
-      return this.renderMobile($$);
+    if (this.props.mobile || !this.props.userSession) {
+      return this.renderReader($$);
     } else {
-      return this.renderDesktop($$);
+      return this.renderWriter($$);
     }
   };
 
-  this.renderDesktop = function($$) {
+  this.renderWriter = function($$) {
     var notification = this.state.notification;
     var el = $$('div').addClass('sc-edit-note');
     var main = $$('div');
@@ -90,7 +96,7 @@ NoteSection.Prototype = function() {
     header = $$(Header, {
       mobile: this.props.mobile,
       actions: {
-        'openDashboard': 'My Notes',
+        'home': 'My Notes',
         'newNote': 'New Note'
       }
     });
@@ -133,18 +139,15 @@ NoteSection.Prototype = function() {
         main
       ).ref('splitPane')
     );
-
     return el;
   };
 
-  this.renderMobile = function($$) {
+  this.renderReader = function($$) {
     var el = $$('div').addClass('sc-edit-note');
 
     var layout = $$(Layout, {
       width: 'large'
     });
-
-    // TODO: Render a mobile optimized header
 
     // Display top-level errors. E.g. when a doc could not be loaded
     // we will display the notification on top level

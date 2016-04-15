@@ -9,5 +9,3 @@ $(function() {
   window.app = Component.mount(NotesApp, document.body);
 });
 
-
-
