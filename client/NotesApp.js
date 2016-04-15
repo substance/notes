@@ -55,6 +55,7 @@ function NotesApp() {
     'newNote': this._newNote,
     'home': this._home,
     'settings': this._settings,
+    'deleteNote': this._deleteNote,
     'logout': this._logout
   });
 
@@ -221,6 +222,12 @@ NotesApp.Prototype = function() {
         section: 'note',
         documentId: result.documentId
       });
+    }.bind(this));
+  };
+
+  this._deleteNote = function(documentId) {
+    this.documentClient.deleteDocument(documentId, function(/*err, result*/) {
+      this._home();
     }.bind(this));
   };
 
