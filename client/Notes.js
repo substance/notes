@@ -83,6 +83,7 @@ Notes.Prototype = function() {
     };
   };
 
+
   /*
     That's the public state reflected in the route
   */
@@ -104,33 +105,6 @@ Notes.Prototype = function() {
     this.router.readURL();
   };
 
-  this.didUpdate = function() {
-    if (!this.state.initialized) {
-      console.log('initializing..');
-      this._init();
-    }
-  };
-
-  /*
-    Attempt to reauthenticate based on last used session token
-  */
-  this._init = function() {
-    var loginKey = this.state.loginKey;
-    var storedToken = this._getSessionToken();
-    var loginData;
-
-    if (loginKey) {
-      loginData = {loginKey: loginKey};
-    } else if (storedToken) {
-      loginData = {sessionToken: storedToken};
-    }
-
-    if (loginData) {
-      this.authenticationClient.authenticate(loginData, this._authenticateDone.bind(this));
-    } else {
-      this.extendState({initialized: true});
-    }
-  };
 
   /*
     Nothing to do here, as app is always running
@@ -192,6 +166,7 @@ Notes.Prototype = function() {
         el.append($$(Dashboard).ref('dashboard'));
         break;
       default: // mode=index or default
+
         var userName = this._getUserName();
         if (userName) {
           el.append($$(Dashboard).ref('dashboard'));
@@ -217,32 +192,7 @@ Notes.Prototype = function() {
     });
   };
 
-  /*
-    Determines when a mobile view should be shown.
 
-    TODO: Check also for user agents. Eg. on iPad we want to show the mobile
-    version, even thought he screenwidth may be greater than the threshold.
-  */
-  this._isMobile = function() {
-    return window.innerWidth < 700;
-  };
-
-  this._onResize = function() {
-    if (this._isMobile()) {
-      // switch to mobile
-      if (!this.state.mobile) {
-        this.extendState({
-          mobile: true
-        });
-      }
-    } else {
-      if (this.state.mobile) {
-        this.extendState({
-          mobile: false
-        });
-      }
-    }
-  };
 
   // Action Handlers
   // ------------------------------------

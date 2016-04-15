@@ -9,25 +9,19 @@ function NotesRouter(app) {
 
 NotesRouter.Prototype = function() {
 
-  this.stateFromRoute = function(route) {
+  this.deserializeRoute = function(routeString) {
     console.log('NotesRouter.stateFromRoute');
-    if (!route) {
-      this.app.updateState(this.app.getInitialState(), 'silent');
+    var route;
+    if (!routeString) {
+      route = this.app.getInitialState();
     } else {
-      var state = Router.routeStringToObject(route);
-      this.app.updateState(state, 'silent');
+      route = Router.routeStringToObject(route);
     }
+    return route;
   };
 
-  this.routeFromState = function() {
-    var state = {};
-    var appState = this.app.state;
-    ["mode", "docId"].forEach(function(key) {
-      if (appState.hasOwnProperty(key)) {
-        state[key] = appState[key];
-      }
-    });
-    return Router.objectToRouteString(state);
+  this.serializeRoute = function(routeString) {
+    return Router.objectToRouteString();
   };
 
   // URL helpers

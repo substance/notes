@@ -16,12 +16,11 @@ Profile.Prototype = function() {
 
   this.render = function($$) {
     var el = $$('div').addClass('sc-profile');
-    var userName = this.getUserName();
+    var userName = this.props.userSession.user.name;
 
     var header = $$(Header, {
       actions: {
-        'openDashboard': 'My Notes',
-        'newNote': 'New Note'
+        'openDashboard': 'My Notes'
       }
     });
 
@@ -71,16 +70,11 @@ Profile.Prototype = function() {
     return el;
   };
 
-  this.getUserName = function() {
-    var authenticationClient = this.context.authenticationClient;
-    var user = authenticationClient.getUser();
-    return user.name;
-  };
 
   this._updateUserName = function() {
     var name = this.refs.name.val();
     var authenticationClient = this.context.authenticationClient;
-    var user = authenticationClient.getUser();
+    var userSession = this.props.userSession;
 
     if (!name) {
       this.setState({
@@ -91,7 +85,7 @@ Profile.Prototype = function() {
       });
     }
 
-    authenticationClient.changeName(user.userId, name, function(err) {
+    authenticationClient.changeName(userSession.user.userId, name, function(err) {
       if(err) {
         this.setState({
           notification: {

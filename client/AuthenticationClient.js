@@ -9,6 +9,8 @@ var $ = require('substance/util/jquery');
 
 function AuthenticationClient(config) {
   this.config = config;
+
+  this._requests = {};
 }
 
 AuthenticationClient.Prototype = function() {
@@ -30,11 +32,16 @@ AuthenticationClient.Prototype = function() {
   };
 
   this.changeName = function(userId, name, cb) {
+    this._requests['changeName'] = userId+name;
+
     var path = this.config.httpUrl + 'changename';
     this._request('POST', path, {
       userId: userId,
       name: name
     }, function(err, res) {
+      // Skip if there has been another request in the meanwhile
+      if (this._requestInvalid('changeName', userId+name)) return;
+
       if (err) return cb(err);
       // We need to update user.name locally too
       this._session.user.name = name;
@@ -49,14 +56,23 @@ AuthenticationClient.Prototype = function() {
     return !!this._session;
   };
 
+  this._requestInvalid = function(reqName, reqParams) {
+    return this._requests[reqName] !==  reqParams;
+  };
+
   /*
     Authenticate user
 
     Logindata consists of an object (usually with login/password properties)
   */
   this.authenticate = function(loginData, cb) {
+    this._requests['authenticate'] = loginData;
+
     var path = this.config.httpUrl + 'authenticate';
     this._request('POST', path, loginData, function(err, hubSession) {
+      // Skip if there has been another request in the meanwhile
+      if (this._requestInvalid('authenticate', loginData)) return;
+
       if (err) return cb(err);
       this._session = hubSession;
       cb(null, hubSession);
@@ -68,16 +84,21 @@ AuthenticationClient.Prototype = function() {
 
     TODO: this should make a logout call to the API to remove the session entry
   */
-  this.logout = function() {
+  this.logout = function(cb) {
     this._session = null;
+    cb(null);
   };
 
   /*
     Request a login link for a given email address
   */
   this.requestLoginLink = function(email, cb) {
+    this._requests['requestLoginLink'] = email;
+
     var path = this.config.httpUrl + 'loginlink';
     this._request('POST', path, {email: email}, function(err, res) {
+      // Skip if there has been another request in the meanwhile
+      if (this._requestInvalid('requestLoginLink', loginData)) return;
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));
