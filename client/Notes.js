@@ -54,6 +54,7 @@ function Notes() {
   this.handleActions({
     'openNote': this._openNote,
     'newNote': this._newNote,
+    'deleteNote': this._deleteNote,
     'openDashboard': this._openDashboard,
     'openUserSettings': this._openUserSettings,
     'logout': this._logout
@@ -276,6 +277,12 @@ Notes.Prototype = function() {
       }
     }, function(err, result) {
       this._openNote(result.documentId);
+    }.bind(this));
+  };
+
+  this._deleteNote = function(docId) {
+    this.documentClient.deleteDocument(docId, function(/*err, result*/) {
+      this._openDashboard();
     }.bind(this));
   };
 
