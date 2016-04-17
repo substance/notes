@@ -11,6 +11,8 @@ var Collaborators = require('./Collaborators');
 var Notification = require('./Notification');
 var Header = require('./Header');
 var Layout = require('substance/ui/Layout');
+var Button = require('substance/ui/Button');
+var Icon = require('substance/ui/FontAwesomeIcon');
 
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
@@ -172,6 +174,23 @@ NoteSection.Prototype = function() {
         message: this.state.error.message
       }));
     } else if (this.state.session) {
+      var userSession = this.props.userSession;
+
+      if (!userSession) {
+        layout.append(
+          $$(Layout, {
+            textAlign: 'center',
+            noPadding: true
+          }).append(
+            // $$('p').append('Note is read only.'),
+            $$(Button).addClass('se-new-note-button').append(
+              $$(Icon, {icon: 'fa-pencil'}),
+              ' Edit'
+            )
+          )
+        );
+      }
+
       layout.append(
         $$(NoteReader, {
           mobile: this.props.mobile,
