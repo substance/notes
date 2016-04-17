@@ -1,14 +1,11 @@
 .sc-welcome {
-  
-  .sc-layout {
-    padding-top: $default-padding*2;
-  }
 
   .se-cursor {
     display: inline-block;
     background: #7BB5B3;
     width: 2px;
   }
+  
   // cursor must have some content, otherwise it won't be displayed inline
   .se-cursor::after  { content: "."; opacity: 0; }
 
@@ -17,7 +14,4 @@
     background-image: url(/assets/img/welcome_header.png);
   }
 
-  .se-email {
-    padding-bottom: $default-padding;
-  }
 }

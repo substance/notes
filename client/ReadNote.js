@@ -4,17 +4,29 @@ var Notification = require('./Notification');
 var Layout = require('substance/ui/Layout');
 var Button = require('substance/ui/Button');
 var Icon = require('substance/ui/FontAwesomeIcon');
-
 var NoteLoader = require('./NoteLoader');
 var NoteReader = require('./NoteReader');
+var RequestEditAccess = require('./RequestEditAccess');
 
 function NoteSection() {
   NoteLoader.apply(this, arguments);
+
+  this.handleActions({
+    'closeModal': this._closeModal
+  });
 }
 
 NoteSection.Prototype = function() {
 
+  this._requestLogin = function() {
+    console.log('authenticating now');
+    this.extendState({
+      requestLogin: true
+    });
+  };
+
   this.render = function($$) {
+    var userSession = this.props.userSession;
     var el = $$('div').addClass('sc-read-note');
 
     var layout = $$(Layout, {
@@ -29,8 +41,6 @@ NoteSection.Prototype = function() {
         message: this.state.error.message
       }));
     } else if (this.state.session) {
-      var userSession = this.props.userSession;
-
       if (!userSession) {
         layout.append(
           $$(Layout, {
@@ -41,7 +51,7 @@ NoteSection.Prototype = function() {
             $$(Button).addClass('se-new-note-button').append(
               $$(Icon, {icon: 'fa-pencil'}),
               ' Edit'
-            ).on('click', this._authenticate)
+            ).on('click', this._requestLogin)
           )
         );
       }
@@ -55,10 +65,21 @@ NoteSection.Prototype = function() {
       );
     }
 
+    if (this.state.requestLogin) {
+      el.append($$(RequestEditAccess, {
+        documentId: this.getDocumentId()
+      }));
+    }
+
     el.append(layout);
     return el;
   };
 
+  this._closeModal = function() {
+    this.extendState({
+      requestLogin: undefined
+    });
+  };
 };
 
 NoteLoader.extend(NoteSection);

@@ -53,7 +53,7 @@ EnterName.Prototype = function() {
       $$('div').addClass('se-enter-name').append(
         $$(Input, {
           type: 'text',
-          value: userName,
+          value: userName || '',
           placeholder: 'Please enter your name here',
           centered: true
         }).ref('name')
@@ -104,7 +104,9 @@ EnterName.Prototype = function() {
         });
         return;
       }
-      this.send('home');
+
+      userSession.user.name = name;
+      this.send('userSessionUpdated', userSession);
     }.bind(this));
   };
 

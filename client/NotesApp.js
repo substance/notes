@@ -56,7 +56,8 @@ function NotesApp() {
     'home': this._home,
     'settings': this._settings,
     'deleteNote': this._deleteNote,
-    'logout': this._logout
+    'logout': this._logout,
+    'userSessionUpdated': this._userSessionUpdated
   });
 
   this.router = new NotesRouter(this);
@@ -65,19 +66,22 @@ function NotesApp() {
 
 NotesApp.Prototype = function() {
 
+  this._userSessionUpdated = function(userSession) {
+    console.log('user session updated');
+    this.extendState({
+      userSession: userSession
+    });
+
+    if (this.state.route && this.state.route.section === 'settings') {
+      this.navigate({section: 'index'});
+    }
+  };
+
   this._onRouteChanged = function(route) {
     console.log('NotesApp._onRouteChanged', route);
     this.navigate(route, {replace: true});
   };
 
-  /*
-    If no route provided, use this initial route
-  */
-  // this.getInitialRoute = function() {
-  //   return {
-  //     section: 'index'
-  //   };
-  // };
 
   /*
     That's the public state reflected in the route

@@ -27,6 +27,10 @@ UserStore.Prototype = function() {
       userData.userId = uuid();
     }
 
+    if (userData.name === undefined) {
+      userData.name = '';
+    }
+
     return this.userExists(userData.userId)
       .then(function(exists) {
         if (exists) {

@@ -8,4 +8,3 @@ var $ = window.$ = require('substance/util/jquery');
 $(function() {
   window.app = Component.mount(NotesApp, document.body);
 });
-

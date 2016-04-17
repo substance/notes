@@ -28,7 +28,9 @@ AuthenticationEngine.Prototype = function() {
         return userStore.createUser({email: args.email});
       })
       .then(this._updateLoginKey.bind(this))
-      .then(this._sendLoginLink.bind(this));
+      .then(function(user) {
+        return this._sendLoginLink(user, args.documentId);
+      }.bind(this));
   };
 
   /*
@@ -71,10 +73,16 @@ AuthenticationEngine.Prototype = function() {
   /*
     Send a login link via email
   */
-  this._sendLoginLink = function(user) {
+  this._sendLoginLink = function(user, documentId) {
     var url = appConfig.get('server.appUrl');
-    var subject = "Welcome to Substance Notes!";
-    var msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
+    var subject = "Your login to Substance Notes!";
+    var msg;
+
+    if (documentId) {
+      msg = "Click the following link to login: " + url + "/#section=note,documentId=" +documentId+",loginKey=" + user.loginKey;
+    } else {
+      msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
+    }
     
     console.log('Message: ', msg);
     return Mail.sendPlain(user.email, subject, msg)
@@ -85,7 +93,6 @@ AuthenticationEngine.Prototype = function() {
         };
       }).catch(function(err) {
         throw new Err('EmailError', {
-          message: 'invalid-email',
           cause: err
         });
       });

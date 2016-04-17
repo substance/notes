@@ -91,13 +91,13 @@ AuthenticationClient.Prototype = function() {
   /*
     Request a login link for a given email address
   */
-  this.requestLoginLink = function(email, cb) {
-    this._requests['requestLoginLink'] = email;
+  this.requestLoginLink = function(data, cb) {
+    this._requests['requestLoginLink'] = data;
 
     var path = this.config.httpUrl + 'loginlink';
-    this._request('POST', path, {email: email}, function(err, res) {
+    this._request('POST', path, data, function(err, res) {
       // Skip if there has been another request in the meanwhile
-      if (this._requestInvalid('requestLoginLink', email)) return;
+      if (this._requestInvalid('requestLoginLink', data)) return;
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));

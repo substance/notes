@@ -1,13 +1,15 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
-var Button = require('substance/ui/Button');
-var Input = require('substance/ui/Input');
 var Layout = require('substance/ui/Layout');
-var Notification = require('./Notification');
+var RequestLogin = require('./RequestLogin');
 
 function Welcome() {
   Component.apply(this, arguments);
+
+  this.handleActions({
+    'loginRequested': this._loginRequested
+  });
 }
 
 Welcome.Prototype = function() {
@@ -43,60 +45,17 @@ Welcome.Prototype = function() {
       );
 
       layout.append(
-        $$('div').addClass('se-email').append(
-          $$(Input, {
-            type: 'text',
-            value: this.state.email,
-            placeholder: 'Enter your email here',
-            centered: true
-          }).ref('email')
-        )
+        $$(RequestLogin)
       );
-
-      layout.append(
-        $$(Button, {
-          disabled: !!this.state.loading // disable button when in loading state
-        }).append(this.i18n.t('sc-welcome.submit'))
-          .on('click', this._requestLoginLink)
-      );
-
-      if (this.state.notification) {
-        layout.append($$(Notification, this.state.notification));
-      }
     }
 
     el.append(layout);
     return el;
   };
 
-  this._requestLoginLink = function() {
-    var email = this.refs.email.val();
-    var authenticationClient = this.context.authenticationClient;
-
-    // Set loading state
-    this.setState({
-      email: email,
-      loading: true
-    });
-
-    authenticationClient.requestLoginLink(email, function(err) {
-      if (err) {
-        this.setState({
-          loading: false,
-          notification: {
-            type: 'error',
-            message: 'Your request could not be processed. Make sure you provided a valid email.'
-          }
-        });
-      } else {
-        this.setState({
-          loading: false,
-          requested: true
-        });
-      }
-    }.bind(this));
+  this._loginRequested = function() {
+    this.setState({requested: true});
   };
-
 };
 
 Component.extend(Welcome);
