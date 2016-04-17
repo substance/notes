@@ -66,8 +66,18 @@ function NotesApp() {
 NotesApp.Prototype = function() {
 
   this._onRouteChanged = function(route) {
-    this.navigate(route, 'silent');
+    console.log('NotesApp._onRouteChanged', route);
+    this.navigate(route, {replace: true});
   };
+
+  /*
+    If no route provided, use this initial route
+  */
+  // this.getInitialRoute = function() {
+  //   return {
+  //     section: 'index'
+  //   };
+  // };
 
   /*
     That's the public state reflected in the route
@@ -86,8 +96,9 @@ NotesApp.Prototype = function() {
       _window.on('resize', this._onResize, this);
     }
     var route = this.router.readRoute();
-    console.log('route', route);
-    this.navigate(route, 'silent');
+    // Replaces the current entry without creating new history entry
+    // or triggering hashchange
+    this.navigate(route, {replace: true});
   };
 
   this.dispose = function() {
@@ -104,23 +115,50 @@ NotesApp.Prototype = function() {
 
     if (loginKey) {
       loginData = {loginKey: loginKey};
-    } else if (storedToken) {
+    } else if (storedToken && !this.state.userSession) {
       loginData = {sessionToken: storedToken};
     }
     return loginData;
   };
 
-  // e.g. {section: 'note', id: 'note-25'}
-  this.navigate = function(route, silent) {
+  /*
+    Used to navigate the app based on given route.
+  
+    Example route: {section: 'note', id: 'note-25'}
+
+    On app level, never use setState/extendState directly as this may
+    lead to invalid states.
+  */
+  this.navigate = function(route, opts) {
     var loginData = this.__getLoginData(route);
-    this.authenticationClient.authenticate(loginData, function(err, userSession) {
+
+    this._authenticate(loginData, function(err, userSession) {
+      // Patch route not to include loginKey for security reasons
+      delete route.loginKey;
+
       this.extendState({
         route: route,
         userSession: userSession
       });
-      if (!silent) {
-        this.router.writeRoute(route);
+
+      this.router.writeRoute(route, opts);
+    }.bind(this));
+  };
+
+  /*  
+    Authenticate based on loginData object
+
+    Returns current userSession if no loginData is given
+  */
+  this._authenticate = function(loginData, cb) {
+    if (!loginData) return cb(null, this.state.userSession);
+    this.authenticationClient.authenticate(loginData, function(err, userSession) {
+      if (err) {
+        window.localStorage.removeItem('sessionToken');
+        return cb(err);
       }
+      this._setSessionToken(userSession.sessionToken);
+      cb(null, userSession);
     }.bind(this));
   };
 
@@ -173,6 +211,7 @@ NotesApp.Prototype = function() {
 
     // Uninitialized
     if (this.state.route === undefined) {
+      console.log('Uninitialized');
       return el;
     }
 
@@ -183,7 +222,7 @@ NotesApp.Prototype = function() {
       case 'settings':
         el.append($$(SettingsSection, this.state).ref('settingsSection'));
         break;
-      default: // section=index
+      default: // !section || section === index
         el.append($$(IndexSection, this.state).ref('indexSection'));
         break;
     }
@@ -209,10 +248,12 @@ NotesApp.Prototype = function() {
     Create a new note
   */
   this._newNote = function() {
-    var userId = this._getUserId();
+    var userId = this.state.userSession.user.userId;
     this.documentClient.createDocument({
       schemaName: 'substance-note',
       // TODO: Find a way not to do this statically
+      // Actually we should not provide the userId
+      // from the client here.
       info: {
         title: 'Untitled',
         userId: userId
@@ -236,13 +277,15 @@ NotesApp.Prototype = function() {
   */
   this._logout = function() {
     this.authenticationClient.logout(function(err) {
+      if (err) return alert('Logout failed');
+
+      var indexRoute = {};
       window.localStorage.removeItem('sessionToken');
       this.extendState({
         userSession: null,
-        route: {
-          section: 'index'
-        }
+        route: indexRoute
       });
+      this.router.writeRoute(indexRoute);
     }.bind(this));
   };
 

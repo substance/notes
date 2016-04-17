@@ -1,10 +1,9 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
-
 var Dashboard = require('./Dashboard');
 var Welcome = require('./Welcome');
-var EnterName = require('./Profile');
+var EnterName = require('./EnterName');
 
 function IndexSection() {
   Component.apply(this, arguments);

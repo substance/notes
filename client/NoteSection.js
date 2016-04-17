@@ -14,6 +14,7 @@ var Layout = require('substance/ui/Layout');
 
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
+var EnterName = require('./EnterName');
 var NoteInfo = require('./NoteInfo');
 var converter = new JSONConverter();
 
@@ -77,11 +78,23 @@ NoteSection.Prototype = function() {
   };
 
   this.render = function($$) {
-    if (this.props.mobile || !this.props.userSession) {
+    var userSession = this.props.userSession;
+
+    if (this.props.mobile || !userSession) {
       return this.renderReader($$);
     } else {
-      return this.renderWriter($$);
+      if (!userSession.user.name) {
+        return this.renderEnterName($$);
+      } else {
+        return this.renderWriter($$);
+      }
     }
+  };
+
+  this.renderEnterName = function($$) {
+    var el = $$('div').addClass('sc-note-section');
+    el.append($$(EnterName));
+    return el;
   };
 
   this.renderWriter = function($$) {

@@ -8,19 +8,19 @@ var Input = require('substance/ui/Input');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
 
-function Profile() {
+function EnterName() {
   Component.apply(this, arguments);
 }
 
-Profile.Prototype = function() {
+EnterName.Prototype = function() {
 
   this.render = function($$) {
-    var el = $$('div').addClass('sc-profile');
+    var el = $$('div').addClass('sc-enter-name');
     var userName = this.props.userSession.user.name;
 
     var header = $$(Header, {
       actions: {
-        'openDashboard': 'My Notes'
+        'home': 'My Notes'
       }
     });
 
@@ -29,11 +29,21 @@ Profile.Prototype = function() {
       textAlign: 'center'
     });
 
-    form.append(
-      $$('h1').html(
-        'Welcome to Substance Notes<span class="se-cursor"></span>'
-      )
-    );
+    // If no username present yet
+    if (!userName) {
+      form.append(
+        $$('h1').html(
+          'Welcome to Substance Notes'
+        )
+      );
+    } else {
+      form.append(
+        $$('h1').html(
+          'Please provide your name'
+        )
+      );
+    }
+
 
     if (this.state.notification) {
       form.append($$(Notification, this.state.notification));
@@ -49,7 +59,7 @@ Profile.Prototype = function() {
         }).ref('name')
       ),
       $$('p').addClass('se-help').append(
-        'Your name will show up along with notes you worked on. You can change it later via the user menu.'
+        'Your name will show up along with notes you worked on. You can change it any time via the user menu.'
       )
     );
 
@@ -69,7 +79,6 @@ Profile.Prototype = function() {
     );
     return el;
   };
-
 
   this._updateUserName = function() {
     var name = this.refs.name.val();
@@ -95,12 +104,12 @@ Profile.Prototype = function() {
         });
         return;
       }
-      this.send('openDashboard');
+      this.send('home');
     }.bind(this));
   };
 
 };
 
-Component.extend(Profile);
+Component.extend(EnterName);
 
-module.exports = Profile;
+module.exports = EnterName;
