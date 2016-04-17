@@ -50,6 +50,10 @@ Cover.Prototype = function() {
   this._onDocumentChanged = function(change) {
     // Only rerender if changed happened outside of the title surface.
     // Otherwise we would destroy the current selection
+    
+    // HACK: update the updatedAt property
+    this.props.noteInfo.props.updatedAt = new Date();
+
     if (change.after && change.after.surfaceId !== 'title') {
       this.rerender();
     }

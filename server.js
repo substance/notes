@@ -116,7 +116,6 @@ var collabServer = new CollabServer({
   authenticate: function(req, cb) {
     var sessionToken = req.message.sessionToken;
     authenticationEngine.getSession(sessionToken).then(function(session) {
-      console.log('server.js authenticate successful!');
       cb(null, session);
     }).catch(function(err) {
       cb(err);
