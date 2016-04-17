@@ -11,6 +11,8 @@ var Collaborators = require('./Collaborators');
 var Notification = require('./Notification');
 var Header = require('./Header');
 var Layout = require('substance/ui/Layout');
+var Button = require('substance/ui/Button');
+var Icon = require('substance/ui/FontAwesomeIcon');
 
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
@@ -133,10 +135,12 @@ NoteSection.Prototype = function() {
     // Display top-level errors. E.g. when a doc could not be loaded
     // we will display the notification on top level
     if (this.state.error) {
-      main = $$(Notification, {
-        type: 'error',
-        message: this.state.error.message
-      });
+      main = $$('div').append(
+        $$(Notification, {
+          type: 'error',
+          message: this.state.error.message
+        })
+      );
     } else if (this.state.session) {
       var fileClient = this.context.fileClient;
       main = $$(NoteWriter, {
@@ -170,6 +174,23 @@ NoteSection.Prototype = function() {
         message: this.state.error.message
       }));
     } else if (this.state.session) {
+      var userSession = this.props.userSession;
+
+      if (!userSession) {
+        layout.append(
+          $$(Layout, {
+            textAlign: 'center',
+            noPadding: true
+          }).append(
+            // $$('p').append('Note is read only.'),
+            $$(Button).addClass('se-new-note-button').append(
+              $$(Icon, {icon: 'fa-pencil'}),
+              ' Edit'
+            )
+          )
+        );
+      }
+
       layout.append(
         $$(NoteReader, {
           mobile: this.props.mobile,
@@ -237,7 +258,7 @@ NoteSection.Prototype = function() {
     documentClient.getDocument(documentId, function(err, docRecord) {
       if (err) {
         this.extendState({
-          notification: {
+          error: {
             type: 'error',
             message: 'Document could not be loaded.'
           }

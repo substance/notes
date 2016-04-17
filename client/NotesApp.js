@@ -86,7 +86,7 @@ NotesApp.Prototype = function() {
     return {
       route: undefined,
       userSession: undefined,
-      _isMobile: this._isMobile()
+      mobile: this._isMobile()
     };
   };
 
