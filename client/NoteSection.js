@@ -133,10 +133,12 @@ NoteSection.Prototype = function() {
     // Display top-level errors. E.g. when a doc could not be loaded
     // we will display the notification on top level
     if (this.state.error) {
-      main = $$(Notification, {
-        type: 'error',
-        message: this.state.error.message
-      });
+      main = $$('div').append(
+        $$(Notification, {
+          type: 'error',
+          message: this.state.error.message
+        })
+      );
     } else if (this.state.session) {
       var fileClient = this.context.fileClient;
       main = $$(NoteWriter, {
@@ -237,7 +239,7 @@ NoteSection.Prototype = function() {
     documentClient.getDocument(documentId, function(err, docRecord) {
       if (err) {
         this.extendState({
-          notification: {
+          error: {
             type: 'error',
             message: 'Document could not be loaded.'
           }

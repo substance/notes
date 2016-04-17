@@ -23,6 +23,10 @@ Dashboard.Prototype = function() {
     this._loadDocuments();
   };
 
+  this.willReceiveProps = function() {
+    this._loadDocuments();
+  };
+
   this.render = function($$) {
     var noteItems = this.state.noteItems;
     var el = $$('div').addClass('sc-dashboard');
