@@ -9,7 +9,6 @@ var $ = require('substance/util/jquery');
 
 function AuthenticationClient(config) {
   this.config = config;
-
   this._requests = {};
 }
 
@@ -98,7 +97,7 @@ AuthenticationClient.Prototype = function() {
     var path = this.config.httpUrl + 'loginlink';
     this._request('POST', path, {email: email}, function(err, res) {
       // Skip if there has been another request in the meanwhile
-      if (this._requestInvalid('requestLoginLink', loginData)) return;
+      if (this._requestInvalid('requestLoginLink', email)) return;
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));
