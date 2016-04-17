@@ -28,7 +28,7 @@ LoginStatus.Prototype = function() {
   };
 
   this._openUserSettings = function() {
-    this.send('openUserSettings');
+    this.send('settings');
   };
 
 };

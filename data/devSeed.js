@@ -30,18 +30,15 @@ var devSeed = {
       name: 'Test User 2',
       loginKey: '12345',
       email: 'test2@example.com'
+    },
+    'testuser3': {
+      userId: 'testuser3',
+      name: '',
+      loginKey: '123456',
+      email: 'test3@example.com'
     }
   },
-  // TODO: that's a security issue
   sessions: {
-    'user1token': {
-      'userId': 'testuser',
-      'sessionToken': 'user1token'
-    },
-    'user2token': {
-      'userId': 'testuser2',
-      'sessionToken': 'user2token'
-    }
   },
   documents: {
     'note-1': {
@@ -111,17 +108,6 @@ var devSeed = {
         title: exampleNote.createArticle().get(['meta', 'title']),
         updatedAt: 1458662725909
       }
-    },
-    'note-99': {
-      documentId: 'note-99',
-      schemaName: 'substance-note',
-      schemaVersion: '1.0.0',
-      version: 1,
-      info: {
-        userId: 'testuser',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458662725909
-      }
     }
   },
   changes: {
@@ -130,8 +116,7 @@ var devSeed = {
     'note-3': [testUser2Change],
     'note-4': [testUserChange],
     'note-5': [testUserChange],
-    'note-6': [testUserChange],
-    'note-99': [testUserChange, testUser2Change]
+    'note-6': [testUserChange]
   }
 };
 

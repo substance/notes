@@ -109,6 +109,7 @@ NoteWriter.static.config = {
       require('substance/packages/emphasis/EmphasisCommand'),
       require('substance/packages/text/SwitchTextTypeCommand'),
       require('substance/packages/subscript/SubscriptCommand'),
+      require('./MarkCommand'),
       require('substance/packages/superscript/SuperscriptCommand')
     ]
   },

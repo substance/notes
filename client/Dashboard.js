@@ -27,16 +27,44 @@ Dashboard.Prototype = function() {
     var noteItems = this.state.noteItems;
     var el = $$('div').addClass('sc-dashboard');
 
+    el.append($$(Header, {
+      actions: {
+        'newNote': 'New Note'
+      }
+    }));
+
     if (!noteItems) {
       return el;
     }
 
-    var header = $$(Header, {
-      actions: {
-        'newNote': 'New Note'
-      }
+    if (noteItems.length > 0) {
+      el.append(this.renderFull($$));
+    } else {
+      el.append(this.renderEmpty($$));
+    }
+    return el;
+  };
+
+  this.renderEmpty = function($$) {
+    var layout = $$(Layout, {
+      width: 'medium',
+      textAlign: 'center'
     });
 
+    layout.append(
+      $$('h1').html(
+        'Almost there'
+      ),
+      $$('p').html('Create your first note now. Then invite colleagues and friends to view and edit it simultaneously — just share the URL!'),
+      $$(Button).addClass('se-new-note-button').append('Create new note')
+        .on('click', this.send.bind(this, 'newNote'))
+    );
+
+    return layout;
+  };
+
+  this.renderFull = function($$) {
+    var noteItems = this.state.noteItems;
     var layout = $$(Layout, {
       width: 'large'
     });
@@ -60,12 +88,7 @@ Dashboard.Prototype = function() {
         );
       });
     }
-
-    el.append(
-      header,
-      layout
-    );
-    return el;
+    return layout;
   };
 
   this._getUserId = function() {

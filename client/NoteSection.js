@@ -14,14 +14,14 @@ var Layout = require('substance/ui/Layout');
 
 var NoteWriter = require('./NoteWriter');
 var NoteReader = require('./NoteReader');
+var EnterName = require('./EnterName');
 var NoteInfo = require('./NoteInfo');
 var converter = new JSONConverter();
 
-function EditNote() {
+function NoteSection() {
   Component.apply(this, arguments);
 
   var config = this.context.config;
-  var authenticationClient = this.context.authenticationClient;
 
   this.conn = new WebSocketConnection({
     wsUrl: config.wsUrl || 'ws://'+config.host+':'+config.port
@@ -30,7 +30,10 @@ function EditNote() {
   this.collabClient = new CollabClient({
     connection: this.conn,
     enhanceMessage: function(message) {
-      message.sessionToken = authenticationClient.getSessionToken();
+      var userSession = this.props.userSession;
+      if (userSession) {
+        message.sessionToken = userSession.sessionToken;
+      }
       return message;
     }.bind(this)
   });
@@ -39,7 +42,7 @@ function EditNote() {
   this.collabClient.on('connected', this._onCollabClientConnected, this);
 }
 
-EditNote.Prototype = function() {
+NoteSection.Prototype = function() {
 
   this.getInitialState = function() {
     return {
@@ -49,16 +52,20 @@ EditNote.Prototype = function() {
     };
   };
 
+  this.getDocumentId = function() {
+    return this.props.route.documentId;
+  };
+
   this.didMount = function() {
     // load the document after mounting
-    this._loadDocument(this.props.docId);
+    this._loadDocument(this.getDocumentId());
   };
 
   this.willReceiveProps = function(newProps) {
-    if (newProps.docId !== this.props.docId) {
+    if (newProps.route.documentId !== this.props.route.documentId) {
       this.dispose();
       this.state = this.getInitialState();
-      this._loadDocument(newProps.docId);
+      this._loadDocument(this.getDocumentId());
     }
   };
 
@@ -71,14 +78,26 @@ EditNote.Prototype = function() {
   };
 
   this.render = function($$) {
-    if (this.props.mobile) {
-      return this.renderMobile($$);
+    var userSession = this.props.userSession;
+
+    if (this.props.mobile || !userSession) {
+      return this.renderReader($$);
     } else {
-      return this.renderDesktop($$);
+      if (!userSession.user.name) {
+        return this.renderEnterName($$);
+      } else {
+        return this.renderWriter($$);
+      }
     }
   };
 
-  this.renderDesktop = function($$) {
+  this.renderEnterName = function($$) {
+    var el = $$('div').addClass('sc-note-section');
+    el.append($$(EnterName));
+    return el;
+  };
+
+  this.renderWriter = function($$) {
     var notification = this.state.notification;
     var el = $$('div').addClass('sc-edit-note');
     var main = $$('div');
@@ -90,7 +109,7 @@ EditNote.Prototype = function() {
     header = $$(Header, {
       mobile: this.props.mobile,
       actions: {
-        'openDashboard': 'My Notes',
+        'home': 'My Notes',
         'newNote': 'New Note'
       }
     });
@@ -133,18 +152,15 @@ EditNote.Prototype = function() {
         main
       ).ref('splitPane')
     );
-
     return el;
   };
 
-  this.renderMobile = function($$) {
+  this.renderReader = function($$) {
     var el = $$('div').addClass('sc-edit-note');
 
     var layout = $$(Layout, {
       width: 'large'
     });
-
-    // TODO: Render a mobile optimized header
 
     // Display top-level errors. E.g. when a doc could not be loaded
     // we will display the notification on top level
@@ -204,7 +220,6 @@ EditNote.Prototype = function() {
 
   this._onCollabSessionSync = function() {
     if (this.state.notification) {
-      console.log('unsetting...');
       // Unset notification (error message)
       this.extendState({
         notification: null
@@ -215,11 +230,11 @@ EditNote.Prototype = function() {
   /*
     Loads a document and initializes a CollabSession
   */
-  this._loadDocument = function(docId) {
+  this._loadDocument = function(documentId) {
     var collabClient = this.collabClient;
     var documentClient = this.context.documentClient;
 
-    documentClient.getDocument(docId, function(err, docRecord) {
+    documentClient.getDocument(documentId, function(err, docRecord) {
       if (err) {
         this.extendState({
           notification: {
@@ -234,7 +249,7 @@ EditNote.Prototype = function() {
       var doc = new Note();
       doc = converter.importDocument(doc, docRecord.data);
       var session = new CollabSession(doc, {
-        documentId: docId,
+        documentId: documentId,
         version: docRecord.version,
         collabClient: collabClient
       });
@@ -255,6 +270,6 @@ EditNote.Prototype = function() {
   };
 };
 
-Component.extend(EditNote);
+Component.extend(NoteSection);
 
-module.exports = EditNote;
+module.exports = NoteSection;
