@@ -41,13 +41,12 @@ NoteSection.Prototype = function() {
         message: this.state.error.message
       }));
     } else if (this.state.session) {
-      if (!userSession) {
+      if (!userSession && !this.props.mobile) {
         layout.append(
           $$(Layout, {
             textAlign: 'center',
             noPadding: true
           }).append(
-            // $$('p').append('Note is read only.'),
             $$(Button).addClass('se-new-note-button').append(
               $$(Icon, {icon: 'fa-pencil'}),
               ' Edit'

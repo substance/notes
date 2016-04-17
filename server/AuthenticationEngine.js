@@ -75,13 +75,13 @@ AuthenticationEngine.Prototype = function() {
   */
   this._sendLoginLink = function(user, documentId) {
     var url = appConfig.get('server.appUrl');
-    var subject = "Your login to Substance Notes!";
+    var subject = "Your login key!";
     var msg;
 
     if (documentId) {
-      msg = "Click the following link to login: " + url + "/#section=note,documentId=" +documentId+",loginKey=" + user.loginKey;
+      msg = "Click the following link to edit: "+url + "/#section=note,documentId=" +documentId+",loginKey=" + user.loginKey;
     } else {
-      msg = "Click the following link to login: " + url + "/#loginKey=" + user.loginKey;
+      msg = "Click the following link to login: "+url + "/#loginKey=" + user.loginKey;
     }
     
     console.log('Message: ', msg);
