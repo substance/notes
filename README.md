@@ -13,7 +13,7 @@ npm install
 Seed the db
 
 ```bash
-npm run seed
+npm run seed dev
 ```
 
 Start the app
