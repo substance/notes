@@ -4,6 +4,12 @@ Real-time collaborative notes editing.
 
 # Install
 
+Clone the repo
+
+```bash
+git clone https://github.com/substance/notes.git
+```
+
 Install dependencies
 
 ```bash
