@@ -63,7 +63,11 @@ var notesEngine = new NotesEngine({db: db});
   Express body-parser configureation 
 */
 app.use(bodyParser.json({limit: '3mb'}));
-app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 3000 }));
+app.use(bodyParser.urlencoded({
+  extended: true,
+  limit: '3mb',
+  parameterLimit: 3000
+}));
 
 /*
   Serve app
@@ -108,6 +112,9 @@ documentServer.bind(app);
 // ----------------
 
 var collabServer = new CollabServer({
+  // every 30s a heart beat message is sent to keep
+  // websocket connects alive when they are inactive
+  heartbeat: 30*1000,
   documentEngine: documentEngine,
 
   /*
@@ -170,7 +177,7 @@ var collabServer = new CollabServer({
 
 collabServer.bind(wss);
 
-// Set up AuthenticationServer
+// AuthenticationServer
 // ----------------
 
 var authenticationServer = new AuthenticationServer({
@@ -189,10 +196,10 @@ var notesServer = new NotesServer({
 });
 notesServer.bind(app);
 
-// Substance Notes API
+// File Server
 // ----------------
 // 
-// We just moved that out of the Collab hub as it's app specific code
+// E.g. used for image uploads
 
 var fileServer = new FileServer({
   store: fileStore,
