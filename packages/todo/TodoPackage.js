@@ -2,7 +2,7 @@
 
 var Todo = require('./Todo');
 var TodoTool = require('./TodoTool');
-var TodoCommmand = require('./TodoCommmand');
+var TodoCommand = require('./TodoCommand');
 var TodoComponent = require('./TodoComponent');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
   configure: function(config) {
     config.addNode(Todo);
     config.addTool(TodoTool);
-    config.addCommand(TodoCommmand);
+    config.addCommand(TodoCommand);
     config.addComponent(Todo.static.name, TodoComponent);
   }
 };

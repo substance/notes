@@ -1,12 +1,12 @@
 'use strict';
 
-var SurfaceTool = require('substance/ui/SurfaceTool');
+var AnnotationTool = require('substance/ui/AnnotationTool');
 
 function CommentTool() {
   CommentTool.super.apply(this, arguments);
 }
 
-SurfaceTool.extend(CommentTool);
+AnnotationTool.extend(CommentTool);
 
 CommentTool.static.name = 'comment';
 

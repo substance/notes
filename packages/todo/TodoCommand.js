@@ -1,9 +1,9 @@
 'use strict';
 
-var SurfaceCommand = require('substance/ui/SurfaceCommand');
+var AnnotationCommand = require('substance/ui/AnnotationCommand');
 
 var TodoCommand = function(surface) {
-  SurfaceCommand.call(this, surface);
+  AnnotationCommand.call(this, surface);
 };
 
 TodoCommand.Prototype = function() {
@@ -60,7 +60,7 @@ TodoCommand.Prototype = function() {
   };
 };
 
-SurfaceCommand.extend(TodoCommand);
+AnnotationCommand.extend(TodoCommand);
 
 TodoCommand.static.name = 'todo';
 

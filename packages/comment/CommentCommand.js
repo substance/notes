@@ -1,9 +1,9 @@
 'use strict';
 
-var SurfaceCommand = require('substance/ui/SurfaceCommand');
+var AnnotationCommand = require('substance/ui/AnnotationCommand');
 
 var CommentCommand = function(surface) {
-  SurfaceCommand.call(this, surface);
+  AnnotationCommand.call(this, surface);
 };
 
 CommentCommand.Prototype = function() {
@@ -67,7 +67,7 @@ CommentCommand.Prototype = function() {
   };
 };
 
-SurfaceCommand.extend(CommentCommand);
+AnnotationCommand.extend(CommentCommand);
 
 CommentCommand.static.name = 'comment';
 

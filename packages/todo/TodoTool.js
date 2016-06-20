@@ -1,12 +1,12 @@
 'use strict';
 
-var SurfaceTool = require('substance/ui/SurfaceTool');
+var AnnotationTool = require('substance/ui/AnnotationTool');
 
 function TodoTool() {
   TodoTool.super.apply(this, arguments);
 }
 
-SurfaceTool.extend(TodoTool);
+AnnotationTool.extend(TodoTool);
 
 TodoTool.static.name = 'todo';
 
