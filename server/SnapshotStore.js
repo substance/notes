@@ -2,7 +2,7 @@
 
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
-var Err = require('substance/util/Error');
+var Err = require('substance/util/SubstanceError');
 
 /*
   Implements Substance SnapshotStore API.

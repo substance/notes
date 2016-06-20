@@ -1,7 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var Err = require('substance/util/Error');
+var Err = require('substance/util/SubstanceError');
 
 /*
   FileServer module. Can be bound to an express instance

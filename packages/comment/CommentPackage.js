@@ -2,7 +2,7 @@
 
 var Comment = require('./Comment');
 var CommentTool = require('./CommentTool');
-var CommentCommmand = require('./CommentCommmand');
+var CommentCommand = require('./CommentCommand');
 var CommentComponent = require('./CommentComponent');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
   configure: function(config) {
     config.addNode(Comment);
     config.addTool(CommentTool);
-    config.addCommand(CommentCommmand);
+    config.addCommand(CommentCommand);
     config.addComponent(Comment.static.name, CommentComponent);
   }
 };

@@ -1,7 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var request = require('substance/util/request');
+var $ = require('substance/util/jquery');
 
 /*
   HTTP client for talking with AuthenticationServer
@@ -34,7 +34,7 @@ AuthenticationClient.Prototype = function() {
     this._requests['changeName'] = userId+name;
 
     var path = this.config.httpUrl + 'changename';
-    request('POST', path, {
+    this._request('POST', path, {
       userId: userId,
       name: name
     }, function(err, res) {
@@ -68,7 +68,7 @@ AuthenticationClient.Prototype = function() {
     this._requests['authenticate'] = loginData;
 
     var path = this.config.httpUrl + 'authenticate';
-    request('POST', path, loginData, function(err, hubSession) {
+    this._request('POST', path, loginData, function(err, hubSession) {
       // Skip if there has been another request in the meanwhile
       if (this._requestInvalid('authenticate', loginData)) return;
 
@@ -95,12 +95,35 @@ AuthenticationClient.Prototype = function() {
     this._requests['requestLoginLink'] = data;
 
     var path = this.config.httpUrl + 'loginlink';
-    request('POST', path, data, function(err, res) {
+    this._request('POST', path, data, function(err, res) {
       // Skip if there has been another request in the meanwhile
       if (this._requestInvalid('requestLoginLink', data)) return;
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));
+  };
+
+  /*
+    A generic request method
+  */
+  this._request = function(method, url, data, cb) {
+    var ajaxOpts = {
+      type: method,
+      url: url,
+      contentType: "application/json; charset=UTF-8",
+      dataType: "json",
+      success: function(data) {
+        cb(null, data);
+      },
+      error: function(err) {
+        // console.error(err);
+        cb(new Error(err.responseJSON.errorMessage));
+      }
+    };
+    if (data) {
+      ajaxOpts.data = JSON.stringify(data);
+    }
+    $.ajax(ajaxOpts);
   };
 
 };

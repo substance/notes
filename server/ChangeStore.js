@@ -3,7 +3,7 @@
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
 var has = require('lodash/has');
-var Err = require('substance/util/Error');
+var Err = require('substance/util/SubstanceError');
 
 /*
   Implements the Substance DocumentStore API.

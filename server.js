@@ -72,14 +72,14 @@ app.use(bodyParser.urlencoded({
 /*
   Serve app
 */
-var config = config.get('server');
 var env = config.util.getEnv('NODE_ENV');
+var config = config.get('server');
 
 if(env !== 'production') {
   // Serve HTML, bundled JS and CSS in non-production mode
-  server.serveHTML(app, '/', path.join(__dirname, 'index.html'), config);
-  server.serveStyles(app, '/app.css', path.join(__dirname, 'app.scss'));
-  server.serveJS(app, '/app.js', path.join(__dirname, 'app.js'));
+  server.serveHTML(app, '/', path.join(__dirname, 'client/index.html'), config);
+  server.serveStyles(app, '/app.css', path.join(__dirname, 'client/app.scss'));
+  server.serveJS(app, '/app.js', path.join(__dirname, 'client/app.js'));
   // Serve static files in non-production mode
   app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));
   app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));

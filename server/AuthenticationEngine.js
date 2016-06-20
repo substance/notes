@@ -3,7 +3,7 @@
 var appConfig = require('config');
 var uuid = require('substance/util/uuid');
 var oo = require('substance/util/oo');
-var Err = require('substance/util/Error');
+var Err = require('substance/util/SubstanceError');
 var Mail = require('./Mail');
 
 /*
