@@ -21,6 +21,7 @@ NoteSection.Prototype = function() {
 
       if (userName) {
         el.append($$(EditNote, {
+          configurator: this.props.configurator,
           documentId: this.props.route.documentId,
           userSession: userSession,
           mobile: this.props.mobile
@@ -32,6 +33,7 @@ NoteSection.Prototype = function() {
       }
     } else {
       el.append($$(ReadNote, {
+        configurator: this.props.configurator,
         documentId: this.props.route.documentId,
         userSession: userSession,
         mobile: this.props.mobile
