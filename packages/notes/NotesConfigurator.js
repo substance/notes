@@ -34,7 +34,7 @@ NotesConfigurator.Prototype = function() {
 
   this.getDocumentClient = function() {
     var DocumentClientClass = this.config.DocumentClientClass;
-    return new DocumentClientClass(this.config.documentServerUrl);
+    return new DocumentClientClass({httpUrl: this.config.documentServerUrl});
   };
 
   this.setAuthenticationClient = function(AuthenticationClientClass) {
@@ -43,12 +43,12 @@ NotesConfigurator.Prototype = function() {
 
   this.getAuthenticationClient = function() {
     var AuthenticationClientClass = this.config.AuthenticationClientClass;
-    return new AuthenticationClientClass(this.config.authenticationServerUrl);
+    return new AuthenticationClientClass({httpUrl: this.config.authenticationServerUrl});
   };
 
   this.getFileClient = function() {
     var FileClientClass = this.config.fileClient;
-    return new FileClientClass(this.config.fileServerUrl);
+    return new FileClientClass({httpUrl: this.config.fileServerUrl});
   };
 }
 
