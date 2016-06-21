@@ -7,7 +7,7 @@ var DocumentNode = require('substance/model/DocumentNode');
 */
 
 function MetaNode() {
-  Meta.super.apply(this, arguments);
+  MetaNode.super.apply(this, arguments);
 }
 
 DocumentNode.extend(MetaNode);

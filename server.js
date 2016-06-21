@@ -2,7 +2,6 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var server = require('substance/util/server');
-var newNote = require('./packages/note/NewNote');
 var CollabServer = require('substance/collab/CollabServer');
 var DocumentChange = require('substance/model/DocumentChange');
 var DocumentEngine = require('./server/NotesDocumentEngine');
