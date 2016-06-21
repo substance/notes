@@ -30,20 +30,7 @@ module.exports = {
 
     // Import base packages
     config.import(BasePackage);
-    config.import(ParagraphPackage);
-    config.import(HeadingPackage);
-    config.import(CodeblockPackage);
-    config.import(BlockquotePackage);
-    config.import(ListPackage);
-    config.import(EmphasisPackage);
-    config.import(StrongPackage);
-    config.import(CodePackage);
-    config.import(LinkPackage);
     config.import(PersistencePackage);
 
-    // Import note specific packages
-    config.import(CommentPackage);
-    config.import(MarkPackage);
-    config.import(TodoPackage);
   }
 };
