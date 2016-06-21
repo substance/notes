@@ -1,7 +1,6 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
-var Icon = require('substance/ui/FontAwesomeIcon');
 var filter = require('lodash/filter');
 var size = require('lodash/size');
 var moment = require('moment');
@@ -13,7 +12,7 @@ var NoteSummary = function() {
 NoteSummary.Prototype = function() {
 
   this.render = function($$) {
-    var doc = this.context.controller.getDocument();
+    var doc = this.context.doc;
     var noteInfo = this.props.noteInfo.props;
 
     var updatedAt = moment(noteInfo.updatedAt).fromNow();
@@ -30,11 +29,11 @@ NoteSummary.Prototype = function() {
 
     el.append(
       $$('div').addClass('se-item').append(
-        $$(Icon, {icon: "fa-comment-o"}),
+        this.context.iconProvider.renderIcon($$, 'cover.comments'),
         ' ' +commentsQt + ' ' + commentsLabel
       ),
       $$('div').addClass('se-item').append(
-        $$(Icon, {icon: "fa-check-square-o"}),
+        this.context.iconProvider.renderIcon($$, 'cover.todos'),
         $$('div').addClass('se-issues-bar').append(
           $$('div').addClass('se-completed')
             .setAttribute('style', 'width: ' + resolvedQt/issuesQt*100 + '%')

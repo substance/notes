@@ -21,6 +21,7 @@ Cover.Prototype = function() {
   };
 
   this.render = function($$) {
+    var configurator = this.props.configurator;
     var doc = this.getDocument();
     var config = this.context.config;
     var noteInfo = this.props.noteInfo.props;
@@ -34,7 +35,7 @@ Cover.Prototype = function() {
         $$(TextPropertyEditor, {
           name: 'title',
           tagName: "div",
-          commands: config.titleEditor.commands,
+          commands: configurator.getSurfaceCommandNames(),
           path: [metaNode.id, "title"],
           editing: this.props.editing || 'full'
         }).addClass('se-title'),

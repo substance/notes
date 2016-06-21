@@ -1,11 +1,10 @@
 'use strict';
 
-var Notification = require('./Notification');
+var Notification = require('../notification/Notification');
 var Layout = require('substance/ui/Layout');
 var Button = require('substance/ui/Button');
-var Icon = require('substance/ui/FontAwesomeIcon');
-var NoteLoader = require('./NoteLoader');
-var NoteReader = require('./NoteReader');
+var NoteLoader = require('../note-loader/NoteLoader');
+var NoteReader = require('../note-reader/NoteReader');
 var RequestEditAccess = require('./RequestEditAccess');
 
 function NoteSection() {
@@ -48,7 +47,7 @@ NoteSection.Prototype = function() {
             noPadding: true
           }).append(
             $$(Button).addClass('se-new-note-button').append(
-              $$(Icon, {icon: 'fa-pencil'}),
+              this.context.iconProvider.renderIcon($$, 'cover.edit'),
               ' Edit'
             ).on('click', this._requestLogin)
           )
@@ -57,6 +56,7 @@ NoteSection.Prototype = function() {
 
       layout.append(
         $$(NoteReader, {
+          configurator: this.props.configurator,
           mobile: this.props.mobile,
           noteInfo: this.state.noteInfo,
           documentSession: this.state.session
