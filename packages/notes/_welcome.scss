@@ -1,0 +1,17 @@
+.sc-welcome {
+
+  .se-cursor {
+    display: inline-block;
+    background: #7BB5B3;
+    width: 2px;
+  }
+  
+  // cursor must have some content, otherwise it won't be displayed inline
+  .se-cursor::after  { content: "."; opacity: 0; }
+
+  .se-topbar {
+    height: 15px;
+    background-image: url(/assets/img/welcome_header.png);
+  }
+
+}

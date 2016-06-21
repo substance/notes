@@ -1,6 +1,9 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
+var NoteSection = require('./NoteSection');
+var SettingsSection = require('./SettingsSection');
+var IndexSection = require('./IndexSection');
 
 /*
   Notes Component
@@ -28,19 +31,18 @@ Notes.Prototype = function() {
       console.log('Uninitialized');
       return el;
     }
-
     
-    // switch (this.props.section) {
-    //   case 'note':
-    //     el.append($$(NoteSection, this.props).ref('noteSection'));
-    //     break;
-    //   case 'settings':
-    //     el.append($$(SettingsSection, this.props).ref('settingsSection'));
-    //     break;
-    //   default: // !section || section === index
-    //     el.append($$(IndexSection, this.props).ref('indexSection'));
-    //     break;
-    // }
+    switch (this.props.route.section) {
+      case 'note':
+        el.append($$(NoteSection, this.props).ref('noteSection'));
+        break;
+      case 'settings':
+        el.append($$(SettingsSection, this.props).ref('settingsSection'));
+        break;
+      default: // !section || section === index
+        el.append($$(IndexSection, this.props).ref('indexSection'));
+        break;
+    }
     return el;
   };
 
@@ -48,13 +50,13 @@ Notes.Prototype = function() {
   // ------------------------------------
 
   this._home = function() {
-    this.send.navigate({
+    this.send('navigate', {
       section: 'index'
     });
   };
 
   this._settings = function() {
-    this.send.navigate({
+    this.send('navigate', {
       section: 'settings'
     });
   };
@@ -75,7 +77,7 @@ Notes.Prototype = function() {
         userId: userId
       }
     }, function(err, result) {
-      this.send.navigate({
+      this.send('navigate', {
         section: 'note',
         documentId: result.documentId
       });
@@ -105,6 +107,17 @@ Notes.Prototype = function() {
       });
       this.context.urlHelper.writeRoute(indexRoute);
     }.bind(this));
+  };
+
+  this._userSessionUpdated = function(userSession) {
+    console.log('user session updated');
+    this.parent.extendState({
+      userSession: userSession
+    });
+
+    if (this.state.route && this.state.route.section === 'settings') {
+      this.send('navigate', {section: 'index'});
+    }
   };
 };
 
