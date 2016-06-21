@@ -1,0 +1,35 @@
+/* Used in Dashboard */
+
+.sc-note-item {
+
+  .se-title {
+    color: $link-color;
+    font-weight: $strong-font-weight;
+    font-size: $large-font-size;
+    padding-bottom: $default-padding / 2;
+  }
+
+  .se-preview {
+    font-size: $small-font-size;
+    padding-bottom: $default-padding / 2;
+  }
+
+
+  .se-meta {
+    font-size: $small-font-size;
+
+    .se-meta-item {
+      display: inline-block;
+      margin-right: $default-padding;
+      margin-bottom: $default-padding/2;
+    }
+
+    .se-updated-at {
+      color: $light-text-color;
+    }
+
+    .se-delete {
+      color: $link-color;
+    }
+  }
+}
