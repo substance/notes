@@ -1,0 +1,21 @@
+.sc-todo {
+  padding-left: 20px;
+  padding-bottom: 20px;
+  position: relative;
+
+  .se-done {
+    display: inline-block;
+    width: 20px;
+    cursor: pointer;
+
+    position: absolute;
+    left: 0px;
+    
+    // This is really important because otherwise the DOM selection also covers
+    // the previous line when you double click the first word of a todo item.
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+  }
+}
