@@ -1,8 +1,7 @@
 'use strict';
 
-var DocumentClient = require('./NotesDocumentClient');
-var Err = require('substance/util/Error');
-var Header = require('./Header');
+var Err = require('substance/util/SubstanceError');
+var Header = require('../header/Header');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
 var Component = require('substance/ui/Component');
@@ -10,11 +9,6 @@ var NoteItem = require('./NoteItem');
 
 function Dashboard() {
   Component.apply(this, arguments);
-
-  var config = this.context.config;
-  this.documentClient = new DocumentClient({
-    httpUrl: config.documentServerUrl || 'http://'+config.host+':'+config.port+'/api/documents/'
-  });
 }
 
 Dashboard.Prototype = function() {
@@ -112,7 +106,7 @@ Dashboard.Prototype = function() {
   */
   this._loadDocuments = function() {
     var self = this;
-    var documentClient = this.documentClient;
+    var documentClient = this.context.documentClient;
     var userId = this._getUserId();
 
     documentClient.listUserDashboard(userId, function(err, notes) {
