@@ -1,0 +1,42 @@
+.sc-login-status {
+  float: right;
+  padding: 0px 15px;
+  color: white;
+  line-height: 40px;
+  border-left: 1px solid #2E393A;
+}
+
+// TODO: .sc- is reserved for components, while inside components you
+// would use .se-. So this would be called .se-dropdown and go inside
+// .sc-login-status
+.se-dropdown {
+  .se-caret {
+    padding-left: 10px;
+    font-size: 24px;
+    position: relative;
+    top: 3px;
+    color: #6B7B7C;
+  }
+
+  ul {
+    display: none;
+    position: absolute;
+    background: #3B4749;
+    padding: 0px 15px;
+    margin: 0px -15px;
+    list-style: none;
+    z-index: 99;
+    width: 100%;
+
+    li {
+      width: 100px;
+      cursor: pointer;
+    }
+  }
+
+  &:hover {
+    ul {
+      display: block;
+    }
+  }
+}
