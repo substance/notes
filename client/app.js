@@ -18,6 +18,8 @@ substanceGlobals.DEBUG_RENDERING = true;
 function App() {
   App.super.apply(this, arguments);
 
+  this.config = configurator.getAppConfig();
+
   this.authenticationClient = configurator.getAuthenticationClient();
   this.documentClient = configurator.getDocumentClient();
   this.fileClient = configurator.getFileClient();
@@ -152,7 +154,9 @@ App.Prototype = function() {
       documentClient: this.documentClient,
       fileClient: this.fileClient,
       config: this.config,
-      urlHelper: this.router
+      urlHelper: this.router,
+      iconProvider: configurator.getIconProvider(),
+      labelProvider: configurator.getLabelProvider()
     };
   };
 
@@ -185,17 +189,6 @@ App.Prototype = function() {
   */
   this._getSessionToken = function() {
     return window.localStorage.getItem('sessionToken');
-  };
-
-  this._userSessionUpdated = function(userSession) {
-    console.log('user session updated');
-    this.extendState({
-      userSession: userSession
-    });
-
-    if (this.state.route && this.state.route.section === 'settings') {
-      this.navigate({section: 'index'});
-    }
   };
 
   this._onRouteChanged = function(route) {
