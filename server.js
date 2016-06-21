@@ -1,9 +1,8 @@
-var config = require('config');
 var express = require('express');
 var path = require('path');
 var app = express();
 var server = require('substance/util/server');
-var newNote = require('./model/newNote');
+var newNote = require('./packages/note/NewNote');
 var CollabServer = require('substance/collab/CollabServer');
 var DocumentChange = require('substance/model/DocumentChange');
 var DocumentEngine = require('./server/NotesDocumentEngine');
@@ -22,6 +21,13 @@ var Database = require('./server/Database');
 var bodyParser = require('body-parser');
 var http = require('http');
 var WebSocketServer = require('ws').Server;
+var NotesServerConfigurator = require('./server/NotesServerConfigurator');
+var NotesServerConfig = require('./server/NotesServerConfig');
+
+var configurator = new NotesServerConfigurator();
+configurator.import(NotesServerConfig);
+
+var config = configurator.getAppConfig();
 
 var db = new Database();
 
@@ -38,17 +44,18 @@ var documentStore = new DocumentStore({db: db});
 
 var fileStore = new FileStore({destination: './uploads'});
 
+var schema = configurator.getSchema();
+var schemas = {};
+schemas[schema.name] = schema;
+schemas[schema.name].documentFactory = {
+  createDocument: configurator.createArticle.bind(configurator)
+};
+
 var documentEngine = new DocumentEngine({
   db: db,
   documentStore: documentStore,
   changeStore: changeStore,
-  schemas: {
-    'substance-note': {
-      name: 'substance-note',
-      version: '1.0.0',
-      documentFactory: newNote
-    }
-  }
+  schemas: schemas
 });
 
 var authenticationEngine = new AuthenticationEngine({
@@ -68,10 +75,8 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 30
 /*
   Serve app
 */
-var env = config.util.getEnv('NODE_ENV');
-var config = config.get('server');
 
-if(env !== 'production') {
+if(config.env !== 'production') {
   // Serve HTML, bundled JS and CSS in non-production mode
   server.serveHTML(app, '/', path.join(__dirname, 'client/index.html'), config);
   server.serveStyles(app, '/app.css', path.join(__dirname, 'client/app.scss'));
