@@ -1,12 +1,13 @@
 'use strict';
 
 var SplitPane = require('substance/ui/SplitPane');
-var Collaborators = require('./Collaborators');
-var Notification = require('./Notification');
-var Header = require('./Header');
-var NoteLoader = require('./NoteLoader');
-var NoteWriter = require('./NoteWriter');
+var Collaborators = require('../collaborators/Collaborators');
+var Notification = require('../notification/Notification');
+var Header = require('../header/Header');
+var NoteLoader = require('../note-loader/NoteLoader');
+var NoteWriter = require('../note-writer/NoteWriter');
 var inBrowser = require('substance/util/inBrowser');
+var NoteWriterPackage = require('../note-writer/NoteWriterPackage');
 
 function EditNote() {
   NoteLoader.apply(this, arguments);
@@ -80,6 +81,7 @@ EditNote.Prototype = function() {
     } else if (this.state.session) {
       var fileClient = this.context.fileClient;
       main = $$(NoteWriter, {
+        configurator: this.props.configurator,
         noteInfo: this.state.noteInfo,
         documentSession: this.state.session,
         onUploadFile: fileClient.uploadFile.bind(fileClient)

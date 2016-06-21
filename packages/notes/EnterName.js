@@ -1,8 +1,8 @@
 'use strict';
 
-var Header = require('./Header');
+var Header = require('../header/Header');
 var Component = require('substance/ui/Component');
-var Notification = require('./Notification');
+var Notification = require('../notification/Notification');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var Input = require('substance/ui/Input');
 var Button = require('substance/ui/Button');

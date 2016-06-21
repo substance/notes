@@ -4,7 +4,6 @@ var Layout = require('substance/ui/Layout');
 var Component = require('substance/ui/Component');
 
 var Button = require('substance/ui/Button');
-// var Icon = require('substance/ui/FontAwesomeIcon');
 
 var Modal = require('substance/ui/Modal');
 var RequestLogin = require('./RequestLogin');
