@@ -1,16 +1,12 @@
 'use strict';
 
 var SplitPane = require('substance/ui/SplitPane');
-var Collaborators = require('../collaborators/Collaborators');
-var Notification = require('../notification/Notification');
-var Header = require('../header/Header');
-var NoteLoader = require('../note-loader/NoteLoader');
-var NoteWriter = require('../note-writer/NoteWriter');
 var inBrowser = require('substance/util/inBrowser');
-var NoteWriterPackage = require('../note-writer/NoteWriterPackage');
+var Loader = require('../common/Loader');
+var Writer = require('./Writer');
 
 function EditNote() {
-  NoteLoader.apply(this, arguments);
+  Loader.apply(this, arguments);
 }
 
 EditNote.Prototype = function() {
@@ -35,6 +31,10 @@ EditNote.Prototype = function() {
   };
 
   this.render = function($$) {
+    var componentRegistry = this.context.componentRegistry;
+    var Collaborators = componentRegistry.get('collaborators');
+    var Header = componentRegistry.get('header');
+
     var notification = this.state.notification;
     var el = $$('div').addClass('sc-edit-note');
     var main = $$('div');
@@ -80,7 +80,7 @@ EditNote.Prototype = function() {
       );
     } else if (this.state.session) {
       var fileClient = this.context.fileClient;
-      main = $$(NoteWriter, {
+      main = $$(Writer, {
         configurator: this.props.configurator,
         noteInfo: this.state.noteInfo,
         documentSession: this.state.session,
@@ -121,7 +121,7 @@ EditNote.Prototype = function() {
       this.i18n.t(err.name)
     ];
     if (err.cause) {
-      message.push(this.i18n.t(err.cause.name));
+      message.push(this.getLabel(err.cause.name));
     }
     this.extendState({
       notification: {
@@ -141,6 +141,6 @@ EditNote.Prototype = function() {
   };
 };
 
-NoteLoader.extend(EditNote);
+Loader.extend(EditNote);
 
 module.exports = EditNote;
