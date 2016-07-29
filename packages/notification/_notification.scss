@@ -1,11 +1,10 @@
-// Notification styles (when rendered on white main section)
-
 .sc-notification {
   color: #777C82;
   border: 1px solid #777C82;
   margin: 50px;
   padding: $default-padding;
   text-align: center;
+  float: left;
 
   &.se-type-error {
     border: 1px solid #FF7B7A;
