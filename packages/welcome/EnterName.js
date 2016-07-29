@@ -1,8 +1,6 @@
 'use strict';
 
-var Header = require('../header/Header');
 var Component = require('substance/ui/Component');
-var Notification = require('../notification/Notification');
 var Icon = require('substance/ui/FontAwesomeIcon');
 var Input = require('substance/ui/Input');
 var Button = require('substance/ui/Button');
@@ -15,6 +13,10 @@ function EnterName() {
 EnterName.Prototype = function() {
 
   this.render = function($$) {
+    var componentRegistry = this.context.componentRegistry;
+    var Notification = componentRegistry.get('notification');
+    var Header = componentRegistry.get('header');
+
     var el = $$('div').addClass('sc-enter-name');
     var userName = this.props.userSession.user.name;
 
