@@ -17,7 +17,7 @@ FileClient.Prototype = function() {
   this.uploadFile = function(file, cb) {
 
     function transferComplete(e) {
-      if(e.currentTarget.status == 200) {
+      if(e.currentTarget.status === 200) {
         var data = JSON.parse(e.currentTarget.response);
         var path = '/media/' + data.name;
         cb(null, path);
