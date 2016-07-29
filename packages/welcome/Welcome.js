@@ -29,19 +29,19 @@ Welcome.Prototype = function() {
 
     if (this.state.requested) {
       layout.append(
-        $$('h1').append(this.getLabel('sc-welcome.submitted-title')),
-        $$('p').append(this.getLabel('sc-welcome.submitted-instructions'))
+        $$('h1').append(this.getLabel('welcome-title')),
+        $$('p').append(this.getLabel('welcome-instructions'))
       );
     } else {
       layout.append(
         $$('h1').append(
-          this.getLabel('sc-welcome.title'),
+          this.getLabel('welcome-title'),
           $$('span').addClass('se-cursor')
         ),
-        $$('p').append(this.getLabel('sc-welcome.about')),
-        $$('h2').append(this.getLabel('sc-welcome.no-passwords')),
-        $$('p').append(this.getLabel('sc-welcome.howto-login')),
-        $$('p').append(this.getLabel('sc-welcome.enter-email'))
+        $$('p').append(this.getLabel('welcome-about')),
+        $$('h2').append(this.getLabel('welcome-no-passwords')),
+        $$('p').html(this.getLabel('welcome-howto-login')),
+        $$('p').append(this.getLabel('welcome-enter-email'))
       );
 
       layout.append(

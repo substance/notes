@@ -3,7 +3,6 @@
 var Component = require('substance/ui/Component');
 var Button = require('substance/ui/Button');
 var Input = require('substance/ui/Input');
-var Notification = require('../notification/Notification');
 
 function RequestLogin() {
   Component.apply(this, arguments);
@@ -12,12 +11,15 @@ function RequestLogin() {
 RequestLogin.Prototype = function() {
 
   this.render = function($$) {
+    var componentRegistry = this.context.componentRegistry;
+    var Notification = componentRegistry.get('notification');
+
     var el = $$('div').addClass('sc-request-login');
 
     if (this.state.requested) {
       el.append(
-        $$('h1').append(this.getLabel('sc-welcome.submitted-title')),
-        $$('p').append(this.getLabel('sc-welcome.submitted-instructions'))
+        $$('h1').append(this.i18n.t('sc-welcome.submitted-title')),
+        $$('p').append(this.i18n.t('sc-welcome.submitted-instructions'))
       );
     } else {
       el.append(
@@ -33,8 +35,8 @@ RequestLogin.Prototype = function() {
 
       el.append(
         $$(Button, {
-          disabled: !!this.state.loading // disable button when in loading state
-        }).append(this.getLabel('sc-welcome.submit'))
+          disabled: Boolean(this.state.loading) // disable button when in loading state
+        }).append(this.getLabel('welcome-submit'))
           .on('click', this._requestLoginLink)
       );
 

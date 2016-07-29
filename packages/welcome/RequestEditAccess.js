@@ -19,7 +19,6 @@ function RequestEditAccess() {
 RequestEditAccess.Prototype = function() {
 
   this._requestLogin = function() {
-    console.log('authenticating now');
     this.extendState({
       requestLogin: true
     });
