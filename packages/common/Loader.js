@@ -5,7 +5,7 @@ var JSONConverter = require('substance/model/JSONConverter');
 var CollabClient = require('substance/collab/CollabClient');
 var WebSocketConnection = require('substance/collab/WebSocketConnection');
 var Component = require('substance/ui/Component');
-var NoteInfo = require('./NoteInfo');
+var Info = require('./Info');
 var converter = new JSONConverter();
 
 /*
@@ -13,7 +13,7 @@ var converter = new JSONConverter();
 
   Mainly responsible for managing life cycle and data loading
 */
-function NoteLoader() {
+function Loader() {
   Component.apply(this, arguments);
 
   var config = this.context.config;
@@ -37,7 +37,7 @@ function NoteLoader() {
   this.collabClient.on('connected', this._onCollabClientConnected, this);
 }
 
-NoteLoader.Prototype = function() {
+Loader.Prototype = function() {
 
   this.getInitialState = function() {
     return {
@@ -78,7 +78,7 @@ NoteLoader.Prototype = function() {
     this.extendState({
       error: {
         type: 'error',
-        message: err.name
+        message: this.i18n.t(err.name)
       }
     });
   };
@@ -100,8 +100,8 @@ NoteLoader.Prototype = function() {
     Loads a document and initializes a CollabSession
   */
   this._loadDocument = function(documentId) {
-    var configurator = this.props.configurator;
     var collabClient = this.collabClient;
+    var configurator = this.context.configurator;
     var documentClient = this.context.documentClient;
 
     documentClient.getDocument(documentId, function(err, docRecord) {
@@ -110,8 +110,9 @@ NoteLoader.Prototype = function() {
         return;
       }
 
-      var doc = configurator.createArticle();
-      doc = converter.importDocument(doc, docRecord.data);
+      var note = configurator.createArticle();
+      var doc = converter.importDocument(note, docRecord.data);
+
       var session = new CollabSession(doc, {
         documentId: documentId,
         version: docRecord.version,
@@ -127,13 +128,13 @@ NoteLoader.Prototype = function() {
       window.session = session;
 
       this.setState({
-        noteInfo: new NoteInfo(docRecord),
+        noteInfo: new Info(docRecord),
         session: session
       });
     }.bind(this));
   };
 };
 
-Component.extend(NoteLoader);
+Component.extend(Loader);
 
-module.exports = NoteLoader;
+module.exports = Loader;
