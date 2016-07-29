@@ -1,7 +1,7 @@
 'use strict';
 
 var MetaNode = require('./MetaNode');
-var SubstanceNote = require('./SubstanceNote');
+var Note = require('./Note');
 
 var ParagraphPackage = require('substance/packages/paragraph/ParagraphPackage');
 var HeadingPackage = require('substance/packages/heading/HeadingPackage');
@@ -13,21 +13,21 @@ var EmphasisPackage = require('substance/packages/emphasis/EmphasisPackage');
 var StrongPackage = require('substance/packages/strong/StrongPackage');
 var CodePackage = require('substance/packages/code/CodePackage');
 
-var CommentPackage = require('../comment/CommentPackage');
-var MarkPackage = require('../mark/MarkPackage');
-var TodoPackage = require('../todo/TodoPackage');
+var CommentPackage = require('../comment/package');
+var MarkPackage = require('../mark/package');
+var TodoPackage = require('../todo/package');
 
 module.exports = {
-  name: 'note',
+  name: 'substance-note',
   configure: function(config) {
     config.defineSchema({
       name: 'substance-note',
-      ArticleClass: SubstanceNote,
+      ArticleClass: Note,
       defaultTextType: 'paragraph'
     });
-
     config.addNode(MetaNode);
 
+    // Import Substance Core packages
     config.import(ParagraphPackage);
     config.import(HeadingPackage);
     config.import(CodeblockPackage);
