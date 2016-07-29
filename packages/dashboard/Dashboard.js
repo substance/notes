@@ -5,7 +5,7 @@ var Header = require('../header/Header');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
 var Component = require('substance/ui/Component');
-var NoteItem = require('./NoteItem');
+var Item = require('./Item');
 
 function Dashboard() {
   Component.apply(this, arguments);
@@ -82,7 +82,7 @@ Dashboard.Prototype = function() {
     if (noteItems) {
       noteItems.forEach(function(noteItem) {
         layout.append(
-          $$(NoteItem, noteItem)
+          $$(Item, noteItem)
         );
       });
     }
