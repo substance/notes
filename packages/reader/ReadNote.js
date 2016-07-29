@@ -1,30 +1,30 @@
 'use strict';
 
-var Notification = require('../notification/Notification');
 var Layout = require('substance/ui/Layout');
 var Button = require('substance/ui/Button');
-var NoteLoader = require('../note-loader/NoteLoader');
-var NoteReader = require('../note-reader/NoteReader');
-var RequestEditAccess = require('./RequestEditAccess');
+var Loader = require('../common/Loader');
+var Reader = require('./Reader');
 
-function NoteSection() {
-  NoteLoader.apply(this, arguments);
+function ReadNote() {
+  Loader.apply(this, arguments);
 
   this.handleActions({
     'closeModal': this._closeModal
   });
 }
 
-NoteSection.Prototype = function() {
+ReadNote.Prototype = function() {
 
   this._requestLogin = function() {
-    console.log('authenticating now');
     this.extendState({
       requestLogin: true
     });
   };
 
   this.render = function($$) {
+    var componentRegistry = this.context.componentRegistry;
+    var RequestEditAccess = componentRegistry.get('request-edit');
+
     var userSession = this.props.userSession;
     var el = $$('div').addClass('sc-read-note');
 
@@ -47,7 +47,7 @@ NoteSection.Prototype = function() {
             noPadding: true
           }).append(
             $$(Button).addClass('se-new-note-button').append(
-              this.context.iconProvider.renderIcon($$, 'cover.edit'),
+              this.context.iconProvider.renderIcon($$, 'edit-note'),
               ' Edit'
             ).on('click', this._requestLogin)
           )
@@ -55,7 +55,7 @@ NoteSection.Prototype = function() {
       }
 
       layout.append(
-        $$(NoteReader, {
+        $$(Reader, {
           configurator: this.props.configurator,
           mobile: this.props.mobile,
           noteInfo: this.state.noteInfo,
@@ -81,6 +81,6 @@ NoteSection.Prototype = function() {
   };
 };
 
-NoteLoader.extend(NoteSection);
+Loader.extend(ReadNote);
 
-module.exports = NoteSection;
+module.exports = ReadNote;
