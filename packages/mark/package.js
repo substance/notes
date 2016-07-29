@@ -1,3 +1,4 @@
+
 'use strict';
 
 var Mark = require('./Mark');
