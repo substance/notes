@@ -52,16 +52,15 @@ AuthenticationClient.Prototype = function() {
     Returns true if client is authenticated
   */
   this.isAuthenticated = function() {
-    return !!this._session;
+    return Boolean(this._session);
   };
 
   this._requestInvalid = function(reqName, reqParams) {
-    return this._requests[reqName] !==  reqParams;
+    return this._requests[reqName] !== reqParams;
   };
 
   /*
     Authenticate user
-
     Logindata consists of an object (usually with login/password properties)
   */
   this.authenticate = function(loginData, cb) {
@@ -80,7 +79,6 @@ AuthenticationClient.Prototype = function() {
 
   /*
     Clear user session
-
     TODO: this should make a logout call to the API to remove the session entry
   */
   this.logout = function(cb) {
