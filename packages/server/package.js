@@ -2,13 +2,13 @@
 
 var config = require('config');
 var extend = require('lodash/extend');
-var NotePackage = require('../packages/note/NotePackage');
+var Note = require('../note/package');
 var ServerConfig = extend({}, config.get('server'), {env: config.util.getEnv('NODE_ENV')});
 
 module.exports = {
-  name: 'notes-server',
+  name: 'server',
   configure: function(config) {
-    config.import(NotePackage);
     config.setAppConfig(ServerConfig);
+    config.import(Note);
   }
 };

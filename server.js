@@ -1,37 +1,61 @@
-var express = require('express');
-var path = require('path');
-var app = express();
-var server = require('substance/util/server');
-var CollabServer = require('substance/collab/CollabServer');
-var DocumentChange = require('substance/model/DocumentChange');
-var DocumentEngine = require('./server/NotesDocumentEngine');
-var DocumentStore = require('./server/DocumentStore');
-var ChangeStore = require('./server/ChangeStore');
-var UserStore = require('./server/UserStore');
-var SessionStore = require('./server/SessionStore');
-var AuthenticationServer = require('./server/AuthenticationServer');
-var DocumentServer = require('./server/NotesDocumentServer');
-var AuthenticationEngine = require('./server/AuthenticationEngine');
-var FileStore = require('./server/FileStore');
-var FileServer = require('./server/FileServer');
-var NotesServer = require('./server/NotesServer');
-var NotesEngine = require('./server/NotesEngine');
-var Database = require('./server/Database');
-var bodyParser = require('body-parser');
+'use strict';
+
 var http = require('http');
+var path = require('path');
+var express = require('express');
+var app = express();
+var bodyParser = require('body-parser');
 var WebSocketServer = require('ws').Server;
-var NotesServerConfigurator = require('./server/NotesServerConfigurator');
-var NotesServerConfig = require('./server/NotesServerConfig');
 
-var configurator = new NotesServerConfigurator();
-configurator.import(NotesServerConfig);
-
+/*
+  Config
+*/
+var ServerConfigurator = require('./packages/server/ServerConfigurator');
+var ServerPackage = require('./packages/server/package');
+var configurator = new ServerConfigurator().import(ServerPackage);
 var config = configurator.getAppConfig();
 
-var db = new Database();
+// Development server 
+// Serves HTML, bundled JS and CSS in non-production mode
+var serverUtils = require('substance/util/server');
 
-// Set up stores
-// -------------------------------
+/*
+  Stores
+*/
+var DocumentStore = require('./server/DocumentStore');
+var SnapshotStore = require('./server/SnapshotStore');
+var ChangeStore = require('./server/ChangeStore');
+var SessionStore = require('./server/SessionStore');
+var UserStore = require('./server/UserStore');
+var FileStore = require('./server/FileStore');
+
+/*
+  Engines
+*/
+var DocumentEngine = require('./server/NotesDocumentEngine');
+var AuthenticationEngine = require('./server/AuthenticationEngine');
+var NotesEngine = require('./server/NotesEngine');
+//var SnapshotEngine = require('./server/MproSnapshotEngine');
+
+/*
+  Servers
+*/
+var CollabServer = require('substance/collab/CollabServer');
+var AuthenticationServer = require('./server/AuthenticationServer');
+var DocumentServer = require('./server/NotesDocumentServer');
+var FileServer = require('./server/FileServer');
+var NotesServer = require('./server/NotesServer');
+
+/*
+  Models
+*/
+var DocumentChange = require('substance/model/DocumentChange');
+var Database = require('./server/Database');
+
+/*
+  Stores setup
+*/
+var db = new Database();
 
 var userStore = new UserStore({ db: db });
 var sessionStore = new SessionStore({ db: db });
@@ -40,21 +64,34 @@ var sessionStore = new SessionStore({ db: db });
 // each time.
 var changeStore = new ChangeStore({db: db});
 var documentStore = new DocumentStore({db: db});
-
+var snapshotStore = new SnapshotStore({db: db});
 var fileStore = new FileStore({destination: './uploads'});
 
+/*
+  Engines setup
+*/
 var schema = configurator.getSchema();
-var schemas = {};
-schemas[schema.name] = schema;
-schemas[schema.name].documentFactory = {
-  createDocument: configurator.createArticle.bind(configurator)
+var seed = configurator.getSeed();
+schema.documentFactory = {
+  createDocument: configurator.createArticle.bind(configurator, seed)
 };
+
+// var snapshotEngine = new SnapshotEngine({
+//   db: db,
+//   documentStore: documentStore,
+//   changeStore: changeStore,
+//   snapshotStore: snapshotStore,
+//   schemas: schema
+// });
 
 var documentEngine = new DocumentEngine({
   db: db,
   documentStore: documentStore,
   changeStore: changeStore,
-  schemas: schemas
+  //snapshotEngine: snapshotEngine,
+  schemas: {
+    'substance-note': schema
+  }
 });
 
 var authenticationEngine = new AuthenticationEngine({
@@ -74,12 +111,15 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 30
 /*
   Serve app
 */
-
 if(config.env !== 'production') {
   // Serve HTML, bundled JS and CSS in non-production mode
-  server.serveHTML(app, '/', path.join(__dirname, 'client/index.html'), config);
-  server.serveStyles(app, '/app.css', path.join(__dirname, 'client/app.scss'));
-  server.serveJS(app, '/app.js', path.join(__dirname, 'client/app.js'));
+  serverUtils.serveStyles(app, '/app.css', {
+    rootDir: __dirname,
+    configuratorPath: require.resolve('./packages/notes/NotesConfigurator'),
+    configPath: require.resolve('./client/package')
+  });
+  serverUtils.serveJS(app, '/app.js', path.join(__dirname, 'client', 'app.js'));
+  serverUtils.serveHTML(app, '/', path.join(__dirname, 'client', 'index.html'), config);
   // Serve static files in non-production mode
   app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));
   app.use('/fonts', express.static(path.join(__dirname, 'node_modules/font-awesome/fonts')));
@@ -92,15 +132,13 @@ if(config.env !== 'production') {
 */
 app.use('/media', express.static(path.join(__dirname, 'uploads')));
 
-// Connect Substance
-// ----------------
-
+/*
+  Servers setup
+*/
 var httpServer = http.createServer();
 var wss = new WebSocketServer({ server: httpServer });
 
 // DocumentServer
-// ----------------
-
 var documentServer = new DocumentServer({
   documentEngine: documentEngine,
   path: '/api/documents'
@@ -109,8 +147,6 @@ documentServer.bind(app);
 
 
 // CollabServer
-// ----------------
-
 var collabServer = new CollabServer({
   documentEngine: documentEngine,
 
@@ -174,36 +210,26 @@ var collabServer = new CollabServer({
 
 collabServer.bind(wss);
 
-// Set up AuthenticationServer
-// ----------------
-
+// AuthenticationServer
 var authenticationServer = new AuthenticationServer({
   authenticationEngine: authenticationEngine,
-  path: '/api/auth/'
+  path: '/api/auth'
 });
-
 authenticationServer.bind(app);
 
-// NotesServer
-// ----------------
-
-var notesServer = new NotesServer({
-  notesEngine: notesEngine,
-  path: '/api/notes'
-});
-notesServer.bind(app);
-
-// Substance Notes API
-// ----------------
-// 
-// We just moved that out of the Collab hub as it's app specific code
-
+// File Server
 var fileServer = new FileServer({
   store: fileStore,
   path: '/api/files'
 });
 fileServer.bind(app);
 
+// NotesServer
+var notesServer = new NotesServer({
+  notesEngine: notesEngine,
+  path: '/api/notes'
+});
+notesServer.bind(app);
 
 // Error handling
 // We send JSON to the client so they can display messages in the UI.
@@ -224,7 +250,7 @@ app.use(function(err, req, res, next) {
   
   res.status(500).json({
     errorName: err.name,
-    errorMessage: err.message || err.name
+    errorMessage: err.message || err.name
   });
 });
 
@@ -233,10 +259,10 @@ httpServer.on('request', app);
 
 // NOTE: binding to localhost means that the app is not exposed
 // to the www directly.
-// E.g. on sandbox.substance.io we have established a reverse proxy
-// forwarding http+ws on notepad.substance.io to localhost:5001
+// E.g. we'll need to establish a reverse proxy
+// forwarding http+ws from domain name to localhost:5001 for instance
 httpServer.listen(config.port, config.host, function() {
-  console.log('Listening on ' + httpServer.address().port); 
+  console.log('Listening on ' + httpServer.address().port); // eslint-disable-line
 });
 
 // Export app for requiring in test files
