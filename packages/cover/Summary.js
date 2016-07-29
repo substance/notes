@@ -5,11 +5,11 @@ var filter = require('lodash/filter');
 var size = require('lodash/size');
 var moment = require('moment');
 
-var NoteSummary = function() {
-  NoteSummary.super.apply(this, arguments);
+var Summary = function() {
+  Summary.super.apply(this, arguments);
 };
 
-NoteSummary.Prototype = function() {
+Summary.Prototype = function() {
 
   this.render = function($$) {
     var doc = this.context.doc;
@@ -51,6 +51,6 @@ NoteSummary.Prototype = function() {
   };
 };
 
-Component.extend(NoteSummary);
+Component.extend(Summary);
 
-module.exports = NoteSummary;
+module.exports = Summary;
