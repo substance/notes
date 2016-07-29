@@ -1,3 +1,6 @@
+$fa-font-path:  "../fonts" !default;
+@import '../node_modules/font-awesome/scss/font-awesome';
+
 .sc-app {
   // font-family: 'Lato', sans-serif;
 
@@ -23,4 +26,8 @@
       cursor: pointer;
     }
   }
+}
+
+body.sm-fixed-layout {
+  overflow: hidden;
 }

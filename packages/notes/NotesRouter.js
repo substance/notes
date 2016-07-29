@@ -12,9 +12,14 @@ NotesRouter.Prototype = function() {
   // URL helpers
   this.openNote = function(documentId) {
     return '#' + Router.objectToRouteString({
-      section: 'note',
+      page: 'note',
       documentId: documentId
     });
+  };
+
+  this.getRoute = function() {
+    var routerString = this.getRouteString();
+    return Router.routeStringToObject(routerString);
   };
 };
 
