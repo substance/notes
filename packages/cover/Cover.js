@@ -2,7 +2,7 @@
 
 var Component = require('substance/ui/Component');
 var TextPropertyEditor = require('substance/ui/TextPropertyEditor');
-var NoteSummary = require('./NoteSummary');
+var Summary = require('./Summary');
 
 var Cover = function() {
   Cover.super.apply(this, arguments);
@@ -41,7 +41,7 @@ Cover.Prototype = function() {
         }).addClass('se-title'),
         $$('div').addClass('se-separator'),
         $$('div').addClass('se-authors').append(authors.join(', ')),
-        $$(NoteSummary, {
+        $$(Summary, {
           mobile: this.props.mobile,
           noteInfo: this.props.noteInfo
         })
