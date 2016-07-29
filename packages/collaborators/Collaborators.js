@@ -1,7 +1,7 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
-var forEach = require('lodash/forEach');
+var each = require('lodash/each');
 
 function Collaborators() {
   Component.apply(this, arguments);
@@ -19,21 +19,30 @@ Collaborators.Prototype = function() {
   };
 
   this._init = function() {
-    this.props.session.on('collaborators:changed', this.rerender, this);
+    if(this.props.session) {
+      this.props.session.on('collaborators:changed', this.rerender, this);
+    }
   };
 
   this.dispose = function() {
-    this.props.session.off(this);
+    if(this.props.session) {
+      this.props.session.off(this);
+    }
   };
 
   this.render = function($$) {
+    if(!this.props.session) {
+      var emptyEl = $$('div').addClass('sc-empty-collaborators');
+      return emptyEl;
+    }
+    
     var el = $$('div').addClass('sc-collaborators');
 
     var collaborators = this.props.session.collaborators;
-    forEach(collaborators, function(collaborator) {
+    each(collaborators, function(collaborator) {
       var initials = this._extractInitials(collaborator);
       el.append(
-        $$('div').addClass('se-collaborator sm-collaborator-'+collaborator.colorIndex).attr({title: collaborator.name || 'Anonymous'}).append(
+        $$('div').addClass('se-collaborator sm-collaborator-'+collaborator.colorIndex).attr({title: collaborator.name || 'Anonymous'}).append(
           initials
         )
       );
