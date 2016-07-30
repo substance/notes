@@ -12,5 +12,7 @@ module.exports = {
     config.addTool(CommentTool);
     config.addCommand(CommentCommand);
     config.addComponent(Comment.static.name, CommentComponent);
+    config.addIcon(Comment.static.name, {'fontawesome': 'fa-comment'});
+    config.addStyle(__dirname, '_comment');
   }
 };

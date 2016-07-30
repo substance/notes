@@ -11,5 +11,7 @@ module.exports = {
     config.addNode(Mark);
     config.addTool(MarkTool);
     config.addCommand(MarkCommand);
+    config.addIcon(Mark.static.name, {'fontawesome': 'fa-pencil'});
+    config.addStyle(__dirname, '_mark');
   }
 };
