@@ -2,16 +2,17 @@
 
 var Document = require('substance/model/Document');
 
-/**
-  Note article class
+/*
+  Substance Note model.
 */
-var Note = function(schema) {
+
+function Note(schema) {
   Document.call(this, schema);
   this._initialize();
-};
+}
 
 Note.Prototype = function() {
-  
+
   this._initialize = function() {
     this.create({
       type: 'container',
@@ -23,7 +24,7 @@ Note.Prototype = function() {
   this.getDocumentMeta = function() {
     return this.get('meta');
   };
-  
+
 };
 
 Document.extend(Note);
