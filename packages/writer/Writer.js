@@ -13,7 +13,7 @@ function NoteWriter() {
 NoteWriter.Prototype = function() {
 
   this.render = function($$) {
-    var el = $$('div').addClass('sc-document-editor');
+    var el = $$('div').addClass('sc-note-writer');
 
     var toolbar = this._renderToolbar($$);
     var editor = this._renderEditor($$);
@@ -31,9 +31,16 @@ NoteWriter.Prototype = function() {
       )
     ).ref('contentPanel');
 
+    var toolbarPane = $$('div').addClass('se-toolbar-wrapper').append(
+      $$(Layout, {
+        width: 'large',
+        noPadding: true
+      }).append(toolbar)
+    );
+
     el.append(
       $$(SplitPane, {splitType: 'horizontal'}).append(
-        toolbar,
+        toolbarPane,
         contentPanel
       )
     );
