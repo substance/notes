@@ -19,9 +19,9 @@ AuthenticationServer.Prototype = function() {
     @param {String} mountPath must be something like '/api/auth/'
   */
   this.bind = function(app) {
-    app.post(this.path + 'loginlink', this._requestLoginLink.bind(this));
-    app.post(this.path + 'authenticate', this._authenticate.bind(this));
-    app.post(this.path + 'changename', this._changename.bind(this));
+    app.post(this.path + '/loginlink', this._requestLoginLink.bind(this));
+    app.post(this.path + '/authenticate', this._authenticate.bind(this));
+    app.post(this.path + '/changename', this._changename.bind(this));
   };
 
   /*
