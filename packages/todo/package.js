@@ -12,5 +12,7 @@ module.exports = {
     config.addTool(TodoTool);
     config.addCommand(TodoCommand);
     config.addComponent(Todo.static.name, TodoComponent);
+    config.addIcon(Todo.static.name, {'fontawesome': 'fa-check-square-o'});
+    config.addStyle(__dirname, '_todo');
   }
 };
