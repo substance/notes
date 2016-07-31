@@ -55,7 +55,7 @@ CommentCommand.Prototype = function() {
     if (!node) return 'paragraph';
     var nodeType = node.type;
 
-    if (nodeType === 'todo') {
+    if (nodeType === 'comment') {
       return 'paragraph';
     } else {
       return 'comment';
