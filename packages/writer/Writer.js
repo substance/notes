@@ -73,6 +73,18 @@ NoteWriter.Prototype = function() {
     }).ref('cover');
   };
 
+  // Expose authentication client in commands context
+  this.getCommandContext = function() {
+    return {
+      authenticationClient: this.context.authenticationClient,
+      documentSession: this.documentSession,
+      surfaceManager: this.surfaceManager,
+      fileClient: this.fileClient,
+      saveHandler: this.saveHandler,
+      converterRegistry: this.converterRegistry
+    };
+  };
+
 };
 
 ProseEditor.extend(NoteWriter);
