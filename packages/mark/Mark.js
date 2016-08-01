@@ -12,6 +12,6 @@ function Mark() {
 
 PropertyAnnotation.extend(Mark);
 
-Mark.static.name = 'mark';
+Mark.type = 'mark';
 
 module.exports = Mark;

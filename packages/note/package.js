@@ -1,7 +1,8 @@
 'use strict';
 
-var MetaNode = require('./MetaNode');
 var Note = require('./Note');
+var MetaNode = require('./MetaNode');
+var NoteSeed = require('./NoteSeed');
 
 var ParagraphPackage = require('substance/packages/paragraph/ParagraphPackage');
 var HeadingPackage = require('substance/packages/heading/HeadingPackage');
@@ -26,6 +27,7 @@ module.exports = {
       defaultTextType: 'paragraph'
     });
     config.addNode(MetaNode);
+    config.addSeed(NoteSeed);
 
     // Import Substance Core packages
     config.import(ParagraphPackage);

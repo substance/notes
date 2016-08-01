@@ -48,7 +48,7 @@ EditNote.Prototype = function() {
     header = $$(Header, {
       mobile: this.props.mobile,
       actions: {
-        'home': 'My Notes',
+        'dashboard': 'My Notes',
         'newNote': 'New Note'
       }
     });

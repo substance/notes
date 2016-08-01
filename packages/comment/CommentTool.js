@@ -8,6 +8,4 @@ function CommentTool() {
 
 AnnotationTool.extend(CommentTool);
 
-CommentTool.static.name = 'comment';
-
 module.exports = CommentTool;

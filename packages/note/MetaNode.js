@@ -12,9 +12,8 @@ function MetaNode() {
 
 DocumentNode.extend(MetaNode);
 
-MetaNode.static.name = "meta";
-
-MetaNode.static.defineSchema({
+MetaNode.define({
+  type: "meta",
   title: { type: 'string', default: 'Untitled'}
 });
 

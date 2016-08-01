@@ -12,9 +12,8 @@ function Comment() {
 
 TextBlock.extend(Comment);
 
-Comment.static.name = 'comment';
-
-Comment.static.defineSchema({
+Comment.define({
+  type: 'comment',
   content: 'text',
   author: { type: 'string', default: '' },
   createdAt: { type: 'string', default: new Date().toISOString() }

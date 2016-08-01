@@ -9,10 +9,10 @@ module.exports = {
   name: 'todo',
   configure: function(config) {
     config.addNode(Todo);
-    config.addTool(TodoTool);
-    config.addCommand(TodoCommand);
-    config.addComponent(Todo.static.name, TodoComponent);
-    config.addIcon(Todo.static.name, {'fontawesome': 'fa-check-square-o'});
+    config.addTool(Todo.type, TodoTool);
+    config.addCommand(Todo.type, TodoCommand, { nodeType: Todo.type });
+    config.addComponent(Todo.type, TodoComponent);
+    config.addIcon(Todo.type, {'fontawesome': 'fa-check-square-o'});
     config.addStyle(__dirname, '_todo');
   }
 };

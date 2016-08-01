@@ -8,6 +8,4 @@ function MarkTool() {
 
 AnnotationTool.extend(MarkTool);
 
-MarkTool.static.name = 'mark';
-
 module.exports = MarkTool;

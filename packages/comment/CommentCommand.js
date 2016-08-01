@@ -65,6 +65,4 @@ CommentCommand.Prototype = function() {
 
 Command.extend(CommentCommand);
 
-CommentCommand.static.name = 'comment';
-
 module.exports = CommentCommand;

@@ -8,6 +8,4 @@ function TodoTool() {
 
 AnnotationTool.extend(TodoTool);
 
-TodoTool.static.name = 'todo';
-
 module.exports = TodoTool;
