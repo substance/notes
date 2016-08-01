@@ -8,6 +8,4 @@ function MarkCommand() {
 
 AnnotationCommand.extend(MarkCommand);
 
-MarkCommand.static.name = 'mark';
-
 module.exports = MarkCommand;

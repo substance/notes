@@ -28,6 +28,14 @@ NotesConfigurator.Prototype = function() {
     return this.config.app;
   };
 
+  this.addSeed = function(seed) {
+    this.config.seed = seed;
+  };
+
+  this.getSeed = function() {
+    return this.config.seed;
+  };
+
   /*
     Set Authentication Server url
   */

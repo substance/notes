@@ -12,9 +12,8 @@ function Todo() {
 
 TextBlock.extend(Todo);
 
-Todo.static.name = 'todo';
-
-Todo.static.defineSchema({
+Todo.define({
+  type: 'todo',
   content: 'text',
   done: { type: 'bool', default: false }
 });

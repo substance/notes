@@ -9,10 +9,10 @@ module.exports = {
   name: 'comment',
   configure: function(config) {
     config.addNode(Comment);
-    config.addTool(CommentTool);
-    config.addCommand(CommentCommand);
-    config.addComponent(Comment.static.name, CommentComponent);
-    config.addIcon(Comment.static.name, {'fontawesome': 'fa-comment'});
+    config.addTool(Comment.type, CommentTool);
+    config.addCommand(Comment.type, CommentCommand, { nodeType: Comment.type });
+    config.addComponent(Comment.type, CommentComponent);
+    config.addIcon(Comment.type, {'fontawesome': 'fa-comment'});
     config.addStyle(__dirname, '_comment');
   }
 };

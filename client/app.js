@@ -9,7 +9,7 @@ var NotesPackage = require('./package');
 var configurator = new NotesConfigurator().import(NotesPackage);
 
 window.onload = function() {
-  window.app = Notes.static.mount({
+  window.app = Notes.mount({
     configurator: configurator
   }, document.body);
 };

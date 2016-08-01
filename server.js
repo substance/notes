@@ -86,6 +86,7 @@ schema.documentFactory = {
 
 var documentEngine = new DocumentEngine({
   db: db,
+  configurator: configurator,
   documentStore: documentStore,
   changeStore: changeStore,
   //snapshotEngine: snapshotEngine,
@@ -112,13 +113,20 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '3mb', parameterLimit: 30
   Serve app
 */
 if(config.env !== 'production') {
+  var browserifyConfig = {
+    debug: true
+  };
+  
   // Serve HTML, bundled JS and CSS in non-production mode
   serverUtils.serveStyles(app, '/app.css', {
     rootDir: __dirname,
     configuratorPath: require.resolve('./packages/notes/NotesConfigurator'),
     configPath: require.resolve('./client/package')
   });
-  serverUtils.serveJS(app, '/app.js', path.join(__dirname, 'client', 'app.js'));
+  serverUtils.serveJS(app, '/app.js', {
+    sourcePath: path.join(__dirname, 'client', 'app.js'),
+    browserify: browserifyConfig
+  });
   serverUtils.serveHTML(app, '/', path.join(__dirname, 'client', 'index.html'), config);
   // Serve static files in non-production mode
   app.use('/assets', express.static(path.join(__dirname, 'styles/assets')));

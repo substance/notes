@@ -61,6 +61,4 @@ TodoCommand.Prototype = function() {
 
 Command.extend(TodoCommand);
 
-TodoCommand.static.name = 'todo';
-
 module.exports = TodoCommand;

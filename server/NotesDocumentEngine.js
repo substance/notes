@@ -1,3 +1,5 @@
+'use strict';
+
 var DocumentEngine = require('substance/collab/DocumentEngine');
 var Err = require('substance/util/SubstanceError');
 
@@ -6,6 +8,7 @@ var Err = require('substance/util/SubstanceError');
 */
 function NotesDocumentEngine(config) {
   NotesDocumentEngine.super.apply(this, arguments);
+  this.configurator = config.configurator;
   this.db = config.db.connection;
 }
 
@@ -14,14 +17,14 @@ NotesDocumentEngine.Prototype = function() {
   var _super = NotesDocumentEngine.super.prototype;
 
   this.createDocument = function(args, cb) {
-    var schemaConfig = this.schemas[args.schemaName];
-    if (!schemaConfig) {
+    var schema = this.configurator.getSchema();
+    if (schema.name !== args.schemaName) {
       return cb(new Err('SchemaNotFoundError', {
         message: 'Schema not found for ' + args.schemaName
       }));
     }
-    var docFactory = schemaConfig.documentFactory;
-    var doc = docFactory.createArticle();
+    var seed = this.configurator.getSeed();
+    var doc = this.configurator.createArticle(seed);
     args.info.updatedAt = new Date();
     args.info.title = doc.get(['meta', 'title']);
     _super.createDocument.call(this, args, cb);
