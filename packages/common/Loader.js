@@ -119,6 +119,11 @@ Loader.Prototype = function() {
         collabClient: collabClient
       });
 
+      if(docRecord.version === 0) {
+        var seed = configurator.getSeed();
+        session.transaction(seed);
+      }
+
       // Listen for errors and sync start events for error reporting
       session.on('error', this._onCollabSessionError, this);
       session.on('sync', this._onCollabSessionSync, this);
