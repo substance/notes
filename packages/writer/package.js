@@ -4,7 +4,6 @@ var Note = require('../note/package');
 var EditNote = require('./EditNote');
 // Base packages
 var BasePackage = require('substance/packages/base/BasePackage');
-var PersistencePackage = require('substance/packages/persistence/PersistencePackage');
 // Toolbar
 var ProseEditorToolbar = require('substance/packages/prose-editor/ProseEditorToolbar');
 // Notes specific packages
@@ -24,7 +23,6 @@ module.exports = {
     config.import(Note);
     // Import base packages
     config.import(BasePackage);
-    config.import(PersistencePackage);
     // Import notes specific packages
     config.import(CoverPackage);
     config.import(HeaderPackage);
