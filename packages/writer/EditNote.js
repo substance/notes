@@ -33,6 +33,7 @@ EditNote.Prototype = function() {
   this.render = function($$) {
     var authenticationClient = this.context.authenticationClient;
     var componentRegistry = this.context.componentRegistry;
+    var Notification = componentRegistry.get('notification');
     var Collaborators = componentRegistry.get('collaborators');
     var LoginStatus = componentRegistry.get('login-status');
     var Header = componentRegistry.get('header');
@@ -55,6 +56,12 @@ EditNote.Prototype = function() {
       }
     });
 
+    header.outlet('content').append(
+      $$(LoginStatus, {
+        user: authenticationClient.getUser()
+      })
+    );
+
     // Notification overrules collaborators
     if (notification) {
       header.outlet('content').append(
@@ -67,12 +74,6 @@ EditNote.Prototype = function() {
         })
       );
     }
-
-    header.outlet('content').append(
-      $$(LoginStatus, {
-        user: authenticationClient.getUser()
-      })
-    );
 
     // Main content
     // --------------
@@ -126,7 +127,7 @@ EditNote.Prototype = function() {
   */
   this._onCollabSessionError = function(err) {
     var message = [
-      this.i18n.t(err.name)
+      this.getLabel(err.name)
     ];
     if (err.cause) {
       message.push(this.getLabel(err.cause.name));
