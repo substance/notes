@@ -1,7 +1,6 @@
 'use strict';
 
 var Err = require('substance/util/SubstanceError');
-var Header = require('../header/Header');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
 var Component = require('substance/ui/Component');
@@ -22,14 +21,27 @@ Dashboard.Prototype = function() {
   };
 
   this.render = function($$) {
+    var authenticationClient = this.context.authenticationClient;
+    var componentRegistry = this.context.componentRegistry;
+    var LoginStatus = this.context.componentRegistry.get('login-status');
+    var Header = componentRegistry.get('header');
+
     var noteItems = this.state.noteItems;
     var el = $$('div').addClass('sc-dashboard');
 
-    el.append($$(Header, {
+    var header = $$(Header, {
       actions: {
         'newNote': 'New Note'
       }
-    }));
+    });
+
+    header.outlet('content').append(
+      $$(LoginStatus, {
+        user: authenticationClient.getUser()
+      })
+    );
+
+    el.append(header);
 
     if (!noteItems) {
       return el;

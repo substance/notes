@@ -31,8 +31,10 @@ EditNote.Prototype = function() {
   };
 
   this.render = function($$) {
+    var authenticationClient = this.context.authenticationClient;
     var componentRegistry = this.context.componentRegistry;
     var Collaborators = componentRegistry.get('collaborators');
+    var LoginStatus = componentRegistry.get('login-status');
     var Header = componentRegistry.get('header');
 
     var notification = this.state.notification;
@@ -65,6 +67,12 @@ EditNote.Prototype = function() {
         })
       );
     }
+
+    header.outlet('content').append(
+      $$(LoginStatus, {
+        user: authenticationClient.getUser()
+      })
+    );
 
     // Main content
     // --------------

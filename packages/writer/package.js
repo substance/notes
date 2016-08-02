@@ -10,6 +10,7 @@ var ProseEditorToolbar = require('substance/packages/prose-editor/ProseEditorToo
 var CoverPackage = require('../cover/package');
 var HeaderPackage = require('../header/package');
 var CollaboratorsPackage = require('../collaborators/package');
+var WelcomePackage = require('../welcome/package');
 var Overlay = require('substance/ui/Overlay');
 
 module.exports = {
@@ -27,5 +28,6 @@ module.exports = {
     config.import(CoverPackage);
     config.import(HeaderPackage);
     config.import(CollaboratorsPackage);
+    config.import(WelcomePackage);
   }
 };
