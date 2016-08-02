@@ -2,6 +2,7 @@
 
 var ResponsiveApplication = require('substance/ui/ResponsiveApplication');
 var cloneDeep = require('lodash/cloneDeep');
+var isNull = require('lodash/isNull');
 
 /*
   Abstract Application class.
@@ -17,6 +18,12 @@ function AbstractApplication() {
 }
 
 AbstractApplication.Prototype = function() {
+
+  this.willUpdateState = function(newState) {
+    if(isNull(newState.userSession)) {
+      this.navigate({page: this.getLoginPage()});
+    }
+  };
 
   /*
     Gets default app route.
@@ -154,10 +161,10 @@ AbstractApplication.Prototype = function() {
       if (err) throw err;
 
       window.localStorage.removeItem('sessionToken');
+
       this.extendState({
         userSession: null
       });
-      this.navigate({page: this.getLoginPage()});
     }.bind(this));
   };
 
