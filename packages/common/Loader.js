@@ -78,7 +78,7 @@ Loader.Prototype = function() {
     this.extendState({
       error: {
         type: 'error',
-        message: this.i18n.t(err.name)
+        message: this.getLabel(err.name)
       }
     });
   };
