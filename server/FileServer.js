@@ -27,9 +27,11 @@ FileServer.Prototype = function() {
     var self = this;
     var uploader = this.store.getFileUploader('files');
     uploader(req, res, function (err) {
-      if (err) return next(new Err('FileStore.UploadError', {
-        cause: err
-      }));
+      if (err) {
+        return next(new Err('FileStore.UploadError', {
+          cause: err
+        }));
+      }
       res.json({name: self.store.getFileName(req)});
     });
   };

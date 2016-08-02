@@ -4,6 +4,7 @@ var oo = require('substance/util/oo');
 var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
 var Err = require('substance/util/SubstanceError');
+var Promise = require('bluebird');
 
 /*
   A simple SQL Session Store implementation

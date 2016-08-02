@@ -4,6 +4,7 @@ var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
 var has = require('lodash/has');
 var Err = require('substance/util/SubstanceError');
+var Promise = require('bluebird');
 
 /*
   Implements the Substance DocumentStore API.
@@ -41,9 +42,11 @@ ChangeStore.Prototype = function() {
     }
     
     self.getVersion(args.documentId, function(err, headVersion) {
-      if (err) return cb(new Err('ChangeStore.GetVersionError', {
-        cause: err
-      }));
+      if (err) {
+        return cb(new Err('ChangeStore.GetVersionError', {
+          cause: err
+        }));
+      }
       var version = headVersion + 1;
       var record = {
         documentId: args.documentId,
@@ -55,9 +58,11 @@ ChangeStore.Prototype = function() {
 
       self.db.table('changes').insert(record)
         .asCallback(function(err) {
-          if (err) return cb(new Err('ChangeStore.CreateError', {
-            cause: err
-          }));
+          if (err) {
+            return cb(new Err('ChangeStore.CreateError', {
+              cause: err
+            }));
+          }
           cb(null, version);
         });
     });
@@ -138,14 +143,18 @@ ChangeStore.Prototype = function() {
     if(args.toVersion) query.andWhere('version', '<=', args.toVersion);
 
     query.asCallback(function(err, changes) {
-      if (err) return cb(new Err('ChangeStore.ReadError', {
-        cause: err
-      }));
-      changes = _.map(changes, function(c) {return JSON.parse(c.data); });
-      self.getVersion(args.documentId, function(err, headVersion) {
-        if (err) return cb(new Err('ChangeStore.GetVersionError', {
+      if (err) {
+        return cb(new Err('ChangeStore.ReadError', {
           cause: err
         }));
+      }
+      changes = _.map(changes, function(c) {return JSON.parse(c.data); });
+      self.getVersion(args.documentId, function(err, headVersion) {
+        if (err) {
+          return cb(new Err('ChangeStore.GetVersionError', {
+            cause: err
+          }));
+        }
         var res = {
           version: headVersion,
           changes: changes
@@ -167,9 +176,11 @@ ChangeStore.Prototype = function() {
                 .del();
 
     query.asCallback(function(err, deletedCount) {
-      if (err) return cb(new Err('ChangeStore.DeleteError', {
-        cause: err
-      }));
+      if (err) {
+        return cb(new Err('ChangeStore.DeleteError', {
+          cause: err
+        }));
+      }
       return cb(null, deletedCount);
     });
   };
@@ -189,9 +200,11 @@ ChangeStore.Prototype = function() {
                 .count();
 
     query.asCallback(function(err, count) {
-      if (err) return cb(new Err('ChangeStore.GetVersionError', {
-        cause: err
-      }));
+      if (err) {
+        return cb(new Err('ChangeStore.GetVersionError', {
+          cause: err
+        }));
+      }
       var result = count[0]['count(*)'];
       return cb(null, result);
     });

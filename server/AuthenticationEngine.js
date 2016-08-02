@@ -4,6 +4,7 @@ var appConfig = require('config');
 var uuid = require('substance/util/uuid');
 var oo = require('substance/util/oo');
 var Err = require('substance/util/SubstanceError');
+var Promise = require('bluebird');
 var Mail = require('./Mail');
 
 /*
@@ -83,10 +84,11 @@ AuthenticationEngine.Prototype = function() {
     } else {
       msg = "Click the following link to login: "+url + "/#loginKey=" + user.loginKey;
     }
-    
+    // eslint-disable-next-line
     console.log('Message: ', msg);
     return Mail.sendPlain(user.email, subject, msg)
       .then(function(info){
+        // eslint-disable-next-line
         console.log(info);
         return {
           loginKey: user.loginKey

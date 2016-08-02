@@ -14,7 +14,7 @@ CommentComponent.Prototype = function() {
   this.render = function($$) {
     var author = this.props.node.author;
     var date = moment(this.props.createdAt).fromNow();
-    var authored = '<strong>'+author+'</strong>' + ' ' + date;
+    var authored = '<strong>' + author + '</strong> ' + date;
 
     return $$('div')
       .addClass('sc-comment')

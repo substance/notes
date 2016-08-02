@@ -5,9 +5,9 @@ var filter = require('lodash/filter');
 var size = require('lodash/size');
 var moment = require('moment');
 
-var Summary = function() {
+function Summary() {
   Summary.super.apply(this, arguments);
-};
+}
 
 Summary.Prototype = function() {
 
@@ -17,7 +17,7 @@ Summary.Prototype = function() {
 
     var updatedAt = moment(noteInfo.updatedAt).fromNow();
     var commentsQt = size(doc.getIndex('type').get('comment'));
-    var commentsLabel = commentsQt == 1 ? 'comment' : 'comments';
+    var commentsLabel = commentsQt === 1 ? 'comment' : 'comments';
     var issueIndex = doc.getIndex('type').get('todo');
     var issuesQt = size(issueIndex);
     var resolvedQt = size(filter(issueIndex, function(i){return i.done;}));

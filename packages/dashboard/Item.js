@@ -36,7 +36,7 @@ NoteItem.Prototype = function() {
     //   )
     // );
 
-    // Creator + collaborators |  updatedAt
+    // Creator + collaborators | updatedAt
     var authors = [];
     authors.push($$('strong').append(this.props.creator || 'Anonymous'));
     if (this.props.collaborators.length > 0) {
