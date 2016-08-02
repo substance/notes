@@ -1,3 +1,5 @@
+'use strict';
+
 var DocumentServer = require('substance/collab/DocumentServer');
 
 /*

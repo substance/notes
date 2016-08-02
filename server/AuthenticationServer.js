@@ -31,6 +31,7 @@ AuthenticationServer.Prototype = function() {
     var args = req.body; // has email and docId (optional) which should be included in the login url.
 
     this.engine.requestLoginLink(args).then(function(result) {
+      // eslint-disable-next-line
       console.log('this.engine.requestLoginLink result', result);
       res.json({status: 'ok'});
     }).catch(function(err) {

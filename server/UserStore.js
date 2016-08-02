@@ -4,6 +4,8 @@ var oo = require('substance/util/oo');
 var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
 var Err = require('substance/util/SubstanceError');
+var Promise = require('bluebird');
+
 /*
   Implements Substance Store API. This is just a stub and is used for
   testing.

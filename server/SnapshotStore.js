@@ -3,6 +3,7 @@
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
 var Err = require('substance/util/SubstanceError');
+var Promise = require('bluebird');
 
 /*
   Implements Substance SnapshotStore API.
@@ -41,9 +42,11 @@ SnapshotStore.Prototype = function() {
 
 
     query.asCallback(function(err, snapshot) {
-      if (err) return cb(new Err('SnapshotStore.ReadError', {
-        cause: err
-      }));
+      if (err) {
+        return cb(new Err('SnapshotStore.ReadError', {
+          cause: err
+        }));
+      }
       snapshot = snapshot[0];
       if (snapshot) snapshot.data = JSON.parse(snapshot.data);
       cb(null, snapshot);
@@ -64,9 +67,11 @@ SnapshotStore.Prototype = function() {
     };
     this.db.table('snapshots').insert(record)
       .asCallback(function(err) {
-        if (err) return cb(new Err('SnapshotStore.CreateError', {
-          cause: err
-        }));
+        if (err) {
+          return cb(new Err('SnapshotStore.CreateError', {
+            cause: err
+          }));
+        }
         cb(null, record);
       });
   };
@@ -96,13 +101,17 @@ SnapshotStore.Prototype = function() {
       version: version
     };
     this.getSnapshot(args, function(err, snapshot){
-      if (err) return cb(new Err('SnapshotStore.ReadError', {
-        cause: err
-      }));
-      query.asCallback(function(err) {
-        if (err) return cb(new Err('SnapshotStore.DeleteError', {
+      if (err) {
+        return cb(new Err('SnapshotStore.ReadError', {
           cause: err
         }));
+      }
+      query.asCallback(function(err) {
+        if (err) {
+          return cb(new Err('SnapshotStore.DeleteError', {
+            cause: err
+          }));
+        }
         return cb(null, snapshot);
       });
     });
@@ -117,11 +126,13 @@ SnapshotStore.Prototype = function() {
                 .del();
 
     query.asCallback(function(err, deleteCount) {
-        if (err) return cb(new Err('SnapshotStore.DeleteForDocumentError', {
+      if (err) {
+        return cb(new Err('SnapshotStore.DeleteForDocumentError', {
           cause: err
         }));
-        return cb(null, deleteCount);
-      });
+      }
+      return cb(null, deleteCount);
+    });
   };
 
   /*

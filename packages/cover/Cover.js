@@ -4,9 +4,9 @@ var Component = require('substance/ui/Component');
 var TextPropertyEditor = require('substance/ui/TextPropertyEditor');
 var Summary = require('./Summary');
 
-var Cover = function() {
+function Cover() {
   Cover.super.apply(this, arguments);
-};
+}
 
 Cover.Prototype = function() {
 
@@ -23,7 +23,6 @@ Cover.Prototype = function() {
   this.render = function($$) {
     var configurator = this.props.configurator;
     var doc = this.getDocument();
-    var config = this.context.config;
     var noteInfo = this.props.noteInfo.props;
     var authors = [noteInfo.author || noteInfo.userId];
 
