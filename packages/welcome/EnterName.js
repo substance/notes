@@ -1,7 +1,6 @@
 'use strict';
 
 var Component = require('substance/ui/Component');
-var Icon = require('substance/ui/FontAwesomeIcon');
 var Input = require('substance/ui/Input');
 var Button = require('substance/ui/Button');
 var Layout = require('substance/ui/Layout');
@@ -13,7 +12,9 @@ function EnterName() {
 EnterName.Prototype = function() {
 
   this.render = function($$) {
+    var authenticationClient = this.context.authenticationClient;
     var componentRegistry = this.context.componentRegistry;
+    var LoginStatus = this.context.componentRegistry.get('login-status');
     var Notification = componentRegistry.get('notification');
     var Header = componentRegistry.get('header');
 
@@ -22,9 +23,15 @@ EnterName.Prototype = function() {
 
     var header = $$(Header, {
       actions: {
-        'home': 'My Notes'
+        'dashboard': 'My Notes'
       }
     });
+
+    header.outlet('content').append(
+      $$(LoginStatus, {
+        user: authenticationClient.getUser()
+      })
+    );
 
     var form = $$(Layout, {
       width: 'medium',
@@ -35,13 +42,13 @@ EnterName.Prototype = function() {
     if (!userName) {
       form.append(
         $$('h1').html(
-          'Welcome to Substance Notes'
+          this.getLabel('enter-name-welcome')
         )
       );
     } else {
       form.append(
         $$('h1').html(
-          'Please provide your name'
+          this.getLabel('enter-name-settings')
         )
       );
     }
@@ -56,21 +63,21 @@ EnterName.Prototype = function() {
         $$(Input, {
           type: 'text',
           value: userName || '',
-          placeholder: 'Please enter your name here',
+          placeholder: this.getLabel('enter-name-placeholder'),
           centered: true
         }).ref('name')
       ),
       $$('p').addClass('se-help').append(
-        'Your name will show up along with notes you worked on. You can change it any time via the user menu.'
+        this.getLabel('enter-name-help')
       )
     );
 
     form.append(
       $$(Button, {
-        disabled: !!this.state.loading // disable button when in loading state
+        disabled: Boolean(this.state.loading) // disable button when in loading state
       }).append(
-         $$(Icon, {icon: 'fa-long-arrow-right'}),
-         ' Continue'
+        this.context.iconProvider.renderIcon($$, 'welcome-continue'),
+        this.getLabel('enter-name-continue')
       )
       .on('click', this._updateUserName)
     );
@@ -101,7 +108,7 @@ EnterName.Prototype = function() {
         this.setState({
           notification: {
             type: 'error',
-            message: this.i18n(err.name)
+            message: this.getLabel(err.name)
           }
         });
         return;
