@@ -34,8 +34,8 @@ var FileStore = require('./server/FileStore');
 */
 var DocumentEngine = require('./server/NotesDocumentEngine');
 var AuthenticationEngine = require('./server/AuthenticationEngine');
+var SnapshotEngine = require('substance/collab/SnapshotEngine');
 var NotesEngine = require('./server/NotesEngine');
-//var SnapshotEngine = require('./server/MproSnapshotEngine');
 
 /*
   Servers
@@ -76,23 +76,20 @@ schema.documentFactory = {
   createDocument: configurator.createArticle.bind(configurator, seed)
 };
 
-// var snapshotEngine = new SnapshotEngine({
-//   db: db,
-//   documentStore: documentStore,
-//   changeStore: changeStore,
-//   snapshotStore: snapshotStore,
-//   schemas: schema
-// });
+var snapshotEngine = new SnapshotEngine({
+  configurator: configurator,
+  documentStore: documentStore,
+  changeStore: changeStore,
+  snapshotStore: snapshotStore,
+  frequency: 50
+});
 
 var documentEngine = new DocumentEngine({
   db: db,
   configurator: configurator,
   documentStore: documentStore,
   changeStore: changeStore,
-  //snapshotEngine: snapshotEngine,
-  schemas: {
-    'substance-note': schema
-  }
+  snapshotEngine: snapshotEngine
 });
 
 var authenticationEngine = new AuthenticationEngine({
@@ -156,6 +153,9 @@ documentServer.bind(app);
 
 // CollabServer
 var collabServer = new CollabServer({
+  // every 30s a heart beat message is sent to keep
+  // websocket connects alive when they are inactive
+  heartbeat: 30*1000,
   documentEngine: documentEngine,
 
   /*
@@ -186,7 +186,7 @@ var collabServer = new CollabServer({
           // Update the title if necessary
           var change = DocumentChange.fromJSON(message.change);
           change.ops.forEach(function(op) {
-            if(op.path[0] == 'meta' && op.path[1] == 'title') {
+            if(op.path[0] === 'meta' && op.path[1] === 'title') {
               title = op.diff.apply(title);
             }
           });
