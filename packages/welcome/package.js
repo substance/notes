@@ -10,11 +10,14 @@ module.exports = {
   configure: function(config) {
     config.addComponent('welcome', Welcome);
     config.addComponent('login-status', LoginStatus);
-    config.addComponent('enter-name', EnterName);
+    config.addComponent('settings', EnterName);
     config.addComponent('request-edit', RequestEditAccess);
     config.addStyle(__dirname, '_welcome');
     config.addStyle(__dirname, '_request-login');
     config.addStyle(__dirname, '_login-status');
+    config.addStyle(__dirname, '_enter-name');
+
+    config.addIcon('welcome-continue', { 'fontawesome': 'fa-long-arrow-right' });
 
     config.addLabel('welcome-title', {
       en: 'Substance Notes'
@@ -33,6 +36,22 @@ module.exports = {
     });
     config.addLabel('welcome-submit', {
       en: 'Request login'
+    });
+
+    config.addLabel('enter-name-welcome', {
+      en: 'Welcome to Substance Notes'
+    });
+    config.addLabel('enter-name-settings', {
+      en: 'Please provide your name'
+    });
+    config.addLabel('enter-name-help', {
+      en: 'Your name will show up along with notes you worked on. You can change it any time via the user menu.'
+    });
+    config.addLabel('enter-name-description', {
+      en: 'Please enter your name here'
+    });
+    config.addLabel('enter-name-continue', {
+      en: ' Continue'
     });
   }
 };
