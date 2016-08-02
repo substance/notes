@@ -2,7 +2,7 @@
   "name": "substance-notepad",
   "repository": "substance/notepad",
   "description": "Real-time notes editing",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "dependencies": {
     "bluebird": "^3.3.5",
     "body-parser": "^1.15.1",
@@ -15,7 +15,7 @@
     "multer": "^1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "git://github.com/substance/substance.git#f9f219a724d56315fb5887af45765236b133e0bb",
+    "substance": "git://github.com/substance/substance.git#ed3b201d85e7dca82fb7cab8ad10ac8b0ca50e65",
     "ws": "^1.1.0"
   },
   "devDependencies": {
