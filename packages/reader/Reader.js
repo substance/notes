@@ -41,6 +41,7 @@ Reader.Prototype = function() {
     var componentRegistry = this.componentRegistry;
     var Cover = componentRegistry.get('cover');
     return $$(Cover, {
+      disabled: this.props.disabled,
       doc: this.doc,
       mobile: this.props.mobile,
       configurator: configurator,

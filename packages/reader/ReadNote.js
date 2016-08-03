@@ -56,6 +56,7 @@ ReadNote.Prototype = function() {
 
       layout.append(
         $$(Reader, {
+          disabled: true,
           configurator: this.props.configurator,
           mobile: this.props.mobile,
           noteInfo: this.state.noteInfo,

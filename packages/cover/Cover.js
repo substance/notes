@@ -34,6 +34,7 @@ Cover.Prototype = function() {
         $$(TextPropertyEditor, {
           name: 'title',
           tagName: "div",
+          disabled: this.props.disabled,
           commands: configurator.getSurfaceCommandNames(),
           path: [metaNode.id, "title"],
           editing: this.props.editing || 'full'
