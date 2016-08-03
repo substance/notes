@@ -15,7 +15,7 @@
     "multer": "^1.1.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "git://github.com/substance/substance.git#ed3b201d85e7dca82fb7cab8ad10ac8b0ca50e65",
+    "substance": "substance/substance.git#74cf213e15338b5c496c34afeea9d15095a22488",
     "ws": "^1.1.0"
   },
   "devDependencies": {
