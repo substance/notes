@@ -41,7 +41,7 @@ function test(description, fn) {
 testDocumentStore(documentStore, test);
 
 test('List documents', function(t) {
-  documentStore.listDocuments({}, function(err, documents) {
+  documentStore.listDocuments({}, {}, function(err, documents) {
     t.isNil(err, 'Should not error');
     t.equal(documents.length, 1, 'There should be one document returned');
     t.equal(documents[0].userId, '1', 'First doc should have userId "1"');
@@ -51,7 +51,7 @@ test('List documents', function(t) {
 });
 
 test('List documents with matching filter', function(t) {
-  documentStore.listDocuments({userId: '1'}, function(err, documents) {
+  documentStore.listDocuments({userId: '1'}, {}, function(err, documents) {
     t.isNil(err, 'Should not error');
     t.equal(documents.length, 1, 'There should be one document returned');
     t.equal(documents[0].userId, '1', 'First doc should have userId "1"');
@@ -61,7 +61,7 @@ test('List documents with matching filter', function(t) {
 });
 
 test('List documents with filter that does not match', function(t) {
-  documentStore.listDocuments({userId: 'userx'}, function(err, documents) {
+  documentStore.listDocuments({userId: 'userx'}, {}, function(err, documents) {
     t.isNil(err, 'Should not error');
     t.equal(documents.length, 0, 'There should be no matches');
     t.end();
