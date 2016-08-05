@@ -8,11 +8,12 @@
     "body-parser": "^1.15.1",
     "config": "^1.20.1",
     "express": "^4.13.4",
-    "knex": "0.10.0",
     "font-awesome": "^4.6.1",
+    "knex": "0.10.0",
     "lodash": "^4.12.0",
     "moment": "^2.13.0",
     "multer": "^1.1.0",
+    "ncp": "^2.0.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
     "substance": "substance/substance.git#74cf213e15338b5c496c34afeea9d15095a22488",
@@ -37,9 +38,10 @@
   },
   "browserify": {},
   "scripts": {
+    "backup": "node ./utils/backup",
     "bundle": "gulp bundle",
-    "postinstall": "node ./create-upload-folder",
-    "seed": "node seed",
+    "postinstall": "node ./utils/create-upload-folder",
+    "seed": "node ./utils/seed",
     "test": "NODE_ENV=test gulp test"
   },
   "version": "1.0.0-beta"
