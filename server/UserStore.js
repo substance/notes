@@ -197,6 +197,46 @@ UserStore.Prototype = function() {
   };
 
   /*
+    List available users
+    @param {Object} filters filters
+    @param {Object} options options (limit, offset, fields)
+  */
+  this.listUsers = function(filters, options) {
+    // set default to avoid unlimited listing
+    var limit = options.limit || 1000;
+    var offset = options.offset || 0;
+
+    var query = this.db('users')
+      .where(filters).limit(limit).offset(offset);
+
+    if (options.fields) {
+      query.select(options.fields);
+    }
+
+    return query;
+  };
+
+  /*
+    Count available users
+    @param {Object} filters filters
+  */
+  this.countUsers = function(filters) {
+    var query = this.db('users').count('*').where(filters);
+
+    return query
+      .then(function(res) {
+        // We want to confirm the insert with the created user entry
+        var count = res[0]['count(*)'];
+        return count;
+      }).catch(function(err) {
+        throw new Err('UserStore.CountError', {
+          // Pass the original error as a cause
+          cause: err
+        });
+      });
+  };
+
+  /*
     Resets the database and loads a given seed object
 
     Be careful with running this in production

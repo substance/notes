@@ -178,17 +178,45 @@ DocumentStore.Prototype = function() {
   /*
     List available documents
     @param {Object} filters filters
+    @param {Object} options options (limit, offset, fields)
     @param {Function} cb callback
   */
-  this.listDocuments = function(filters, cb) {
+  this.listDocuments = function(filters, options, cb) {
+    // set default to avoid unlimited listing
+    var limit = options.limit || 1000;
+    var offset = options.offset || 0;
+
     var query = this.db('documents')
-                .where(filters);
+      .where(filters).limit(limit).offset(offset);
+
+    if (options.fields) {
+      query.select(options.fields);
+    }
 
     query.asCallback(cb);
   };
 
   /*
-    Resets the database and loads a given seed object
+    Count available documents
+    @param {Object} filters filters
+    @param {Function} cb callback
+  */
+  this.countDocuments = function(filters, cb) {
+    var query = this.db('documents').count('*').where(filters);
+    query.asCallback(function(err, res) {
+      if (err) {
+        return cb(new Err('DocumentStore.CountError', {
+          cause: err
+        }));
+      }
+      var count = res[0]['count(*)'];
+
+      cb(null, count);
+    });
+  };
+
+  /*
+    Loads a given seed object to database
 
     Be careful with running this in production
 
