@@ -41,6 +41,7 @@
     "backup": "node ./utils/backup",
     "bundle": "gulp bundle",
     "postinstall": "node ./utils/create-upload-folder",
+    "restore": "node ./utils/restore",
     "seed": "node ./utils/seed",
     "test": "NODE_ENV=test gulp test"
   },
