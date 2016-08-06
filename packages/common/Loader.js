@@ -61,7 +61,7 @@ Loader.Prototype = function() {
       this.dispose();
       // TODO: Use setState instead?
       this.state = this.getInitialState();
-      this._loadDocument(this.getDocumentId());
+      this._loadDocument(newProps.documentId);
     }
   };
 
