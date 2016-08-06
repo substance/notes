@@ -56,6 +56,7 @@ var currentStep = 0;
 var exportDataPath = path.normalize(exportPath + '/notes-backup');
 // We will fill this object with data
 var exportedData = {
+  changes: {},
   documents: {},
   snapshots: {},
   users: {}
@@ -94,10 +95,10 @@ var exportJSON = function(data) {
 
 var exportUploads = function() {
   return new Promise(function(resolve, reject) {
-    var exportUploadPath = exportDataPath + '/uploads';
-    ensureExists(exportUploadPath, function(err) {
+    var exportUploadsPath = exportDataPath + '/uploads';
+    ensureExists(exportUploadsPath, function(err) {
       if (err) return reject(err);
-      ncp('./uploads', exportUploadPath, function (err) {
+      ncp('./uploads', exportUploadsPath, function (err) {
         if (err) return reject(err);
         resolve();
       });
@@ -121,7 +122,7 @@ var getDocumentsPack = function() {
     documentStore.listDocuments({}, {
       limit: stepSize,
       offset: currentStep * stepSize,
-      fields: ['documentId', 'schemaName', 'schemaVersion', 'version', 'info']
+      fields: ['documentId', 'schemaName', 'schemaVersion', 'version', 'info', 'userId']
     }, function(err, docs) {
       if(err) {
         return reject(err);
@@ -167,11 +168,14 @@ var exportSnapshot = function(documentId, version) {
 
 var proccessDocument = function(document) {
   return new Promise(function(resolve) {
+    document.version = 1;
     exportedData.documents[document.documentId] = document;
     return exportSnapshot(document.documentId, document.version)
       .then(function(snapshot) {
+        snapshot.version = 1;
         exportedData.snapshots[document.documentId] = {};
         exportedData.snapshots[document.documentId][snapshot.version] = snapshot;
+        exportedData.changes[document.documentId] = [{documentId: document.documentId}];
         resolve();
       });
   });
