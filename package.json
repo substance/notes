@@ -16,7 +16,7 @@
     "ncp": "^2.0.0",
     "nodemailer": "^2.2.1",
     "sqlite3": "3.1.1",
-    "substance": "substance/substance.git#74cf213e15338b5c496c34afeea9d15095a22488",
+    "substance": "substance/substance.git#a4760eaa1874c47118bfb63c52ab54143df207b3",
     "ws": "^1.1.0"
   },
   "devDependencies": {
