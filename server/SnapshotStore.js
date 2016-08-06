@@ -72,6 +72,7 @@ SnapshotStore.Prototype = function() {
             cause: err
           }));
         }
+        record.data = JSON.parse(record.data);
         cb(null, record);
       });
   };

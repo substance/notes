@@ -1,9 +1,10 @@
 "use strict";
 
 var oo = require('substance/util/oo');
-var _ = require('substance/util/helpers');
 var Err = require('substance/util/SubstanceError');
 var uuid = require('substance/util/uuid');
+var each = require('lodash/each');
+var map = require('lodash/map');
 var Promise = require('bluebird');
 
 /*
@@ -193,7 +194,19 @@ DocumentStore.Prototype = function() {
       query.select(options.fields);
     }
 
-    query.asCallback(cb);
+    query.asCallback(function(err, docs) {
+      if (err) {
+        return cb(new Err('DocumentStore.ListError', {
+          cause: err
+        }));
+      }
+      each(docs, function(doc, key) {
+        if(doc.info) {
+          docs[key].info = JSON.parse(doc.info);
+        }
+      });
+      cb(null, docs);
+    });
   };
 
   /*
@@ -226,7 +239,7 @@ DocumentStore.Prototype = function() {
 
   this.seed = function(seed) {
     var self = this;
-    var actions = _.map(seed, self._createDocument.bind(self));
+    var actions = map(seed, self._createDocument.bind(self));
 
     return Promise.all(actions);
   };
