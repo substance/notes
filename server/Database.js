@@ -1,9 +1,9 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var Knex = require('knex');
-var knexConfig = require('../knexfile');
-var env = process.env.NODE_ENV || 'development';
+var massive = require('massive');
+var config = require('config');
+var Promise = require("bluebird");
 
 /*
   Implements Database Conection API.
@@ -18,42 +18,29 @@ Database.Prototype = function() {
     Connect to the db
   */
   this.connect = function() {
-    this.config = knexConfig[env];
-    if (!this.config) {
-      throw new Error('Could not find config for environment', env);
+    this.db_url = config.get('db_url');
+    if (!this.db_url) {
+      throw new Error('Could not find db connection string');
     }
-    this.connection = new Knex(this.config);
+    this.connection = massive.connectSync({connectionString: this.db_url});
   };
 
   /*
-    Disconnect from the db and shut down
-  */
-  this.shutdown = function() {
-    this.connection.destroy();
-  };
-
-  /*
-    Wipe DB and run lagtest migartion
-
-    @param {Function} cb callback
+    Wipes DB and create tables
+    Be careful with running this in production
+    @returns {Promise}
   */
   this.reset = function() {
-    var self = this;
-
-    return self.connection.schema
-      .dropTableIfExists('changes')
-      .dropTableIfExists('documents')
-      .dropTableIfExists('sessions')
-      .dropTableIfExists('snapshots')
-      .dropTableIfExists('users')
-      // We should drop migrations table 
-      // to rerun the same migration again
-      .dropTableIfExists('knex_migrations')
-      .then(function() {
-        return self.connection.migrate.latest(self.config);
-      }).catch(function(error) {
-        console.error(error);
+    return new Promise(function(resolve) {
+      this.connection.reset(function(err){
+        if (err) {
+          // eslint-disable-next-line
+          console.err(err.stack);
+          process.exit(1);
+        }
+        resolve();
       });
+    }.bind(this));
   };
 
 };
