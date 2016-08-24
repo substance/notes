@@ -4,6 +4,7 @@ var oo = require('substance/util/oo');
 var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
 var Err = require('substance/util/SubstanceError');
+var isUndefined = require('lodash/isUndefined');
 var Promise = require('bluebird');
 
 /*
@@ -18,78 +19,122 @@ SessionStore.Prototype = function() {
   /*
     Create a session record for a given user
 
-    @param {String} userId user id
+    @param {Object} session session object
+    @returns {Promise}
   */
   this.createSession = function(session) {
+    // map userId to session owner
+    if(session.userId) session.user_id = session.userId;
+
+    var session_token = session.sessionToken || uuid();
+
     var newSession = {
-      sessionToken: session.sessionToken || uuid(),
-      timestamp: Date.now(),
-      userId: session.userId
+      session_token: session_token,
+      created: new Date(),
+      user_id: session.user_id
     };
 
-    return this.db.table('sessions').insert(newSession)
-      .then(function() {
-        return newSession;
+    return new Promise(function(resolve, reject) {
+      this.db.sessions.insert(newSession, function(err, session) {
+        if (err) {
+          return reject(new Err('SessionStore.CreateError', {
+            cause: err
+          }));
+        }
+
+        // map session owner to userId,
+        // session_token to sessionToken
+        session.userId = session.user_id;
+        session.sessionToken = session.session_token;
+
+        resolve(session);
       });
+    }.bind(this));
   };
 
   /*
     Get session entry based on a session token
 
     @param {String} sessionToken session token
+    @returns {Promise}
   */
   this.getSession = function(sessionToken) {
-    var query = this.db('sessions')
-                .where('sessionToken', sessionToken);
-
-    return query
-      .then(function(session) {
-        if (session.length === 0) {
-          throw new Err('SessionStore.ReadError', {
-            message: 'No session found for token ' + sessionToken
-          });
+    return new Promise(function(resolve, reject) {
+      this.db.sessions.findOne({session_token: sessionToken}, function(err, session) {
+        if (err) {
+          return reject(new Err('SessionStore.ReadError', {
+            cause: err
+          }));
         }
-        session = session[0];
-        return session;
+
+        if (!session) {
+          return reject(new Err('SessionStore.ReadError', {
+            message: 'No session found for token ' + sessionToken
+          }));
+        }
+
+        // map session owner to userId,
+        // session_token to sessionToken
+        session.userId = session.user_id;
+        session.sessionToken = session.session_token;
+
+        resolve(session);
       });
+    }.bind(this));
   };
 
   /*
     Remove session entry based with a given session token
 
     @param {String} sessionToken session token
+    @returns {Promise}
   */
   this.deleteSession = function(sessionToken) {
-    var self = this;
-    var deletedSession;
+    return this.sessionExists(sessionToken).bind(this)
+      .then(function(exists) {
+        if (!exists) {
+          throw new Err('SessionStore.DeleteError', {
+            message: 'Session with sessionToken ' + sessionToken + ' does not exists'
+          });
+        }
 
-    return this.getSession(sessionToken)
-      .then(function(session) {
-        deletedSession = session;
-        return self.db('sessions')
-            .where('sessionToken', sessionToken)
-            .del();
-      }).then(function() {
-        return deletedSession;
-      }).catch(function(err) {
-        throw new Err('SessionStore.DeleteError', {
-          message: 'Could not delete session ' + sessionToken,
-          cause: err
-        });
-      });
+        return new Promise(function(resolve, reject) {
+          this.db.sessions.destroy({session_token: sessionToken}, function(err, session) {
+            if (err) {
+              return reject(new Err('SessionStore.DeleteError', {
+                cause: err
+              }));
+            }
+            session = session[0];
+
+            // map session owner to userId,
+            // session_token to sessionToken
+            session.userId = session.user_id;
+            session.sessionToken = session.session_token;
+
+            resolve(session);
+          });
+        }.bind(this));
+      }.bind(this));
   };
 
   /*
     Check if session exists
+
+    @param {String} sessionToken session token
+    @returns {Promise}
   */
-  this._sessionExists = function(sessionToken) {
-    var query = this.db('sessions')
-                .where('sessionToken', sessionToken)
-                .limit(1);
-    
-    return query.then(function(session) {
-      return session.length > 0;
-    });
+  this.sessionExists = function(sessionToken) {
+    return new Promise(function(resolve, reject) {
+      this.db.sessions.findOne({session_token: sessionToken}, function(err, session) {
+        if (err) {
+          reject(new Err('SessionStore.ReadError', {
+            cause: err
+          }));
+        }
+        resolve(!isUndefined(session));
+      });
+    }.bind(this));
   };
 
   /*
