@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "browserify": "substance/node-browserify#d3caeb6dcdaa97a258d099c7231a57f0f60ec876",
+    "eslint": "^3.3.1",
     "glob": "7.0.3",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
