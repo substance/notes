@@ -4,6 +4,7 @@ var oo = require('substance/util/oo');
 var map = require('lodash/map');
 var uuid = require('substance/util/uuid');
 var Err = require('substance/util/SubstanceError');
+var isUndefined = require('lodash/isUndefined');
 var Promise = require('bluebird');
 
 /*
@@ -20,45 +21,56 @@ UserStore.Prototype = function() {
     Create a new user record (aka signup)
 
     @param {Object} userData JSON object
+    @returns {Promise}
   */
   this.createUser = function(userData) {
-    var self = this;
-
     // Generate a userId if not provided
     if (!userData.userId) {
       userData.userId = uuid();
     }
 
-    if (userData.name === undefined) {
+    if (isUndefined(userData.name)) {
       userData.name = '';
     }
 
-    return this.userExists(userData.userId)
+    return this.userExists(userData.userId).bind(this)
       .then(function(exists) {
         if (exists) {
           throw new Err('UserStore.CreateError', {
             message: 'User already exists.'
           });
         }
-        return self._createUser(userData);
-      });
+
+        return this._createUser(userData);
+      }.bind(this));
   };
 
   /*
     Get user record for a given userId
 
     @param {String} userId user id
+    @returns {Promise}
   */
   this.getUser = function(userId) {
-    var query = this.db('users')
-                .where('userId', userId);
+    return new Promise(function(resolve, reject) {
+      this.db.users.findOne({user_id: userId}, function(err, user) {
+        if (err) {
+          return reject(new Err('UserStore.ReadError', {
+            cause: err
+          }));
+        }
 
-    return query.then(function(rows) {
-      if (rows.length === 0) {
-        throw new Error('No user found for userId ' + userId);
-      }
-      return rows[0];
-    });
+        if (!user) {
+          return reject(new Err('UserStore.ReadError', {
+            message: 'No user found for userId ' + userId
+          }));
+        }
+
+        user.userId = user.user_id;
+
+        resolve(user);
+      });
+    }.bind(this));
   };
 
   /*
@@ -66,174 +78,217 @@ UserStore.Prototype = function() {
 
     @param {String} userId user id
     @param {Object} props properties to update
+    @returns {Promise}
   */
   this.updateUser = function(userId, props) {
-    var self = this;
-    var update = this.db('users')
-                .where('userId', userId)
-                .update(props);
+    return this.userExists(userId).bind(this)
+      .then(function(exists) {
+        if (!exists) {
+          throw new Err('UserStore.UpdateError', {
+            message: 'User with user_id ' + userId + ' does not exists'
+          });
+        }
 
-    return update.then(function() {
-      return self.getUser(userId);
-    }).catch(function(err) {
-      throw new Err('UserStore.UpdateError', {
-        // Pass the original error as a cause, so caller can inspect it
-        cause: err
-      });
-    });
+        return new Promise(function(resolve, reject) {
+          var userData = props;
+          userData.user_id = userId;
+
+          this.db.users.save(userData, function(err, user) {
+            if (err) {
+              return reject(new Err('UserStore.UpdateError', {
+                cause: err
+              }));
+            }
+
+            resolve(user);
+          });
+        }.bind(this));
+      }.bind(this));
   };
 
   /*
     Remove a user from the db
 
     @param {String} userId user id
+    @returns {Promise}
   */
   this.deleteUser = function(userId) {
-    var deletedUser;
-    var del = this.db('users')
-                .where('userId', userId)
-                .del();
-    
-    
-    // We fetch the user record before we delete it
-    return this.getUser(userId).then(function(user) {
-      deletedUser = user;
-      return del;
-    }).then(function() {
-      return deletedUser;
-    }).catch(function(err) {
-      throw new Err('UserStore.DeleteError', {
-        // Pass the original error as a cause, so caller can inspect it
-        cause: err
-      });
-    });
+    return this.userExists(userId).bind(this)
+      .then(function(exists) {
+        if (!exists) {
+          throw new Err('UserStore.DeleteError', {
+            message: 'User with user_id ' + userId + ' does not exists'
+          });
+        }
+
+        return new Promise(function(resolve, reject) {
+          this.db.users.destroy({user_id: userId}, function(err, user) {
+            if (err) {
+              return reject(new Err('UserStore.DeleteError', {
+                cause: err
+              }));
+            }
+            user = user[0];
+
+            // map user_id to userId
+            user.userId = user.user_id;
+
+            resolve(user);
+          });
+        }.bind(this));
+      }.bind(this));
   };
 
   /*
     Get user record for a given loginKey
 
     @param {String} loginKey login key
+    @returns {Promise}
   */
   this.getUserByLoginKey = function(loginKey) {
-    var query = this.db('users')
-                .where('loginKey', loginKey);
-
-    return query
-      .then(function(user) {
-        if (user.length === 0) {
-          throw new Error('No user found for provided loginKey');
+    return new Promise(function(resolve, reject) {
+      this.db.users.findOne({login_key: loginKey}, function(err, user) {
+        if (err) {
+          return reject(new Err('UserStore.ReadError', {
+            cause: err
+          }));
         }
-        user = user[0];
-        return user;
-      }).catch(function(err) {
-        throw new Err('UserStore.ReadError', {
-          // Pass the original error as a cause, so caller can inspect it
-          cause: err
-        });
+
+        if (!user) {
+          return reject(new Err('UserStore.ReadError', {
+            message: 'No user found for provided loginKey'
+          }));
+        }
+
+        // map user_id to userId
+        user.userId = user.user_id;
+
+        resolve(user);
       });
+    }.bind(this));
   };
 
   /*
     Get user record for a given email
 
     @param {String} email user email
+    @returns {Promise}
   */
   this.getUserByEmail = function(email) {
-    var query = this.db('users')
-                .where('email', email);
-
-    return query
-      .then(function(user) {
-        if (user.length === 0) {
-          throw new Err('UserStore.ReadError', {
-            // Pass the original error as a cause
-            message: 'There is no user with email ' + email
-          });
+    return new Promise(function(resolve, reject) {
+      this.db.users.findOne({email: email}, function(err, user) {
+        if (err) {
+          return reject(new Err('UserStore.ReadError', {
+            cause: err
+          }));
         }
-        user = user[0];
-        return user;
+
+        if (!user) {
+          return reject(new Err('UserStore.ReadError', {
+            message: 'No user found with email ' + email
+          }));
+        }
+
+        resolve(user);
       });
+    }.bind(this));
   };
 
   /*
     Internal method to create a user entry
+
+    @param {Object} userData JSON object
+    @returns {Promise}
   */
   this._createUser = function(userData) {
     // at some point we should make this more secure
     var loginKey = userData.loginKey || uuid();
 
-    var user = {
-      userId: userData.userId,
+    var record = {
+      user_id: userData.userId,
       name: userData.name,
       email: userData.email,
-      createdAt: Date.now(),
-      loginKey: loginKey
+      created: new Date(),
+      login_key: loginKey
     };
 
-    return this.db.table('users').insert(user)
-      .then(function() {
-        // We want to confirm the insert with the created user entry
-        return user;
-      }).catch(function(err) {
-        throw new Err('UserStore.CreateError', {
-          // Pass the original error as a cause
-          cause: err
-        });
+    return new Promise(function(resolve, reject) {
+      this.db.users.insert(record, function(err, user) {
+        if (err) {
+          return reject(new Err('UserStore.CreateError', {
+            cause: err
+          }));
+        }
+
+        // map user_id to userId
+        user.userId = user.user_id;
+
+        resolve(user);
       });
+    }.bind(this));
   };
 
   /*
     Check if user exists
-  */
-  this.userExists = function(id) {
-    var query = this.db('users')
-                .where('userId', id)
-                .limit(1);
 
-    return query.then(function(user) {
-      if (user.length === 0) return false;
-      return true;
-    });
+    @param {String} userId user id
+    @returns {Promise}
+  */
+  this.userExists = function(userId) {
+    return new Promise(function(resolve, reject) {
+      this.db.users.findOne({user_id: userId}, function(err, user) {
+        if (err) {
+          return reject(new Err('UserStore.ReadError', {
+            cause: err
+          }));
+        }
+        resolve(!isUndefined(user));
+      });
+    }.bind(this));
   };
 
   /*
     List available users
+
     @param {Object} filters filters
     @param {Object} options options (limit, offset, fields)
+    @returns {Promise}
   */
   this.listUsers = function(filters, options) {
-    // set default to avoid unlimited listing
-    var limit = options.limit || 1000;
-    var offset = options.offset || 0;
+    // Default limit to avoid unlimited listing
+    if(!options.limit) options.limit = 100;
 
-    var query = this.db('users')
-      .where(filters).limit(limit).offset(offset);
+    return new Promise(function(resolve, reject) {
+      this.db.users.find(filters, options, function(err, users) {
+        if (err) {
+          return reject(new Err('UserStore.ListError', {
+            cause: err
+          }));
+        }
 
-    if (options.fields) {
-      query.select(options.fields);
-    }
-
-    return query;
+        resolve(users);
+      });
+    }.bind(this));
   };
 
   /*
     Count available users
+    
     @param {Object} filters filters
+    @returns {Promise}
   */
   this.countUsers = function(filters) {
-    var query = this.db('users').count('*').where(filters);
+    return new Promise(function(resolve, reject) {
+      this.db.users.count(filters, function(err, count) {
+        if (err) {
+          return reject(new Err('UserStore.CountError', {
+            cause: err
+          }));
+        }
 
-    return query
-      .then(function(res) {
-        // We want to confirm the insert with the created user entry
-        var count = res[0]['count(*)'];
-        return count;
-      }).catch(function(err) {
-        throw new Err('UserStore.CountError', {
-          // Pass the original error as a cause
-          cause: err
-        });
+        resolve(count);
       });
+    }.bind(this));
   };
 
   /*
