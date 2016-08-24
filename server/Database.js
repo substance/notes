@@ -35,12 +35,20 @@ Database.Prototype = function() {
       this.connection.reset(function(err){
         if (err) {
           // eslint-disable-next-line
-          console.err(err.stack);
+          console.error(err.stack);
           process.exit(1);
         }
         resolve();
       });
     }.bind(this));
+  };
+
+  /*
+    Drop DB connection.
+  */
+
+  this.shutdown = function() {
+    this.connection.end();
   };
 
 };
