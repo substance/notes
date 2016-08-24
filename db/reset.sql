@@ -1,8 +1,8 @@
 -- Reset database:
 
-drop table if exists "shapshots";
-drop table if exists "documents";
+drop table if exists "snapshots";
 drop table if exists "changes";
+drop table if exists "documents";
 drop table if exists "sessions";
 drop table if exists "users";
 
@@ -25,21 +25,6 @@ CREATE TABLE "sessions" (
   created timestamp
 );
 
--- Changes:
-CREATE TABLE "changes" (
-  document_id varchar(40) REFERENCES records,
-  version integer,
-  data jsonb,
-  created timestamp,
-  user_id varchar(40) REFERENCES users,
-  PRIMARY KEY(document_id, version)
-);
-
--- Index so we can query by documentId and or userId (needed to extract collaborators)
-CREATE INDEX document_id_index ON changes(document_id);
-CREATE INDEX user_id_index ON changes(user_id);
-CREATE INDEX document_user_idx_index ON changes(document_id, user_id);
-
 -- Documents:
 CREATE TABLE "documents" (
   document_id varchar(40) UNIQUE PRIMARY KEY,
@@ -54,6 +39,21 @@ CREATE TABLE "documents" (
 );
 
 CREATE UNIQUE INDEX document_id_index ON documents(document_id);
+
+-- Changes:
+CREATE TABLE "changes" (
+  document_id varchar(40) REFERENCES documents,
+  version integer,
+  data jsonb,
+  created timestamp,
+  user_id varchar(40) REFERENCES users,
+  PRIMARY KEY(document_id, version)
+);
+
+-- Index so we can query by documentId and or userId (needed to extract collaborators)
+CREATE INDEX changes_document_id_index ON changes(document_id);
+CREATE INDEX changes_user_id_index ON changes(user_id);
+CREATE INDEX changes_document_user_idx_index ON changes(document_id, user_id);
 
 -- Snapshots:
 CREATE TABLE "snapshots" (
