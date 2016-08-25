@@ -1,3 +1,4 @@
+
 {
   "name": "substance-notepad",
   "repository": "substance/notepad",
@@ -44,7 +45,7 @@
     "postinstall": "node ./utils/create-upload-folder",
     "restore": "node ./utils/restore",
     "seed": "node ./utils/seed",
-    "test": "NODE_ENV=test gulp test"
+    "test": "node ./utils/seed && gulp test"
   },
   "version": "1.0.0-beta"
 }
