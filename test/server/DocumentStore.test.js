@@ -6,6 +6,7 @@ var Database = require('../../server/Database');
 var db = new Database();
 var testDocumentStore = require('substance/test/collab/testDocumentStore');
 var DocumentStore = require('../../server/DocumentStore');
+var UserStore = require('../../server/UserStore');
 
 var documentStoreSeed = {
   'test-doc': {
@@ -23,6 +24,17 @@ var documentStore = new DocumentStore({ db: db });
 
 function setup() {
   return db.reset()
+    .then(function() {
+      var userStore = new UserStore({ db: db });
+      return userStore.seed({
+        '1': {
+          userId: '1',
+          name: 'Test',
+          loginKey: '1234',
+          email: 'test@example.com'
+        }
+      });
+    })
     .then(function() {
       var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed));
       return documentStore.seed(newDocumentStoreSeed);
