@@ -251,7 +251,7 @@ UserStore.Prototype = function() {
     List available users
 
     @param {Object} filters filters
-    @param {Object} options options (limit, offset, fields)
+    @param {Object} options options (limit, offset, columns)
     @returns {Promise}
   */
   this.listUsers = function(filters, options) {
