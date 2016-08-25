@@ -13,6 +13,10 @@ function setup() {
   db = new Database();
   return db.reset()
     .then(function() {
+      return db.shutdown();
+    })
+    .then(function() {
+      db = new Database();
       userStore = new UserStore({ db: db});
       return userStore.seed({
         '1': {
