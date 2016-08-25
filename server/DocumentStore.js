@@ -5,6 +5,7 @@ var Err = require('substance/util/SubstanceError');
 var uuid = require('substance/util/uuid');
 var each = require('lodash/each');
 var map = require('lodash/map');
+var isUndefined = require('lodash/isUndefined');
 var Promise = require('bluebird');
 
 /*
@@ -17,35 +18,6 @@ function DocumentStore(config) {
 
 DocumentStore.Prototype = function() {
 
-  /*
-    Remove a document record from the db
-
-    @param {String} documentId document id
-    @param {Function} cb callback
-  */
-  this.deleteDocument = function(documentId, cb) {
-    var query = this.db('documents')
-                .where('documentId', documentId)
-                .del();
-    
-    this.getDocument(documentId, function(err, doc) {
-      if (err) {
-        return cb(new Err('DocumentStore.DeleteError', {
-          cause: err
-        }));
-      }
-
-      query.asCallback(function(err) {
-        if (err) {
-          return cb(new Err('DocumentStore.DeleteError', {
-            cause: err
-          }));          
-        }
-        cb(null, doc);
-      });
-    });
-  };
-
   // Documents API helpers
   // ---------------------
 
@@ -53,176 +25,285 @@ DocumentStore.Prototype = function() {
     Internal method to create a document record
   */
   this.createDocument = function(props, cb) {
-
     if (!props.documentId) {
       // We generate a documentId ourselves
-      props.documentId = uuid();
+      props.document_id = uuid();
+    } else {
+      props.document_id = props.documentId;
+      delete props.documentId;
     }
 
-    var self = this;
+    if(props.schemaName) {
+      props.schema_name = props.schemaName;
+      delete props.schemaName;
+    }
+
+    if(props.schemaVersion) {
+      props.schema_version = props.schemaVersion;
+      delete props.schemaVersion;
+    }
+
     if(props.info) {
       if(props.info.title) props.title = props.info.title;
       if(props.info.userId) {
-        props.userId = props.info.userId;
-        props.updatedBy = props.info.userId;
+        props.user_id = props.info.userId;
+        props.updated_by = props.info.userId;
       }
-      if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
-      props.info = JSON.stringify(props.info);
+      if(props.info.updatedAt) props.updated = props.info.updatedAt;
     }
-    this.db.table('documents').insert(props)
-      .asCallback(function(err) {
+    
+    this.documentExists(props.document_id, function(err, exists) {
+      if (err) {
+        return cb(new Err('DocumentStore.CreateError', {
+          cause: err
+        }));
+      }
+
+      if (exists) {
+        return cb(new Err('DocumentStore.CreateError', {
+          message: 'Document ' + props.document_id + ' already exists.'
+        }));
+      }
+
+      this.db.documents.insert(props, function(err, doc) {
         if (err) {
           return cb(new Err('DocumentStore.CreateError', {
             cause: err
           }));
         }
-        self.getDocument(props.documentId, cb);
+
+        // Set documentId explictly as it will be used by Document Engine
+        doc.documentId = doc.document_id;
+        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
+        doc.schemaName = doc.schema_name;
+        doc.schemaVersion = doc.schema_version;
+        doc.userId = doc.user_id;
+
+        cb(null, doc);
       });
+    }.bind(this));
   };
 
   /*
     Promise version
   */
   this._createDocument = function(props) {
-    if(props.info) {
-      if(props.info.title) props.title = props.info.title;
-      if(props.info.userId) props.userId = props.info.userId;
-      if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
-      // Let's keep updatedBy here for seeding
-      if(props.info.updatedBy) {
-        props.updatedBy = props.info.updatedBy;
-      } else if (props.info.userId){
-        props.updatedBy = props.info.userId;
-      }
-      props.info = JSON.stringify(props.info);
-    }
-    return this.db.table('documents').insert(props);
+    return new Promise(function(resolve, reject) {
+      this.createDocument(props, function(err, doc) {
+        if(err) {
+          return reject(err);
+        }
+
+        resolve(doc);
+      });
+    }.bind(this));
   };
 
+  /*
+    Check if document exists
+    @param {String} documentId document id
+    @param {Callback} cb callback
+    @returns {Callback}
+  */
   this.documentExists = function(documentId, cb) {
-    var query = this.db('documents')
-            .where('documentId', documentId)
-            .limit(1);
-
-    query.asCallback(function(err, doc) {
+    this.db.documents.findOne({document_id: documentId}, function(err, doc) {
       if (err) {
         return cb(new Err('DocumentStore.ReadError', {
           cause: err,
           info: 'Happened within documentExists.'
         }));
       }
-      cb(null, doc.length > 0);
+
+      cb(null, !isUndefined(doc));
     });
   };
 
   /*
-    Internal method to get a document
+    Get document record for a given documentId
+    
+    @param {String} documentId document id
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.getDocument = function(documentId, cb) {
-    var query = this.db('documents')
-                .where('documentId', documentId);
-
-    query.asCallback(function(err, doc) {
+    this.db.documents.findOne({document_id: documentId}, function(err, doc) {
       if (err) {
         return cb(new Err('DocumentStore.ReadError', {
           cause: err
         }));
       }
-      doc = doc[0];
+
       if (!doc) {
         return cb(new Err('DocumentStore.ReadError', {
-          message: 'No document found for documentId ' + documentId,
+          message: 'No document found for documentId ' + documentId
         }));
       }
-      if(doc.info) {
-        doc.info = JSON.parse(doc.info);
-      }
+
+      // Set documentId explictly as it will be used by Document Engine
+      doc.documentId = doc.document_id;
+      // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
+      doc.schemaName = doc.schema_name;
+      doc.schemaVersion = doc.schema_version;
+      doc.userId = doc.user_id;
+
       cb(null, doc);
     });
   };
 
   /*
-    Update a document record
+    Update a document record with given props
+    
+    @param {String} documentId document id
+    @param {Object} props properties to update
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.updateDocument = function(documentId, props, cb) {
-    var self = this;
     if(props.info) {
       if(props.info.title) props.title = props.info.title;
-      if(props.info.userId) props.userId = props.info.userId;
-      if(props.info.updatedAt) props.updatedAt = props.info.updatedAt;
-      if(props.info.updatedBy) props.updatedBy = props.info.updatedBy;
-      props.info = JSON.stringify(props.info);
+      if(props.info.userId) props.user_id = props.info.userId;
+      if(props.info.updatedAt) props.updated = props.info.updatedAt;
+      if(props.info.updatedBy) props.updated_by = props.info.updatedBy;
     }
+
+    if(props.schemaName) {
+      props.schema_name = props.schemaName;
+      delete props.schemaName;
+    }
+
+    if(props.schemaVersion) {
+      props.schema_version = props.schemaVersion;
+      delete props.schemaVersion;
+    }
+    
     this.documentExists(documentId, function(err, exists) {
       if (err) {
         return cb(new Err('DocumentStore.UpdateError', {
           cause: err
         }));
       }
+
       if (!exists) {
         return cb(new Err('DocumentStore.UpdateError', {
-          message: 'Document ' + documentId + ' does not exists'
+          message: 'Document with documentId ' + documentId + ' does not exists'
         }));
       }
-      self.db.table('documents').where('documentId', documentId).update(props)
-        .asCallback(function(err) {
-          if (err) {
-            return cb(new Err('DocumentStore.UpdateError', {
-              cause: err
-            }));
-          }
-          self.getDocument(documentId, cb);
-        });
-    });
+
+      var documentData = props;
+      documentData.document_id = documentId;
+
+      this.db.documents.save(documentData, function(err, doc) {
+        if (err) {
+          return cb(new Err('DocumentStore.UpdateError', {
+            cause: err
+          }));
+        }
+
+        // Set documentId explictly as it will be used by Document Engine
+        doc.documentId = doc.document_id;
+        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
+        doc.schemaName = doc.schema_name;
+        doc.schemaVersion = doc.schema_version;
+        doc.userId = doc.user_id;
+
+        cb(null, doc);
+      });
+    }.bind(this));
+  };
+
+  /*
+    Remove a document record from the db
+
+    @param {String} documentId document id
+    @param {Callback} cb callback
+    @returns {Callback}
+  */
+  this.deleteDocument = function(documentId, cb) {
+    this.documentExists(documentId, function(err, exists) {
+      if (err) {
+        return cb(new Err('DocumentStore.DeleteError', {
+          cause: err
+        }));
+      }
+
+      if (!exists) {
+        return cb(new Err('DocumentStore.DeleteError', {
+          message: 'Document with documentId ' + documentId + ' does not exists'
+        }));
+      }
+
+      this.db.documents.destroy({document_id: documentId}, function(err, doc) {
+        if (err) {
+          return cb(new Err('DocumentStore.DeleteError', {
+            cause: err
+          }));
+        }
+        doc = doc[0];
+        
+        // Set documentId explictly as it will be used by Document Engine
+        doc.documentId = doc.document_id;
+        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
+        doc.schemaName = doc.schema_name;
+        doc.schemaVersion = doc.schema_version;
+        doc.userId = doc.user_id;
+
+        cb(null, doc);
+      });
+    }.bind(this));
   };
 
   /*
     List available documents
+
     @param {Object} filters filters
-    @param {Object} options options (limit, offset, fields)
-    @param {Function} cb callback
+    @param {Object} options options (limit, offset, columns)
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.listDocuments = function(filters, options, cb) {
     // set default to avoid unlimited listing
-    var limit = options.limit || 1000;
-    var offset = options.offset || 0;
+    options.limit = options.limit || 1000;
+    options.offset = options.offset || 0;
 
-    var query = this.db('documents')
-      .where(filters).limit(limit).offset(offset);
-
-    if (options.fields) {
-      query.select(options.fields);
+    if(filters.userId) {
+      filters.user_id = filters.userId;
+      delete filters.userId;
     }
 
-    query.asCallback(function(err, docs) {
+    this.db.documents.find(filters, options, function(err, docs) {
       if (err) {
         return cb(new Err('DocumentStore.ListError', {
           cause: err
         }));
       }
-      each(docs, function(doc, key) {
-        if(doc.info) {
-          docs[key].info = JSON.parse(doc.info);
-        }
+
+      each(docs, function(doc) {
+        // Set documentId explictly as it will be used by Document Engine
+        doc.documentId = doc.document_id;
+        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
+        doc.schemaName = doc.schema_name;
+        doc.schemaVersion = doc.schema_version;
+        doc.userId = doc.user_id;
       });
+
       cb(null, docs);
     });
   };
 
   /*
     Count available documents
+
     @param {Object} filters filters
     @param {Function} cb callback
+    @returns {Callback}
   */
   this.countDocuments = function(filters, cb) {
-    var query = this.db('documents').count('*').where(filters);
-    query.asCallback(function(err, res) {
+    this.db.documents.count(filters, function(err, count) {
       if (err) {
-        return cb(new Err('DocumentStore.CountError', {
+        return cb(new Err('UserStore.CountError', {
           cause: err
         }));
       }
-      var count = res[0]['count(*)'];
 
       cb(null, count);
     });
