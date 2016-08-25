@@ -23,11 +23,11 @@ db.reset() // Clear the database, set up the schema
     var sessionStore = new SessionStore({ db: db });
     return sessionStore.seed(seed.sessions);
   }).then(function() {
-    var changeStore = new ChangeStore({db: db});
-    return changeStore.seed(seed.changes);
-  }).then(function() {
     var documentStore = new DocumentStore({db: db});
     return documentStore.seed(seed.documents);
+  }).then(function() {
+    var changeStore = new ChangeStore({db: db});
+    return changeStore.seed(seed.changes);
   }).then(function() {
     // eslint-disable-next-line
     console.log('Done seeding.');
