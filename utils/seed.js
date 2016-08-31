@@ -17,6 +17,10 @@ if (process.argv[2] === 'dev') {
 
 db.reset() // Clear the database, set up the schema
   .then(function() {
+    // We should drop connection and establish it again,
+    // so massive will have new tables attached
+    db.shutdown();
+    db = new Database();
     var userStore = new UserStore({ db: db });
     return userStore.seed(seed.users);
   }).then(function() {
