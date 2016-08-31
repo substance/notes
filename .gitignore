@@ -1,3 +1,6 @@
+# Ignore Desktop Services Store files
+*.DS_Store
+
 # Logs
 logs
 *.log
