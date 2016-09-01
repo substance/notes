@@ -52,9 +52,24 @@ NotesDocumentEngine.Prototype = function() {
   };
 
   this.queryDocumentMetaData = function(documentId, cb) {
-    var query = "SELECT d.documentId, d.updatedAt, d.version, d.schemaName, d.schemaVersion, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, (SELECT createdAt FROM changes c WHERE c.documentId=d.documentId ORDER BY createdAt ASC LIMIT 1) AS createdAt, u.name AS author, f.name AS updatedBy FROM documents d JOIN users u ON(u.userId=d.userId) JOIN users f ON(f.userId=d.updatedBy) WHERE d.documentId = ?";
-    
-    this.db.raw(query, [documentId]).asCallback(function(err, doc) {
+    var query = "SELECT \
+      d.document_id, \
+      d.updated, \
+      d.version, \
+      d.schema_name, \
+      d.schema_version, \
+      (SELECT string_agg(name, ',') \
+        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON c.user_id = u.user_id WHERE c.document_id = d.document_id AND c.user_id != d.user_id) AS authors \
+      ) AS collaborators, \
+      (SELECT created FROM changes c WHERE c.document_id=d.document_id ORDER BY created ASC LIMIT 1) AS created, \
+      u.name AS author, \
+      f.name AS updated_by \
+    FROM documents d \
+    JOIN users u ON(u.user_id=d.user_id) \
+    JOIN users f ON(f.user_id=d.updated_by) \
+    WHERE d.document_id = $1";
+
+    this.db.run(query, [documentId], function(err, doc) {
       if (err) {
         return cb(new Err('NotesDocumentEngine.ReadDocumentMetaDataError', {
           cause: err

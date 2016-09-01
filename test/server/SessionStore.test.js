@@ -3,13 +3,25 @@
 var substanceTest = require('substance/test/test').module('server/SessionStore');
 
 var Database = require('../../server/Database');
+var UserStore = require('../../server/UserStore');
 var SessionStore = require('../../server/SessionStore');
 
-var db, sessionStore;
+var db, userStore, sessionStore;
 
 function setup() {
   db = new Database();
   return db.reset()
+    .then(function() {
+      userStore = new UserStore({ db: db });
+      return userStore.seed({
+        'testuser': {
+          userId: 'testuser',
+          name: 'Test',
+          loginKey: '1234',
+          email: 'test@example.com'
+        }
+      });
+    })
     .then(function() {
       sessionStore = new SessionStore({ db: db });
       return sessionStore.seed({

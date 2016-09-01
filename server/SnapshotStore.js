@@ -29,26 +29,25 @@ SnapshotStore.Prototype = function() {
       }));
     }
 
-    var query = this.db('snapshots')
-                .where('documentId', args.documentId)
-                .orderBy('version', 'desc')
-                .limit(1);
+    var filters = {document_id: args.documentId};
 
     if(args.version && args.findClosest) {
-      query.andWhere('version', '<=', args.version);
+      filters['version <='] = args.version;
     } else if (args.version) {
-      query.andWhere('version', args.version);
+      filters.version = args.version;
     }
 
-
-    query.asCallback(function(err, snapshot) {
+    this.db.snapshots.findOne(filters, {order: 'version desc'}, function(err, snapshot) {
       if (err) {
         return cb(new Err('SnapshotStore.ReadError', {
           cause: err
         }));
       }
-      snapshot = snapshot[0];
-      if (snapshot) snapshot.data = JSON.parse(snapshot.data);
+
+      if(snapshot) {
+        snapshot.documentId = snapshot.document_id;
+      }
+
       cb(null, snapshot);
     });
   };
@@ -60,61 +59,54 @@ SnapshotStore.Prototype = function() {
   */
   this.saveSnapshot = function(args, cb) {
     var record = {
-      documentId: args.documentId,
+      document_id: args.documentId,
       version: args.version,
-      data: JSON.stringify(args.data),
-      createdAt: args.createdAt || new Date()
+      data: args.data,
+      created: args.createdAt || new Date()
     };
-    this.db.table('snapshots').insert(record)
-      .asCallback(function(err) {
-        if (err) {
-          return cb(new Err('SnapshotStore.CreateError', {
-            cause: err
-          }));
-        }
-        record.data = JSON.parse(record.data);
-        cb(null, record);
-      });
+
+    this.db.snapshots.insert(record, function(err, snapshot) {
+      if (err) {
+        return cb(new Err('SnapshotStore.CreateError', {
+          cause: err
+        }));
+      }
+
+      // Set documentId explictly as it will be used by Document Engine
+      snapshot.documentId = snapshot.document_id;
+
+      cb(null, snapshot);
+    });
   };
 
   // Promise based version
   this._saveSnapshot = function(args) {
-    var record = {
-      documentId: args.documentId,
-      version: args.version,
-      data: JSON.stringify(args.data),
-      createdAt: args.createdAt || new Date()
-    };
-    return this.db.table('snapshots').insert(record);
+    return new Promise(function(resolve, reject) {
+      this.saveSnapshot(args, function(err, snapshot) {
+        if(err) {
+          return reject(err);
+        }
+
+        resolve(snapshot);
+      });
+    }.bind(this));
   };
 
   /*
     Removes a snapshot for a given documentId + version
   */
   this.deleteSnaphot = function(documentId, version, cb) {
-    var query = this.db('snapshots')
-                .where('documentId', documentId)
-                .andWhere('version', version)
-                .del();
-
-    var args = {
-      documentId: documentId,
-      version: version
-    };
-    this.getSnapshot(args, function(err, snapshot){
+    this.db.snapshots.destroy({document_id: documentId, version: version}, function(err, snapshot) {
       if (err) {
-        return cb(new Err('SnapshotStore.ReadError', {
+        return cb(new Err('SnapshotStore.DeleteError', {
           cause: err
         }));
       }
-      query.asCallback(function(err) {
-        if (err) {
-          return cb(new Err('SnapshotStore.DeleteError', {
-            cause: err
-          }));
-        }
-        return cb(null, snapshot);
-      });
+
+      // Set documentId explictly as it will be used by Document Engine
+      snapshot.documentId = snapshot.document_id;
+
+      cb(null, snapshot);
     });
   };
 
@@ -122,17 +114,13 @@ SnapshotStore.Prototype = function() {
     Deletes all snapshots for a given documentId
   */
   this.deleteSnapshotsForDocument = function(documentId, cb) {
-    var query = this.db('snapshots')
-                .where('documentId', documentId)
-                .del();
-
-    query.asCallback(function(err, deleteCount) {
+    this.db.snapshots.destroy({document_id: documentId}, function(err, snapshots) {
       if (err) {
         return cb(new Err('SnapshotStore.DeleteForDocumentError', {
           cause: err
         }));
       }
-      return cb(null, deleteCount);
+      cb(null, snapshots.length);
     });
   };
 
@@ -140,19 +128,16 @@ SnapshotStore.Prototype = function() {
     Returns true if a snapshot exists for a certain version
   */
   this.snapshotExists = function(documentId, version, cb) {
-    var query = this.db('snapshots')
-            .where('documentId', documentId)
-            .andWhere('version', version)
-            .limit(1);
-
-    query.asCallback(function(err, snapshot) {
+    this.db.snapshots.findOne({document_id: documentId}, function(err, snapshot) {
       if (err) {
         return cb(new Err('SnapshotStore.ReadError', {
-          cause: err,
-          info: 'Happened within snapshotExists.'
+          cause: err
         }));
       }
-      cb(null, snapshot.length > 0);
+
+      snapshot.documentId = snapshot.document_id;
+
+      cb(null, Boolean(snapshot));
     });
   };
 

@@ -3,6 +3,7 @@
 var oo = require('substance/util/oo');
 var _ = require('substance/util/helpers');
 var has = require('lodash/has');
+var map = require('lodash/map');
 var Err = require('substance/util/SubstanceError');
 var Promise = require('bluebird');
 
@@ -25,11 +26,10 @@ ChangeStore.Prototype = function() {
     @param {Object} args arguments
     @param {String} args.documentId document id
     @param {Object} args.change JSON object
-    @param {Function} cb callback
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.addChange = function(args, cb) {
-    var self = this;
-
     if(!has(args, 'documentId')) {
       return cb(new Err('ChangeStore.CreateError', {
         message: 'documentId is mandatory'
@@ -41,7 +41,7 @@ ChangeStore.Prototype = function() {
       userId = args.change.info.userId;
     }
     
-    self.getVersion(args.documentId, function(err, headVersion) {
+    this.getVersion(args.documentId, function(err, headVersion) {
       if (err) {
         return cb(new Err('ChangeStore.GetVersionError', {
           cause: err
@@ -49,23 +49,24 @@ ChangeStore.Prototype = function() {
       }
       var version = headVersion + 1;
       var record = {
-        documentId: args.documentId,
+        document_id: args.documentId,
         version: version,
-        data: JSON.stringify(args.change),
-        createdAt: args.createdAt || new Date(),
-        userId: userId
+        data: args.change,
+        created: args.createdAt || new Date(),
+        user_id: userId
       };
 
-      self.db.table('changes').insert(record)
-        .asCallback(function(err) {
-          if (err) {
-            return cb(new Err('ChangeStore.CreateError', {
-              cause: err
-            }));
-          }
-          cb(null, version);
-        });
-    });
+      this.db.changes.insert(record, function(err, change) {
+        if (err) {
+          return cb(new Err('ChangeStore.CreateError', {
+            cause: err
+          }));
+        }
+
+        cb(null, change.version);
+      });
+
+    }.bind(this));
   };
 
   /*
@@ -76,31 +77,48 @@ ChangeStore.Prototype = function() {
     @param {Object} args arguments
     @param {String} args.documentId document id
     @param {Object} args.change JSON object
+    @returns {Promise}
   */
-  this._addChange = function(args) {
-    var self = this;
-    var version;
+  this._addChange = function(args) {    
+    return new Promise(function(resolve, reject) {
+      if(!has(args, 'documentId')) {
+        return reject(new Err('ChangeStore.CreateError', {
+          message: 'documentId is mandatory'
+        }));
+      }
 
-    var userId = null;
-    if(args.change.info) {
-      userId = args.change.info.userId;
-    }
+      var userId = null;
+      if(args.change.info) {
+        userId = args.change.info.userId;
+      }
 
-    return self._getVersion(args.documentId)
-      .then(function(headVersion) {
-        version = headVersion + 1;
+      this.getVersion(args.documentId, function(err, headVersion) {
+        if (err) {
+          return reject(new Err('ChangeStore.GetVersionError', {
+            cause: err
+          }));
+        }
+        var version = headVersion + 1;
         var record = {
-          documentId: args.documentId,
+          document_id: args.documentId,
           version: version,
-          data: JSON.stringify(args.change),
-          createdAt: args.createdAt || new Date(),
-          userId: userId
+          data: args.change,
+          created: args.createdAt || new Date(),
+          user_id: userId
         };
-        return self.db.table('changes').insert(record);
-      })
-      .then(function() {
-        return version;
-      });
+
+        this.db.changes.insert(record, function(err, change) {
+          if (err) {
+            return reject(new Err('ChangeStore.CreateError', {
+              cause: err
+            }));
+          }
+
+          resolve(change.version);
+        });
+
+      }.bind(this));
+    }.bind(this));
   };
 
   /*
@@ -109,11 +127,10 @@ ChangeStore.Prototype = function() {
     @param {Object} args arguments
     @param {String} args.documentId document id
     @param {String} args.sinceVersion changes since version (0 = all changes, 1 all except first change)
-    @param {Function} cb callback
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.getChanges = function(args, cb) {
-    var self = this;
-
     if(args.sinceVersion < 0) {
       return cb(new Err('ChangeStore.ReadError', {
         message: 'sinceVersion should be grater or equal then 0'
@@ -133,55 +150,61 @@ ChangeStore.Prototype = function() {
     }
 
     if(!has(args, 'sinceVersion')) args.sinceVersion = 0;
-      
-    var query = self.db('changes')
-                .select('data')
-                .where('documentId', args.documentId)
-                .andWhere('version', '>', args.sinceVersion)
-                .orderBy('version', 'asc');
 
-    if(args.toVersion) query.andWhere('version', '<=', args.toVersion);
+    var query = {
+      'document_id': args.documentId,
+      'version >': args.sinceVersion
+    };
 
-    query.asCallback(function(err, changes) {
+    if(args.toVersion) query['version <='] = args.toVersion;
+
+    var options = {
+      order: 'version asc',
+      columns: ["data"]
+    };
+
+    this.db.changes.find(query, options, function(err, changes) {
       if (err) {
         return cb(new Err('ChangeStore.ReadError', {
           cause: err
         }));
       }
-      changes = _.map(changes, function(c) {return JSON.parse(c.data); });
-      self.getVersion(args.documentId, function(err, headVersion) {
+
+      // transform results to an array of changes 
+      changes = map(changes, function(c) {return c.data; });
+
+      this.getVersion(args.documentId, function(err, headVersion) {
         if (err) {
-          return cb(new Err('ChangeStore.GetVersionError', {
+          return cb(new Err('ChangeStore.ReadError', {
             cause: err
           }));
         }
+
         var res = {
           version: headVersion,
           changes: changes
         };
-        return cb(null, res);
+
+        cb(null, res);
       });
-    });
+    }.bind(this));
   };
 
   /*
     Remove all changes of a document
 
     @param {String} id document id
-    @param {Function} cb callback
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.deleteChanges = function(id, cb) {
-    var query = this.db('changes')
-                .where('documentId', id)
-                .del();
-
-    query.asCallback(function(err, deletedCount) {
+    this.db.changes.destroy({document_id: id}, function(err, changes) {
       if (err) {
         return cb(new Err('ChangeStore.DeleteError', {
           cause: err
         }));
       }
-      return cb(null, deletedCount);
+      cb(null, changes.length);
     });
   };
 
@@ -189,24 +212,18 @@ ChangeStore.Prototype = function() {
     Get the version number for a document
 
     @param {String} id document id
-    @param {Function} cb callback
+    @param {Callback} cb callback
+    @returns {Callback}
   */
   this.getVersion = function(id, cb) {
-    // HINT: version = count of changes
-    // 0 changes: version = 0
-    // 1 change:  version = 1
-    var query = this.db('changes')
-                .where('documentId', id)
-                .count();
-
-    query.asCallback(function(err, count) {
+    this.db.changes.count({document_id: id}, function(err, count) {
       if (err) {
         return cb(new Err('ChangeStore.GetVersionError', {
           cause: err
         }));
       }
-      var result = count[0]['count(*)'];
-      return cb(null, result);
+
+      cb(null, parseInt(count, 10));
     });
   };
 
@@ -216,16 +233,20 @@ ChangeStore.Prototype = function() {
     Promise based version
 
     @param {String} id document id
+    @returns {Promise}
   */
   this._getVersion = function(id) {
-    var query = this.db('changes')
-                .where('documentId', id)
-                .count();
+    return new Promise(function(resolve, reject) {
+      this.db.changes.count({document_id: id}, function(err, count) {
+        if (err) {
+          return reject(new Err('ChangeStore.GetVersionError', {
+            cause: err
+          }));
+        }
 
-    return query.then(function(count) {
-      var result = count[0]['count(*)'];
-      return result;
-    });
+        resolve(parseInt(count, 10));
+      });
+    }.bind(this));
   };
 
   /*

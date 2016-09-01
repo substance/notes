@@ -9,7 +9,7 @@
     "port": 5000,
     "host": "localhost"
   },
-  "db_url": "postgres://notes_user:notes_pw@localhost:5432/notes",
+  "db_url": "postgres://postgres:@localhost:5432/notes",
   "mail": {
     "sender": "Substance Notes ✍ <notes@substance.io>",
     "mailgun": {

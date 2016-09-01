@@ -1,3 +1,4 @@
+
 {
   "name": "substance-notepad",
   "repository": "substance/notepad",
@@ -9,8 +10,8 @@
     "config": "^1.20.1",
     "express": "^4.13.4",
     "font-awesome": "^4.6.1",
-    "knex": "0.10.0",
     "lodash": "^4.12.0",
+    "massive": "^2.5.0",
     "moment": "^2.13.0",
     "multer": "^1.1.0",
     "ncp": "^2.0.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "browserify": "substance/node-browserify#d3caeb6dcdaa97a258d099c7231a57f0f60ec876",
+    "eslint": "^3.3.1",
     "glob": "7.0.3",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
@@ -43,7 +45,7 @@
     "postinstall": "node ./utils/create-upload-folder",
     "restore": "node ./utils/restore",
     "seed": "node ./utils/seed",
-    "test": "NODE_ENV=test gulp test"
+    "test": "node ./utils/seed && gulp test"
   },
   "version": "1.0.0-beta"
 }

@@ -24,22 +24,45 @@ NotesEngine.Prototype = function() {
       if (!doc.creator) {
         doc.creator = 'Anonymous';
       }
-      if (!doc.updatedBy) {
-        doc.updatedBy = 'Anonymous';
-      }
+      doc.documentId = doc.document_id;
+      doc.updatedBy = doc.updated_by || 'Anonymous';
+      doc.updatedAt = doc.updated;
     });
     return docs;
   };
 
   this.getUserDashboard = function(userId, cb) {
 
-    var userDocsQuery = "SELECT d.title as title, d.documentId as documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt as updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.userId = :userId";
-    var collabDocsQuery = "SELECT d.title as title, d.documentId as documentId, u.name as creator, (SELECT GROUP_CONCAT(name) FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.userId = u.userId) WHERE c.documentId = d.documentId AND c.userId != d.userId)) AS collaborators, d.updatedAt as updatedAt, (SELECT name FROM users WHERE userId=d.updatedBy) AS updatedBy FROM documents d INNER JOIN users u ON (d.userId = u.userId) WHERE d.documentId IN (SELECT documentId FROM changes WHERE userId = :userId) AND d.userId != :userId ORDER BY d.updatedAt DESC";
+    var userDocsQuery = "(SELECT \
+      d.title as title, \
+      d.document_id as document_id, \
+      u.name as creator, \
+      (SELECT string_agg(name, ',') \
+        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.user_id = u.user_id) WHERE c.document_id = d.document_id AND c.user_id != d.user_id) AS authors \
+      ) AS collaborators, \
+      d.updated as updated, \
+      (SELECT name FROM users WHERE user_id=d.updated_by) AS updated_by \
+    FROM documents d \
+    INNER JOIN users u ON (d.user_id = u.user_id) \
+    WHERE d.user_id = $1)";
+
+    var collabDocsQuery = "(SELECT \
+      d.title as title, \
+      d.document_id as document_id, \
+      u.name as creator, \
+      (SELECT string_agg(name, ',') \
+        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.user_id = u.user_id) WHERE c.document_id = d.document_id AND c.user_id != d.user_id) AS authors \
+      ) AS collaborators, \
+      d.updated as updated, \
+      (SELECT name FROM users WHERE user_id=d.updated_by) AS updated_by \
+    FROM documents d \
+    INNER JOIN users u ON (d.user_id = u.user_id) \
+    WHERE d.document_id IN (SELECT document_id FROM changes WHERE user_id = $1) AND d.user_id != $1 ORDER BY d.updated DESC)";
 
     // Combine the two queries
     var query = [userDocsQuery, 'UNION', collabDocsQuery].join(' ');
 
-    this.db.raw(query, {userId: userId}).asCallback(function(err, docs) {
+    this.db.run(query, [userId], function(err, docs) {
       if (err) {
         return cb(new Err('ReadError', {
           cause: err

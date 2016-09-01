@@ -1,3 +1,5 @@
+'use strict';
+
 // App seed
 var defaultSeed = {
   users: {
