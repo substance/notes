@@ -53,7 +53,7 @@ UserStore.Prototype = function() {
   */
   this.getUser = function(userId) {
     return new Promise(function(resolve, reject) {
-      this.db.users.findOne({user_id: userId}, function(err, user) {
+      this.db.users.findOne({userId: userId}, function(err, user) {
         if (err) {
           return reject(new Err('UserStore.ReadError', {
             cause: err
@@ -65,8 +65,6 @@ UserStore.Prototype = function() {
             message: 'No user found for userId ' + userId
           }));
         }
-
-        user.userId = user.user_id;
 
         resolve(user);
       });
@@ -91,7 +89,7 @@ UserStore.Prototype = function() {
 
         return new Promise(function(resolve, reject) {
           var userData = props;
-          userData.user_id = userId;
+          userData.userId = userId;
 
           this.db.users.save(userData, function(err, user) {
             if (err) {
@@ -122,16 +120,13 @@ UserStore.Prototype = function() {
         }
 
         return new Promise(function(resolve, reject) {
-          this.db.users.destroy({user_id: userId}, function(err, user) {
+          this.db.users.destroy({userId: userId}, function(err, user) {
             if (err) {
               return reject(new Err('UserStore.DeleteError', {
                 cause: err
               }));
             }
             user = user[0];
-
-            // map user_id to userId
-            user.userId = user.user_id;
 
             resolve(user);
           });
@@ -147,7 +142,7 @@ UserStore.Prototype = function() {
   */
   this.getUserByLoginKey = function(loginKey) {
     return new Promise(function(resolve, reject) {
-      this.db.users.findOne({login_key: loginKey}, function(err, user) {
+      this.db.users.findOne({loginKey: loginKey}, function(err, user) {
         if (err) {
           return reject(new Err('UserStore.ReadError', {
             cause: err
@@ -159,9 +154,6 @@ UserStore.Prototype = function() {
             message: 'No user found for provided loginKey'
           }));
         }
-
-        // map user_id to userId
-        user.userId = user.user_id;
 
         resolve(user);
       });
@@ -205,11 +197,11 @@ UserStore.Prototype = function() {
     var loginKey = userData.loginKey || uuid();
 
     var record = {
-      user_id: userData.userId,
+      userId: userData.userId,
       name: userData.name,
       email: userData.email,
       created: new Date(),
-      login_key: loginKey
+      loginKey: loginKey
     };
 
     return new Promise(function(resolve, reject) {
@@ -219,9 +211,6 @@ UserStore.Prototype = function() {
             cause: err
           }));
         }
-
-        // map user_id to userId
-        user.userId = user.user_id;
 
         resolve(user);
       });
@@ -236,7 +225,7 @@ UserStore.Prototype = function() {
   */
   this.userExists = function(userId) {
     return new Promise(function(resolve, reject) {
-      this.db.users.findOne({user_id: userId}, function(err, user) {
+      this.db.users.findOne({userId: userId}, function(err, user) {
         if (err) {
           return reject(new Err('UserStore.ReadError', {
             cause: err

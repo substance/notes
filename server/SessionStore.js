@@ -23,15 +23,12 @@ SessionStore.Prototype = function() {
     @returns {Promise}
   */
   this.createSession = function(session) {
-    // map userId to session owner
-    if(session.userId) session.user_id = session.userId;
-
-    var session_token = session.sessionToken || uuid();
+    var sessionToken = session.sessionToken || uuid();
 
     var newSession = {
-      session_token: session_token,
+      sessionToken: sessionToken,
       created: new Date(),
-      user_id: session.user_id
+      userId: session.userId
     };
 
     return new Promise(function(resolve, reject) {
@@ -41,11 +38,6 @@ SessionStore.Prototype = function() {
             cause: err
           }));
         }
-
-        // map session owner to userId,
-        // session_token to sessionToken
-        session.userId = session.user_id;
-        session.sessionToken = session.session_token;
 
         resolve(session);
       });
@@ -60,7 +52,7 @@ SessionStore.Prototype = function() {
   */
   this.getSession = function(sessionToken) {
     return new Promise(function(resolve, reject) {
-      this.db.sessions.findOne({session_token: sessionToken}, function(err, session) {
+      this.db.sessions.findOne({sessionToken: sessionToken}, function(err, session) {
         if (err) {
           return reject(new Err('SessionStore.ReadError', {
             cause: err
@@ -72,11 +64,6 @@ SessionStore.Prototype = function() {
             message: 'No session found for token ' + sessionToken
           }));
         }
-
-        // map session owner to userId,
-        // session_token to sessionToken
-        session.userId = session.user_id;
-        session.sessionToken = session.session_token;
 
         resolve(session);
       });
@@ -99,18 +86,13 @@ SessionStore.Prototype = function() {
         }
 
         return new Promise(function(resolve, reject) {
-          this.db.sessions.destroy({session_token: sessionToken}, function(err, session) {
+          this.db.sessions.destroy({sessionToken: sessionToken}, function(err, session) {
             if (err) {
               return reject(new Err('SessionStore.DeleteError', {
                 cause: err
               }));
             }
             session = session[0];
-
-            // map session owner to userId,
-            // session_token to sessionToken
-            session.userId = session.user_id;
-            session.sessionToken = session.session_token;
 
             resolve(session);
           });
@@ -126,7 +108,7 @@ SessionStore.Prototype = function() {
   */
   this.sessionExists = function(sessionToken) {
     return new Promise(function(resolve, reject) {
-      this.db.sessions.findOne({session_token: sessionToken}, function(err, session) {
+      this.db.sessions.findOne({sessionToken: sessionToken}, function(err, session) {
         if (err) {
           reject(new Err('SessionStore.ReadError', {
             cause: err

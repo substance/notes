@@ -29,7 +29,7 @@ SnapshotStore.Prototype = function() {
       }));
     }
 
-    var filters = {document_id: args.documentId};
+    var filters = {documentId: args.documentId};
 
     if(args.version && args.findClosest) {
       filters['version <='] = args.version;
@@ -44,10 +44,6 @@ SnapshotStore.Prototype = function() {
         }));
       }
 
-      if(snapshot) {
-        snapshot.documentId = snapshot.document_id;
-      }
-
       cb(null, snapshot);
     });
   };
@@ -59,7 +55,7 @@ SnapshotStore.Prototype = function() {
   */
   this.saveSnapshot = function(args, cb) {
     var record = {
-      document_id: args.documentId,
+      documentId: args.documentId,
       version: args.version,
       data: args.data,
       created: args.createdAt || new Date()
@@ -96,7 +92,7 @@ SnapshotStore.Prototype = function() {
     Removes a snapshot for a given documentId + version
   */
   this.deleteSnaphot = function(documentId, version, cb) {
-    this.db.snapshots.destroy({document_id: documentId, version: version}, function(err, snapshot) {
+    this.db.snapshots.destroy({documentId: documentId, version: version}, function(err, snapshot) {
       if (err) {
         return cb(new Err('SnapshotStore.DeleteError', {
           cause: err
@@ -114,7 +110,7 @@ SnapshotStore.Prototype = function() {
     Deletes all snapshots for a given documentId
   */
   this.deleteSnapshotsForDocument = function(documentId, cb) {
-    this.db.snapshots.destroy({document_id: documentId}, function(err, snapshots) {
+    this.db.snapshots.destroy({documentId: documentId}, function(err, snapshots) {
       if (err) {
         return cb(new Err('SnapshotStore.DeleteForDocumentError', {
           cause: err
@@ -128,7 +124,7 @@ SnapshotStore.Prototype = function() {
     Returns true if a snapshot exists for a certain version
   */
   this.snapshotExists = function(documentId, version, cb) {
-    this.db.snapshots.findOne({document_id: documentId}, function(err, snapshot) {
+    this.db.snapshots.findOne({documentId: documentId}, function(err, snapshot) {
       if (err) {
         return cb(new Err('SnapshotStore.ReadError', {
           cause: err

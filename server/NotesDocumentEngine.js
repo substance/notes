@@ -52,22 +52,22 @@ NotesDocumentEngine.Prototype = function() {
   };
 
   this.queryDocumentMetaData = function(documentId, cb) {
-    var query = "SELECT \
-      d.document_id, \
-      d.updated, \
+    var query = 'SELECT \
+      d."documentId", \
+      d."updatedAt", \
       d.version, \
-      d.schema_name, \
-      d.schema_version, \
-      (SELECT string_agg(name, ',') \
-        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON c.user_id = u.user_id WHERE c.document_id = d.document_id AND c.user_id != d.user_id) AS authors \
+      d."schemaName", \
+      d."schemaVersion", \
+      (SELECT string_agg(name, \',\') \
+        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON c."userId" = u."userId" WHERE c."documentId" = d."documentId" AND c."userId" != d."userId") AS authors \
       ) AS collaborators, \
-      (SELECT created FROM changes c WHERE c.document_id=d.document_id ORDER BY created ASC LIMIT 1) AS created, \
+      (SELECT "createdAt" FROM changes c WHERE c."documentId"=d."documentId" ORDER BY "createdAt" ASC LIMIT 1) AS "createdAt", \
       u.name AS author, \
-      f.name AS updated_by \
+      f.name AS "updatedBy" \
     FROM documents d \
-    JOIN users u ON(u.user_id=d.user_id) \
-    JOIN users f ON(f.user_id=d.updated_by) \
-    WHERE d.document_id = $1";
+    JOIN users u ON(u."userId"=d."userId") \
+    JOIN users f ON(f."userId"=d."updatedBy") \
+    WHERE d."documentId" = $1';
 
     this.db.run(query, [documentId], function(err, doc) {
       if (err) {

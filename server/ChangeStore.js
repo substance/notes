@@ -49,11 +49,11 @@ ChangeStore.Prototype = function() {
       }
       var version = headVersion + 1;
       var record = {
-        document_id: args.documentId,
+        documentId: args.documentId,
         version: version,
         data: args.change,
-        created: args.createdAt || new Date(),
-        user_id: userId
+        createdAt: args.createdAt || new Date(),
+        userId: userId
       };
 
       this.db.changes.insert(record, function(err, change) {
@@ -100,11 +100,11 @@ ChangeStore.Prototype = function() {
         }
         var version = headVersion + 1;
         var record = {
-          document_id: args.documentId,
+          documentId: args.documentId,
           version: version,
           data: args.change,
-          created: args.createdAt || new Date(),
-          user_id: userId
+          createdAt: args.createdAt || new Date(),
+          userId: userId
         };
 
         this.db.changes.insert(record, function(err, change) {
@@ -152,7 +152,7 @@ ChangeStore.Prototype = function() {
     if(!has(args, 'sinceVersion')) args.sinceVersion = 0;
 
     var query = {
-      'document_id': args.documentId,
+      'documentId': args.documentId,
       'version >': args.sinceVersion
     };
 
@@ -198,7 +198,7 @@ ChangeStore.Prototype = function() {
     @returns {Callback}
   */
   this.deleteChanges = function(id, cb) {
-    this.db.changes.destroy({document_id: id}, function(err, changes) {
+    this.db.changes.destroy({documentId: id}, function(err, changes) {
       if (err) {
         return cb(new Err('ChangeStore.DeleteError', {
           cause: err
@@ -216,7 +216,7 @@ ChangeStore.Prototype = function() {
     @returns {Callback}
   */
   this.getVersion = function(id, cb) {
-    this.db.changes.count({document_id: id}, function(err, count) {
+    this.db.changes.count({documentId: id}, function(err, count) {
       if (err) {
         return cb(new Err('ChangeStore.GetVersionError', {
           cause: err
@@ -237,7 +237,7 @@ ChangeStore.Prototype = function() {
   */
   this._getVersion = function(id) {
     return new Promise(function(resolve, reject) {
-      this.db.changes.count({document_id: id}, function(err, count) {
+      this.db.changes.count({documentId: id}, function(err, count) {
         if (err) {
           return reject(new Err('ChangeStore.GetVersionError', {
             cause: err

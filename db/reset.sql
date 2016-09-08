@@ -8,58 +8,58 @@ drop table if exists "users";
 
 -- Users:
 CREATE TABLE "users" (
-  user_id varchar(40) UNIQUE PRIMARY KEY,
+  "userId" varchar(40) UNIQUE PRIMARY KEY,
   email varchar(255) UNIQUE,
   name varchar(255),
   created timestamp,
-  login_key varchar(40) UNIQUE
+  "loginKey" varchar(40) UNIQUE
 );
 
-CREATE UNIQUE INDEX login_key_index ON users(login_key);
+CREATE UNIQUE INDEX login_key_index ON users("loginKey");
 
 -- Sessions:
 CREATE TABLE "sessions" (
-  session_token varchar(40) UNIQUE PRIMARY KEY,
-  user_id varchar(40) REFERENCES users,
+  "sessionToken" varchar(40) UNIQUE PRIMARY KEY,
+  "userId" varchar(40) REFERENCES users,
   -- ex timestamp
   created timestamp
 );
 
 -- Documents:
 CREATE TABLE "documents" (
-  document_id varchar(40) UNIQUE PRIMARY KEY,
-  schema_name varchar(40),
-  schema_version varchar(40),
+  "documentId" varchar(40) UNIQUE PRIMARY KEY,
+  "schemaName" varchar(40),
+  "schemaVersion" varchar(40),
   info jsonb,
   version integer,
   title varchar(255),
-  updated timestamp,
-  updated_by varchar(40) REFERENCES users,
-  user_id varchar(40) REFERENCES users
+  "updatedAt" timestamp,
+  "updatedBy" varchar(40) REFERENCES users,
+  "userId" varchar(40) REFERENCES users
 );
 
-CREATE UNIQUE INDEX document_id_index ON documents(document_id);
+CREATE UNIQUE INDEX document_id_index ON documents("documentId");
 
 -- Changes:
 CREATE TABLE "changes" (
-  document_id varchar(40) REFERENCES documents,
+  "documentId" varchar(40) REFERENCES documents,
   version integer,
   data jsonb,
-  created timestamp,
-  user_id varchar(40) REFERENCES users,
-  PRIMARY KEY(document_id, version)
+  "createdAt" timestamp,
+  "userId" varchar(40) REFERENCES users,
+  PRIMARY KEY("documentId", version)
 );
 
 -- Index so we can query by documentId and or userId (needed to extract collaborators)
-CREATE INDEX changes_document_id_index ON changes(document_id);
-CREATE INDEX changes_user_id_index ON changes(user_id);
-CREATE INDEX changes_document_user_idx_index ON changes(document_id, user_id);
+CREATE INDEX changes_document_id_index ON changes("documentId");
+CREATE INDEX changes_user_id_index ON changes("userId");
+CREATE INDEX changes_document_user_idx_index ON changes("documentId", "userId");
 
 -- Snapshots:
 CREATE TABLE "snapshots" (
-  document_id varchar(40) REFERENCES documents,
+  "documentId" varchar(40) REFERENCES documents,
   version integer,
   data jsonb,
   created timestamp,
-  PRIMARY KEY(document_id, version)
+  PRIMARY KEY("documentId", version)
 );

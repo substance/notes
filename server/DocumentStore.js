@@ -3,7 +3,6 @@
 var oo = require('substance/util/oo');
 var Err = require('substance/util/SubstanceError');
 var uuid = require('substance/util/uuid');
-var each = require('lodash/each');
 var map = require('lodash/map');
 var isUndefined = require('lodash/isUndefined');
 var Promise = require('bluebird');
@@ -27,32 +26,18 @@ DocumentStore.Prototype = function() {
   this.createDocument = function(props, cb) {
     if (!props.documentId) {
       // We generate a documentId ourselves
-      props.document_id = uuid();
-    } else {
-      props.document_id = props.documentId;
-    }
-    delete props.documentId;
-
-    if(props.schemaName) {
-      props.schema_name = props.schemaName;
-      delete props.schemaName;
-    }
-
-    if(props.schemaVersion) {
-      props.schema_version = props.schemaVersion;
-      delete props.schemaVersion;
-    }
+      props.documentId = uuid();
+    } 
 
     if(props.info) {
       if(props.info.title) props.title = props.info.title;
       if(props.info.userId) {
-        props.user_id = props.info.userId;
-        props.updated_by = props.info.userId;
+        props.updatedBy = props.info.userId;
+        props.userId = props.info.userId;
       }
-      if(props.info.updatedAt) props.updated = props.info.updatedAt;
     }
     
-    this.documentExists(props.document_id, function(err, exists) {
+    this.documentExists(props.documentId, function(err, exists) {
       if (err) {
         return cb(new Err('DocumentStore.CreateError', {
           cause: err
@@ -61,7 +46,7 @@ DocumentStore.Prototype = function() {
 
       if (exists) {
         return cb(new Err('DocumentStore.CreateError', {
-          message: 'Document ' + props.document_id + ' already exists.'
+          message: 'Document ' + props.documentId + ' already exists.'
         }));
       }
 
@@ -71,13 +56,6 @@ DocumentStore.Prototype = function() {
             cause: err
           }));
         }
-
-        // Set documentId explictly as it will be used by Document Engine
-        doc.documentId = doc.document_id;
-        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
-        doc.schemaName = doc.schema_name;
-        doc.schemaVersion = doc.schema_version;
-        doc.userId = doc.user_id;
 
         cb(null, doc);
       });
@@ -106,7 +84,7 @@ DocumentStore.Prototype = function() {
     @returns {Callback}
   */
   this.documentExists = function(documentId, cb) {
-    this.db.documents.findOne({document_id: documentId}, function(err, doc) {
+    this.db.documents.findOne({documentId: documentId}, function(err, doc) {
       if (err) {
         return cb(new Err('DocumentStore.ReadError', {
           cause: err,
@@ -126,7 +104,7 @@ DocumentStore.Prototype = function() {
     @returns {Callback}
   */
   this.getDocument = function(documentId, cb) {
-    this.db.documents.findOne({document_id: documentId}, function(err, doc) {
+    this.db.documents.findOne({documentId: documentId}, function(err, doc) {
       if (err) {
         return cb(new Err('DocumentStore.ReadError', {
           cause: err
@@ -138,13 +116,6 @@ DocumentStore.Prototype = function() {
           message: 'No document found for documentId ' + documentId
         }));
       }
-
-      // Set documentId explictly as it will be used by Document Engine
-      doc.documentId = doc.document_id;
-      // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
-      doc.schemaName = doc.schema_name;
-      doc.schemaVersion = doc.schema_version;
-      doc.userId = doc.user_id;
 
       cb(null, doc);
     });
@@ -161,19 +132,6 @@ DocumentStore.Prototype = function() {
   this.updateDocument = function(documentId, props, cb) {
     if(props.info) {
       if(props.info.title) props.title = props.info.title;
-      if(props.info.userId) props.user_id = props.info.userId;
-      if(props.info.updatedAt) props.updated = props.info.updatedAt;
-      if(props.info.updatedBy) props.updated_by = props.info.updatedBy;
-    }
-
-    if(props.schemaName) {
-      props.schema_name = props.schemaName;
-      delete props.schemaName;
-    }
-
-    if(props.schemaVersion) {
-      props.schema_version = props.schemaVersion;
-      delete props.schemaVersion;
     }
     
     this.documentExists(documentId, function(err, exists) {
@@ -190,7 +148,7 @@ DocumentStore.Prototype = function() {
       }
 
       var documentData = props;
-      documentData.document_id = documentId;
+      documentData.documentId = documentId;
 
       this.db.documents.save(documentData, function(err, doc) {
         if (err) {
@@ -198,13 +156,6 @@ DocumentStore.Prototype = function() {
             cause: err
           }));
         }
-
-        // Set documentId explictly as it will be used by Document Engine
-        doc.documentId = doc.document_id;
-        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
-        doc.schemaName = doc.schema_name;
-        doc.schemaVersion = doc.schema_version;
-        doc.userId = doc.user_id;
 
         cb(null, doc);
       });
@@ -232,20 +183,13 @@ DocumentStore.Prototype = function() {
         }));
       }
 
-      this.db.documents.destroy({document_id: documentId}, function(err, doc) {
+      this.db.documents.destroy({documentId: documentId}, function(err, doc) {
         if (err) {
           return cb(new Err('DocumentStore.DeleteError', {
             cause: err
           }));
         }
         doc = doc[0];
-        
-        // Set documentId explictly as it will be used by Document Engine
-        doc.documentId = doc.document_id;
-        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
-        doc.schemaName = doc.schema_name;
-        doc.schemaVersion = doc.schema_version;
-        doc.userId = doc.user_id;
 
         cb(null, doc);
       });
@@ -265,26 +209,12 @@ DocumentStore.Prototype = function() {
     options.limit = options.limit || 1000;
     options.offset = options.offset || 0;
 
-    if(filters.userId) {
-      filters.user_id = filters.userId;
-      delete filters.userId;
-    }
-
     this.db.documents.find(filters, options, function(err, docs) {
       if (err) {
         return cb(new Err('DocumentStore.ListError', {
           cause: err
         }));
       }
-
-      each(docs, function(doc) {
-        // Set documentId explictly as it will be used by Document Engine
-        doc.documentId = doc.document_id;
-        // Set schemaName and schemaVersion explictly as it will be used by Snapshot Engine
-        doc.schemaName = doc.schema_name;
-        doc.schemaVersion = doc.schema_version;
-        doc.userId = doc.user_id;
-      });
 
       cb(null, docs);
     });

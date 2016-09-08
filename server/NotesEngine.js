@@ -24,40 +24,38 @@ NotesEngine.Prototype = function() {
       if (!doc.creator) {
         doc.creator = 'Anonymous';
       }
-      doc.documentId = doc.document_id;
-      doc.updatedBy = doc.updated_by || 'Anonymous';
-      doc.updatedAt = doc.updated;
+      doc.updatedBy = doc.updatedBy || 'Anonymous';
     });
     return docs;
   };
 
   this.getUserDashboard = function(userId, cb) {
 
-    var userDocsQuery = "(SELECT \
+    var userDocsQuery = '(SELECT \
       d.title as title, \
-      d.document_id as document_id, \
+      d."documentId" as "documentId", \
       u.name as creator, \
-      (SELECT string_agg(name, ',') \
-        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.user_id = u.user_id) WHERE c.document_id = d.document_id AND c.user_id != d.user_id) AS authors \
+      (SELECT string_agg(name, \',\') \
+        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c."userId" = u."userId") WHERE c."documentId" = d."documentId" AND c."userId" != d."userId") AS authors \
       ) AS collaborators, \
-      d.updated as updated, \
-      (SELECT name FROM users WHERE user_id=d.updated_by) AS updated_by \
+      d."updatedAt" as "updatedAt", \
+      (SELECT name FROM users WHERE "userId"=d."updatedBy") AS "updatedBy" \
     FROM documents d \
-    INNER JOIN users u ON (d.user_id = u.user_id) \
-    WHERE d.user_id = $1)";
+    INNER JOIN users u ON (d."userId" = u."userId") \
+    WHERE d."userId" = $1)';
 
-    var collabDocsQuery = "(SELECT \
+    var collabDocsQuery = '(SELECT \
       d.title as title, \
-      d.document_id as document_id, \
+      d."documentId" as "documentId", \
       u.name as creator, \
-      (SELECT string_agg(name, ',') \
-        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c.user_id = u.user_id) WHERE c.document_id = d.document_id AND c.user_id != d.user_id) AS authors \
+      (SELECT string_agg(name, \',\') \
+        FROM (SELECT DISTINCT u.name FROM changes c INNER JOIN users u ON (c."userId" = u."userId") WHERE c."documentId" = d."documentId" AND c."userId" != d."userId") AS authors \
       ) AS collaborators, \
-      d.updated as updated, \
-      (SELECT name FROM users WHERE user_id=d.updated_by) AS updated_by \
+      d."updatedAt" as "updatedAt", \
+      (SELECT name FROM users WHERE "userId"=d."updatedBy") AS "updatedBy" \
     FROM documents d \
-    INNER JOIN users u ON (d.user_id = u.user_id) \
-    WHERE d.document_id IN (SELECT document_id FROM changes WHERE user_id = $1) AND d.user_id != $1 ORDER BY d.updated DESC)";
+    INNER JOIN users u ON (d."userId" = u."userId") \
+    WHERE d."documentId" IN (SELECT "documentId" FROM changes WHERE "userId" = $1) AND d."userId" != $1 ORDER BY d."updatedAt" DESC)';
 
     // Combine the two queries
     var query = [userDocsQuery, 'UNION', collabDocsQuery].join(' ');
