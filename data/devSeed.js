@@ -1,6 +1,17 @@
-var exampleNote = require('../model/exampleNote');
+'use strict';
 
-var testUserChange = exampleNote.createChangeset().map(function(c) {
+var DocumentSession = require('substance/model/DocumentSession');
+var Configurator = require('substance/util/Configurator');
+var NotePackage = require('../packages/note/package');
+
+var configurator = new Configurator().import(NotePackage);
+var seed = configurator.getSeed();
+var doc = configurator.createArticle();
+var session = new DocumentSession(doc);
+var change = session.transaction(seed);
+var result = [change.toJSON()];
+
+var testUserChange = result.map(function(c) {
   c.info = {
     userId: 'testuser',
     createdAt: new Date()
@@ -8,7 +19,7 @@ var testUserChange = exampleNote.createChangeset().map(function(c) {
   return c;
 })[0];
 
-var testUser2Change = exampleNote.createChangeset().map(function(c) {
+var testUser2Change = result.map(function(c) {
   c.info = {
     userId: 'testuser2',
     createdAt: new Date()
@@ -48,8 +59,8 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458663125909
+        title: doc.get(['meta', 'title']),
+        updatedAt: new Date()
       }
     },
     'note-2': {
@@ -59,8 +70,8 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458663225909,
+        title: doc.get(['meta', 'title']),
+        updatedAt: new Date(),
         updatedBy: 'testuser2'
       }
     },
@@ -71,8 +82,8 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458663325909
+        title: doc.get(['meta', 'title']),
+        updatedAt: new Date()
       }
     },
     'note-4': {
@@ -82,8 +93,8 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser2',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458662325909,
+        title: doc.get(['meta', 'title']),
+        updatedAt: new Date(),
         updatedBy: 'testuser2'
       }
     },
@@ -94,8 +105,8 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser2',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458662125909
+        title: doc.get(['meta', 'title']),
+        updatedAt: new Date()
       }
     },
     'note-6': {
@@ -105,8 +116,8 @@ var devSeed = {
       version: 1,
       info: {
         userId: 'testuser2',
-        title: exampleNote.createArticle().get(['meta', 'title']),
-        updatedAt: 1458662725909
+        title: doc.get(['meta', 'title']),
+        updatedAt: new Date()
       }
     }
   },

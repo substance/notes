@@ -1,0 +1,20 @@
+{
+  "server": {
+    "port": 5000,
+    "host": "localhost",
+    "wsUrl": "ws://localhost:5000",
+    "appUrl": "http://localhost:5000"
+  },
+  "app": {
+    "port": 5000,
+    "host": "localhost"
+  },
+  "db_url": "postgres://postgres:@localhost:5432/notes",
+  "mail": {
+    "sender": "Substance Notes ✍ <notes@substance.io>",
+    "mailgun": {
+      "user": "",
+      "pass": ""
+    }
+  }
+}

@@ -1,7 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var $ = require('substance/util/jquery');
+var request = require('substance/util/request');
 
 /*
   HTTP client for talking with AuthenticationServer
@@ -34,7 +34,7 @@ AuthenticationClient.Prototype = function() {
     this._requests['changeName'] = userId+name;
 
     var path = this.config.httpUrl + 'changename';
-    this._request('POST', path, {
+    request('POST', path, {
       userId: userId,
       name: name
     }, function(err, res) {
@@ -52,23 +52,22 @@ AuthenticationClient.Prototype = function() {
     Returns true if client is authenticated
   */
   this.isAuthenticated = function() {
-    return !!this._session;
+    return Boolean(this._session);
   };
 
   this._requestInvalid = function(reqName, reqParams) {
-    return this._requests[reqName] !==  reqParams;
+    return this._requests[reqName] !== reqParams;
   };
 
   /*
     Authenticate user
-
     Logindata consists of an object (usually with login/password properties)
   */
   this.authenticate = function(loginData, cb) {
     this._requests['authenticate'] = loginData;
 
     var path = this.config.httpUrl + 'authenticate';
-    this._request('POST', path, loginData, function(err, hubSession) {
+    request('POST', path, loginData, function(err, hubSession) {
       // Skip if there has been another request in the meanwhile
       if (this._requestInvalid('authenticate', loginData)) return;
 
@@ -80,7 +79,6 @@ AuthenticationClient.Prototype = function() {
 
   /*
     Clear user session
-
     TODO: this should make a logout call to the API to remove the session entry
   */
   this.logout = function(cb) {
@@ -95,35 +93,12 @@ AuthenticationClient.Prototype = function() {
     this._requests['requestLoginLink'] = data;
 
     var path = this.config.httpUrl + 'loginlink';
-    this._request('POST', path, data, function(err, res) {
+    request('POST', path, data, function(err, res) {
       // Skip if there has been another request in the meanwhile
       if (this._requestInvalid('requestLoginLink', data)) return;
       if (err) return cb(err);
       cb(null, res);
     }.bind(this));
-  };
-
-  /*
-    A generic request method
-  */
-  this._request = function(method, url, data, cb) {
-    var ajaxOpts = {
-      type: method,
-      url: url,
-      contentType: "application/json; charset=UTF-8",
-      dataType: "json",
-      success: function(data) {
-        cb(null, data);
-      },
-      error: function(err) {
-        // console.error(err);
-        cb(new Error(err.responseJSON.errorMessage));
-      }
-    };
-    if (data) {
-      ajaxOpts.data = JSON.stringify(data);
-    }
-    $.ajax(ajaxOpts);
   };
 
 };

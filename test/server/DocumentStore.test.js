@@ -1,10 +1,12 @@
 'use strict';
 
-require('../qunit_extensions');
+var substanceTest = require('substance/test/test').module('server/DocumentStore');
 
-var db = require('../db');
+var Database = require('../../server/Database');
+var db = new Database();
 var testDocumentStore = require('substance/test/collab/testDocumentStore');
 var DocumentStore = require('../../server/DocumentStore');
+var UserStore = require('../../server/UserStore');
 
 var documentStoreSeed = {
   'test-doc': {
@@ -20,46 +22,66 @@ var documentStoreSeed = {
 
 var documentStore = new DocumentStore({ db: db });
 
-QUnit.module('server/DocumentStore', {
-  beforeEach: function() {
-    return db.reset()
-      .then(function() {
-        var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed));
-        return documentStore.seed(newDocumentStoreSeed);
+function setup() {
+  return db.reset()
+    .then(function() {
+      var userStore = new UserStore({ db: db });
+      return userStore.seed({
+        '1': {
+          userId: '1',
+          name: 'Test',
+          loginKey: '1234',
+          email: 'test@example.com'
+        }
       });
-    }
-});
+    })
+    .then(function() {
+      var newDocumentStoreSeed = JSON.parse(JSON.stringify(documentStoreSeed));
+      return documentStore.seed(newDocumentStoreSeed);
+    });
+}
+
+function test(description, fn) {
+  substanceTest(description, function(t) {
+    setup().then(function(){
+      fn(t);
+    });
+  });
+}
 
 // Runs the offical document store test suite
-testDocumentStore(documentStore, QUnit);
+testDocumentStore(documentStore, test);
 
-QUnit.test('List documents', function(assert) {
-  var done = assert.async();
-  documentStore.listDocuments({}, function(err, documents) {
-    assert.notOk(err, 'Should not error');
-    assert.equal(documents.length, 1, 'There should be one document returned');
-    assert.equal(documents[0].userId, '1', 'First doc should have userId "1"');
-    assert.equal(documents[0].documentId, 'test-doc', 'documentId should be "test-doc"');
-    done();
+test('List documents', function(t) {
+  documentStore.listDocuments({}, {}, function(err, documents) {
+    t.isNil(err, 'Should not error');
+    t.equal(documents.length, 1, 'There should be one document returned');
+    t.equal(documents[0].userId, '1', 'First doc should have userId "1"');
+    t.equal(documents[0].documentId, 'test-doc', 'documentId should be "test-doc"');
+    t.end();
   });
 });
 
-QUnit.test('List documents with matching filter', function(assert) {
-  var done = assert.async();
-  documentStore.listDocuments({userId: '1'}, function(err, documents) {
-    assert.notOk(err, 'Should not error');
-    assert.equal(documents.length, 1, 'There should be one document returned');
-    assert.equal(documents[0].userId, '1', 'First doc should have userId "1"');
-    assert.equal(documents[0].documentId, 'test-doc', 'documentId should be "test-doc"');
-    done();
+test('List documents with matching filter', function(t) {
+  documentStore.listDocuments({userId: '1'}, {}, function(err, documents) {
+    t.isNil(err, 'Should not error');
+    t.equal(documents.length, 1, 'There should be one document returned');
+    t.equal(documents[0].userId, '1', 'First doc should have userId "1"');
+    t.equal(documents[0].documentId, 'test-doc', 'documentId should be "test-doc"');
+    t.end();
   });
 });
 
-QUnit.test('List documents with filter that does not match', function(assert) {
-  var done = assert.async();
-  documentStore.listDocuments({userId: 'userx'}, function(err, documents) {
-    assert.notOk(err, 'Should not error');
-    assert.equal(documents.length, 0, 'There should be no matches');
-    done();
+test('List documents with filter that does not match', function(t) {
+  documentStore.listDocuments({userId: 'userx'}, {}, function(err, documents) {
+    t.isNil(err, 'Should not error');
+    t.equal(documents.length, 0, 'There should be no matches');
+    t.end();
   });
+});
+
+// This is the end of test suite
+test('Closing connection', function(t) {
+  db.shutdown();
+  t.end();
 });

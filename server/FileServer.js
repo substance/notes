@@ -1,7 +1,7 @@
 'use strict';
 
 var oo = require('substance/util/oo');
-var Err = require('substance/util/Error');
+var Err = require('substance/util/SubstanceError');
 
 /*
   FileServer module. Can be bound to an express instance
@@ -27,9 +27,11 @@ FileServer.Prototype = function() {
     var self = this;
     var uploader = this.store.getFileUploader('files');
     uploader(req, res, function (err) {
-      if (err) return next(new Err('FileStore.UploadError', {
-        cause: err
-      }));
+      if (err) {
+        return next(new Err('FileStore.UploadError', {
+          cause: err
+        }));
+      }
       res.json({name: self.store.getFileName(req)});
     });
   };

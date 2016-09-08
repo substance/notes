@@ -19,9 +19,9 @@ AuthenticationServer.Prototype = function() {
     @param {String} mountPath must be something like '/api/auth/'
   */
   this.bind = function(app) {
-    app.post(this.path + 'loginlink', this._requestLoginLink.bind(this));
-    app.post(this.path + 'authenticate', this._authenticate.bind(this));
-    app.post(this.path + 'changename', this._changename.bind(this));
+    app.post(this.path + '/loginlink', this._requestLoginLink.bind(this));
+    app.post(this.path + '/authenticate', this._authenticate.bind(this));
+    app.post(this.path + '/changename', this._changename.bind(this));
   };
 
   /*
@@ -31,6 +31,7 @@ AuthenticationServer.Prototype = function() {
     var args = req.body; // has email and docId (optional) which should be included in the login url.
 
     this.engine.requestLoginLink(args).then(function(result) {
+      // eslint-disable-next-line
       console.log('this.engine.requestLoginLink result', result);
       res.json({status: 'ok'});
     }).catch(function(err) {

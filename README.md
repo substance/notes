@@ -4,6 +4,12 @@ Real-time collaborative notes editing.
 
 # Install
 
+Install postgres
+
+(Mac users could install [PostgresApp](https://github.com/postgresapp/postgresapp) for local development)
+
+For local development use ```notes_user``` with password ```notes_pw``` and database ```notes```. You can change default connection url in default config.
+
 Clone the repo
 
 ```bash

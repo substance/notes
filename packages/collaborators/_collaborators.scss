@@ -1,0 +1,59 @@
+.sc-collaborators {
+  float: right;
+  margin-right: 10px;
+
+  .se-collaborator {
+    margin: 6px 3px;
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    line-height: 26px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    color: #42423E;
+    transition: all 0.5s ease;
+
+    &.sm-collaborator-1 { 
+      background: $collaborator-color-1;
+      &.active { color: $collaborator-color-1; background: rgba($collaborator-color-1, 0.25); }
+    }
+    &.sm-collaborator-2 { 
+      background: $collaborator-color-2;
+      &.active { color: $collaborator-color-2; background: rgba($collaborator-color-2, 0.25); }
+    }
+    &.sm-collaborator-3 { 
+      background: $collaborator-color-3;
+      &.active { color: $collaborator-color-3; background: rgba($collaborator-color-3, 0.25); }
+    }
+    &.sm-collaborator-4 { 
+      background: $collaborator-color-4;
+      &.active { color: $collaborator-color-4; background: rgba($collaborator-color-4, 0.25); }
+    }
+    &.sm-collaborator-5 { 
+      background: $collaborator-color-5;
+      &.active { color: $collaborator-color-5; background: rgba($collaborator-color-5, 0.25); }
+    }
+    &.sm-collaborator-6 { 
+      background: $collaborator-color-6;
+      &.active { color: $collaborator-color-6; background: rgba($collaborator-color-6, 0.25); }
+    }
+    &.sm-collaborator-7 { 
+      background: $collaborator-color-7;
+      &.active { color: $collaborator-color-7; background: rgba($collaborator-color-7, 0.25); }
+    }
+    &.sm-collaborator-8 { 
+      background: $collaborator-color-8;
+      &.active { color: $collaborator-color-8; background: rgba($collaborator-color-8, 0.25); }
+    }
+    &.sm-collaborator-9 { 
+      background: $collaborator-color-9;
+      &.active { color: $collaborator-color-9; background: rgba($collaborator-color-9, 0.25); }
+    }
+    &.sm-collaborator-10 { 
+      background: $collaborator-color-10;
+      &.active { color: $collaborator-color-10; background: rgba($collaborator-color-10, 0.25); }
+    }
+  }
+}
