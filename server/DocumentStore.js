@@ -30,8 +30,8 @@ DocumentStore.Prototype = function() {
       props.document_id = uuid();
     } else {
       props.document_id = props.documentId;
-      delete props.documentId;
     }
+    delete props.documentId;
 
     if(props.schemaName) {
       props.schema_name = props.schemaName;
