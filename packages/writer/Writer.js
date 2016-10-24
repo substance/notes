@@ -51,7 +51,7 @@ NoteWriter.Prototype = function() {
     var configurator = this.props.configurator;
     return $$(ContainerEditor, {
       disabled: this.props.disabled,
-      documentSession: this.documentSession,
+      editorSession: this.editorSession,
       node: this.doc.get('body'),
       editing: 'full',
       commands: configurator.getSurfaceCommandNames(),
@@ -77,7 +77,7 @@ NoteWriter.Prototype = function() {
   this.getCommandContext = function() {
     return {
       authenticationClient: this.context.authenticationClient,
-      documentSession: this.documentSession,
+      editorSession: this.editorSession,
       surfaceManager: this.surfaceManager,
       fileClient: this.fileClient,
       saveHandler: this.saveHandler,

@@ -16,7 +16,7 @@ EditNote.Prototype = function() {
     _super.dispose.call(this);
 
     if (inBrowser) {
-      document.body.classList.remove('sm-fixed-layout');  
+      document.body.classList.remove('sm-fixed-layout');
     }
   };
 
@@ -25,7 +25,7 @@ EditNote.Prototype = function() {
       if (this.props.mobile) {
         document.body.classList.remove('sm-fixed-layout');
       } else {
-        document.body.classList.add('sm-fixed-layout');  
+        document.body.classList.add('sm-fixed-layout');
       }
     }
   };
@@ -92,7 +92,7 @@ EditNote.Prototype = function() {
       main = $$(Writer, {
         configurator: this.props.configurator,
         noteInfo: this.state.noteInfo,
-        documentSession: this.state.session,
+        editorSession: this.state.session,
         onUploadFile: fileClient.uploadFile.bind(fileClient)
       }).ref('notepad');
     }

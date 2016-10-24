@@ -29,7 +29,7 @@ FileClient.Prototype = function() {
     function updateProgress(e) {
       if (e.lengthComputable) {
         //var percentage = (e.loaded / e.total) * 100;
-        //self.documentSession.hubClient.emit('upload', percentage);
+        //self.editorSession.hubClient.emit('upload', percentage);
       }
     }
 

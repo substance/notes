@@ -1,13 +1,13 @@
 'use strict';
 
-var DocumentSession = require('substance/model/DocumentSession');
+var EditorSession = require('substance/model/EditorSession');
 var Configurator = require('substance/util/Configurator');
 var NotePackage = require('../packages/note/package');
 
 var configurator = new Configurator().import(NotePackage);
 var seed = configurator.getSeed();
 var doc = configurator.createArticle();
-var session = new DocumentSession(doc);
+var session = new EditorSession(doc, { configurator: configurator });
 var change = session.transaction(seed);
 var result = [change.toJSON()];
 

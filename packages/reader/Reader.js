@@ -28,7 +28,7 @@ Reader.Prototype = function() {
     var configurator = this.props.configurator;
     return $$(ContainerEditor, {
       disabled: this.props.disabled,
-      documentSession: this.documentSession,
+      editorSession: this.editorSession,
       node: this.doc.get('body'),
       editing: 'readonly',
       commands: configurator.getSurfaceCommandNames(),

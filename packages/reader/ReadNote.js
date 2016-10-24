@@ -60,7 +60,7 @@ ReadNote.Prototype = function() {
           configurator: this.props.configurator,
           mobile: this.props.mobile,
           noteInfo: this.state.noteInfo,
-          documentSession: this.state.session
+          editorSession: this.state.session
         }).ref('noteReader')
       );
     }
